@@ -1,0 +1,214 @@
+# Copyright 2002-2007 Barcelona Supercomputing Center (www.bsc.es)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#!@SH@
+
+build_config_worker ()
+{
+@CAT@ > config.worker <<EOF
+
+. PACKAGE/etc/gss-worker-env.sh
+
+if [ x"$LD_LIBRARY_PATH" != x ]; then
+	export LD_LIBRARY_PATH=${SSHGS_LIBRARY_PATH:-"PACKAGE/lib"}:${LD_LIBRARY_PATH};
+else
+	export LD_LIBRARY_PATH=${SSHGS_LIBRARY_PATH:-"PACKAGE/lib"};
+fi;
+
+if [ x"$CLASSPATH" != x ]; then
+	export CLASSPATH=${NEW_CLASSPATH:-"PACKAGE/lib/GridSuperscalarWorker.jar"}:.:..:${CLASSPATH};
+else
+	export CLASSPATH=${NEW_CLASSPATH:-"PACKAGE/lib/GridSuperscalarWorker.jar"}:.:..;
+fi;
+
+if [ x"$NEW_PATH" != x ]; then
+	export PATH=${NEW_PATH};
+else
+	export PATH=${PATH};
+fi
+
+EXECUTABLE="Worker.class";
+COMMAND="@JAVA@ Worker";
+
+#remote shell and copy commands
+SSH='${RSH:-"@SSH@"}';
+SCP='${RCP:-"_REMOTE_COPY_COMMAND_"}';
+
+#remote shell and copy flags
+SSH_FLAGS='${RSH_FLAGS:-"-q -o StrictHostKeyChecking=no"}';
+SCP_FLAGS='${RCP_FLAGS:-"_REMOTE_COPY_COMMAND_FLAGS_"}';
+
+#max time before try to reconnect in msecs
+max_time_before_retry=${MAX_TIME_BEFORE_RETRY:-"10"};
+max_retries=${MAX_RETRIES:-"5"};
+
+#####DON'T EDIT BELOW THIS POINT #####
+
+padding_length=12;
+
+#callback errcode & callback state done
+TASK_ACTIVE="000 1"
+TASK_DONE="000 3"
+CLEANUP_DONE="000 1"
+
+#callback errcode & callback state error
+WRONG_ARGS="100 4"
+WORKER_EXEC_NF="101 4"
+WORKER_ERROR="102 4"
+DESTGEN_NF="103 4"
+STAGEIN_ERROR="104 4"
+USER_CANCEL="105 4"
+
+#callback_type
+TASK_ENDS=5
+RM_ENDS=6
+
+#workerGS.sh script modes
+EXECUTE=0;
+CLEANUP=1;
+EOF
+}
+
+usage ()
+{
+@CAT@ <<EOT
+	Usage: $0 [ -L <GridSuperscalar_library_path> ]";
+				[ -P <path_to_executables> ]";
+				[ --rsh=<remote_shell_command> ]";
+				[ --rsh-flags=\"<remote_shell_command_flags>\" ]";
+				[ --rcp <remote_copy_command> ]";
+				[ --rcp-flags=\"<remote_copy_command_flags>\" ]";
+				[ --max-time-before-retry=<seconds> ]";
+				[ --max-retries=<retries> ]";
+				[ --classpath=<classpath> ]";
+				[ -v ]"; 
+EOT
+	exit 0;
+}
+
+log ()
+{
+	OUTPUT="${OUTPUT}#$1";
+}
+
+print_verbose ()
+{
+	echo $OUTPUT | @SED@ -e 's/#/\n/g';
+}
+
+verbose=0;
+OUTPUT="Verbose mode ...";
+
+while getopts vhL:P:-: o
+do case "$o" in
+	v)	
+		verbose=1;	
+	;;
+	L)
+		SSHGS_LIBRARY_PATH=${OPTARG};
+		log "Grid Superscalar library path set to : ${OPTARG}";
+	;;
+	P)
+		NEW_PATH=${PATH}:${OPTARG};
+		log "Paths to look for executables : ${NEW_PATH}";
+		;;
+	h)
+		usage;
+		exit 0;
+		;;
+	-) 
+		case "$OPTARG" in
+			rsh)
+				echo "Give remote shell command using e.g. --rsh=ssh syntax";
+				echo;
+				usage;
+			;;
+			rsh=*)
+				RSH=`echo $OPTARG | @SED@ -e 's/rsh=//g'`;
+				log "Default remote shell command ssh, overriden by $RSH";
+			;;
+			rsh-flags)
+				echo "Give remote shell command flags using e.g. --rsh-flags=\"-q -o StrictHostKeyChecking=no\"";
+				echo;
+				usage;
+			;;
+			rsh-flags=*)
+				RSH_FLAGS=`echo $OPTARG | @SED@ -e 's/rsh-flags=//g'`;
+				log "Default remote shell command flags overriden by $RSH_FLAGS";
+			;;
+			rcp)
+				echo "Give remote copy command using e.g. --rcp=scp syntax";
+				echo;
+				usage;
+			;;
+			rcp=*)
+				RCP=`echo $OPTARG | @SED@ -e 's/rcp=//g'`;
+				log "Default remote copy command scp, overriden by $RCP";
+			;;
+			rcp-flags)
+				echo "Give remote copy command flags using e.g. --rsh-flags=\"-q -o StrictHostKeyChecking=no\"";
+				echo;
+				usage;
+			;;
+			rcp-flags=*)
+				RCP_FLAGS=`echo $OPTARG | @SED@ -e 's/rsh-flags=//g'`;
+				log "Default remote shell command flags overriden by $RCP_FLAGS";
+			;;
+			max-time-before-retry)
+				echo "Give maximum time before retrying connection using the followin syntax --max-time-before-retry=10";
+				echo;
+				usage;
+			;;
+			max-time-before-retry=*)
+				MAX_TIME_BEFORE_RETRY=`echo $OPTARG | @SED@ -e 's/max-time-before-retry=//g'`;
+				log "10 seconds of default waiting time before retrying connection to a host overriden by $MAX_TIME_BEFORE_RETRY";
+			;;
+			max-retries)
+				echo "Give maximum number of retries before quit trying using the following syntax --max-retires=5";
+				echo;
+				usage;
+			;;
+			max-retries=*)
+				MAX_RETRIES=`echo $OPTARG | @SED@ -e 's/max-retries=//g'`;
+				log "5 retries before quit trying connect to a host overriden by $MAX_RETRIES";
+			;;
+			classpath)
+				echo Specify classpath with the following syntax --classpath=/path/to/java/jars:...
+			;;
+			classpath=*)
+				NEW_CLASSPATH=`echo $OPTARG | @SED@ -e 's/classpath=//g'`;
+				log "User specified classpath $NEW_CLASSPATH";
+			;;
+			help)
+				usage;
+				exit 0;
+			;;
+			*) 
+				echo "An unexpected double-hyphen option was encountered.";
+				echo;
+				usage;
+			;;
+			esac
+	;;			
+	[?])
+		usage;
+	;;
+	esac
+done
+
+if [ $verbose -eq 1 ]; then
+	print_verbose;
+fi
+
+build_config_worker

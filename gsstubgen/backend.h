@@ -1,0 +1,52 @@
+/* Copyright 2002-2007 Barcelona Supercomputing Center (www.bsc.es)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#ifndef BACKEND_H
+#define BACKEND_H
+
+void generate_prolog(void);
+void generate_epilogue(void);
+void generate_body(void);
+
+void generate_swig_prolog(void);
+void generate_swig_epilogue(void);
+void generate_swig_body(void);
+
+void generate_perl_prolog(void);
+void generate_perl_epilogue(void);
+void generate_perl_body(void);
+
+void generate_java_prolog();
+void generate_java_body();
+void generate_java_epilogue();
+
+void generate_xml_prolog(void);
+void generate_xml_epilogue(void);
+void generate_xml_body(void);
+
+void generate_c_constraints_prolog(void);
+void generate_c_constraints_body(void);
+void generate_c_constraints_epilogue(void);
+
+void generate_java_constraints_prolog(void);
+void generate_java_constraints_body(void);
+void generate_java_constraints_epilogue(void);
+
+void set_perl_binary(char const * newBinary);
+void set_perl_extension_dir(char const * ext);
+
+
+
+#endif /* BACKEND_H */

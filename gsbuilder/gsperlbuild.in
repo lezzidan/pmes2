@@ -1,0 +1,411 @@
+# Copyright 2002-2007 Barcelona Supercomputing Center (www.bsc.es)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#!@BASH@
+
+set -e
+
+export PATH=$PATH:@ac_rtpath@
+
+function exittrap {
+	rc=$?
+	if test x"$rc" != x"0" ; then
+		echo "ERROR: Command exited with status" $rc"." 1>&2
+		exit $rc
+	fi
+}
+
+trap exittrap 0
+
+
+# message functions
+usage() {
+
+	echo  Usage\: `basename $0` \<action\> \<component\> \<appname\>
+	echo ""
+	echo "  Available actions:"
+	echo "    copy         Setup a compilation environment for the component for customization."
+	echo "    build        Build the selected component ."
+	echo "    clean        Remove generated binaries."
+	echo ""
+	echo "  Available components:"
+	echo "    master       Build or copy the master part."
+	echo "    worker       Build or copy the worker part."
+	echo "    all          Build or copy the master and workers parts."
+	echo ""
+	echo "  <appname> corresponds to the name of the application used for source files and IDL files."
+	exit 1
+}
+
+
+error() {
+	echo "An error occurred, please check the output."
+	exit 1;
+}
+source $GS_HOME/share/gridsuperscalar/build/scripts/build_worker_scripts.sh
+
+generate_autogen_sh() {
+        @CAT@ > autogen.sh << EOF
+#!@BASH@
+set -e
+
+export CC="@CC@"
+export CXX="@CXX@"
+
+@AUTORECONF@ -i -f
+
+if test x"@ac_cv_use_gssperl_dir@" != x"" ; then
+	if test x"@with_classads@" == x"yes" ; then
+		./configure --with-gs-prefix=$gsprefix --with-perl=@ac_cv_use_perl@ --with-gssperl-dir=@ac_cv_use_gssperl_dir@ --with-classads=@ac_cv_use_classads@ $*
+	else 
+		./configure --with-gs-prefix=$gsprefix --with-perl=@ac_cv_use_perl@ --with-gssperl-dir=@ac_cv_use_gssperl_dir@ $*
+	fi
+else
+	./configure --with-gs-prefix=$gsprefix $*
+fi
+
+for script in workerGS.sh workerGS_script.sh config_all.sh config_worker.sh config_master.sh ssh_execute.sh; do
+	if ( test -e \$script && ! test -x \$script ); then
+		@CHMOD@ +x \$script;
+	fi
+done
+
+EOF
+        @CHMOD@ +x autogen.sh
+}
+
+# master functions
+prepare_master_build() {
+	gsprefix=$1
+	appname=$2
+	if test -d gsbuild ; then
+		echo "The gsbuild directory already exists from a previous build. Removing."
+		@RM@ -rf gsbuild
+	fi
+
+	@MKDIR@ gsbuild
+	cd gsbuild
+	@LN_S@ -f ../*.idl . || error
+	@LN_S@ -f ../${appname}.pl . || error
+
+#	@LN_S@ -f @prefix@/etc/gss-master-env.sh .
+#	@LN_S@ -f @prefix@/etc/gss-master-env.csh .
+}
+
+copy_master_build_env() {
+	gsprefix=$1
+	appname=$2
+	@CP@ @prefix@/share/gridsuperscalar/build/perl/master/Makefile.am Makefile.am.source
+	@CAT@ @prefix@/share/gridsuperscalar/build/perl/master/configure.in | @SED@ -e s/PACKAGE/"$appname"/g | @SED@ -e s/CLASSADS_SUPPORT/"@with_classads@"/g | @SED@ -e s/execution_env/"@exec_environment@"/g > configure.in
+	@CP@ @prefix@/share/gridsuperscalar/build/perl/master/acinclude.m4 acinclude.m4
+	@CAT@ Makefile.am.source | @SED@ -e s/PACKAGE/"$appname"/g > Makefile.am
+	generate_autogen_sh 
+	@TOUCH@	NEWS README AUTHORS ChangeLog
+	echo "" > empty.cc
+
+	path_to_dist="@prefix@";
+	path_to_dist=$(echo $path_to_dist | @SED@ 's/\//\\\//g')
+	copy_comm="@copy_command@";
+	copy_comm=$(echo $copy_comm | @SED@ 's/\//\\\//g');
+	copy_comm_flags="@copy_command_flags@";
+	copy_comm_flags=$(echo $copy_comm_flags | @SED@ 's/\//\\\//g');
+
+	@CAT@ @prefix@/share/gridsuperscalar/build/scripts/config_script.sh.in | @SED@ -e s/PACKAGE/"$path_to_dist"/g |
+		@SED@ -e s/_REMOTE_COPY_COMMAND_FLAGS_/"$copy_comm_flags"/ |
+		@SED@ -e s/_REMOTE_COPY_COMMAND_/"$copy_comm"/ > config_master.sh.in;
+}
+
+build_master() {
+	gsprefix=$1
+	appname=$2
+	echo "Building $1 $2 in $PWD";
+	./autogen.sh
+	@MAKE@
+}
+
+finish_master_build() {
+	gsprefix=$1
+	appname=$2
+
+	@CP@ ${appname}.so ..
+        @CP@ ${appname}.pm ..
+	@CP@ -f config_master.sh ..
+
+        cd ..
+        @RM@ -rf gsbuild
+        @RM@ -f config_master.sh.in
+}
+
+clean_master() {
+        @RM@ -f $appname.so ${appname}.pm config_master.sh || exit
+}
+
+
+# worker functions
+prepare_worker_build() {
+	gsprefix=$1
+	appname=$2
+	if test -d gsbuild ; then
+		echo "The gsbuild directory already exists from a previous build. Removing."
+		@RM@ -rf gsbuild
+	fi
+
+	@MKDIR@ gsbuild
+	cd gsbuild
+	@LN_S@ -f ../*.idl . || error
+	@LN_S@ -f ../${appname}_functions.pm . || error
+}
+
+copy_worker_build_env() {
+	gsprefix=$1
+	appname=$2
+	@CP@ @prefix@/share/gridsuperscalar/build/perl/worker/Makefile.am Makefile.am.source
+	@CAT@ @prefix@/share/gridsuperscalar/build/perl/worker/configure.in | @SED@ -e s/PACKAGE/"$appname"/g | @SED@ -e s/execution_env/"@exec_environment@"/g > configure.in
+	@CP@ @prefix@/share/gridsuperscalar/build/perl/worker/acinclude.m4 acinclude.m4
+	@CAT@ Makefile.am.source | @SED@ 's/PACKAGE/'$appname'/g' > Makefile.am
+	generate_autogen_sh
+	@TOUCH@ NEWS README AUTHORS ChangeLog
+
+	path_to_dist="@prefix@";
+	path_to_dist=$(echo $path_to_dist | @SED@ 's/\//\\\//g')
+	copy_comm="@copy_command@";
+	copy_comm=$(echo $copy_comm | @SED@ 's/\//\\\//g');
+	copy_comm_flags="@copy_command_flags@";
+	copy_comm_flags=$(echo $copy_comm_flags | @SED@ 's/\//\\\//g');
+
+	@CAT@ @prefix@/share/gridsuperscalar/build/scripts/config_script.sh.in | @SED@ 's/PACKAGE/'$path_to_dist'/g' |
+		@SED@ -e s/_REMOTE_COPY_COMMAND_FLAGS_/"$copy_comm_flags"/ |
+		@SED@ -e s/_REMOTE_COPY_COMMAND_/"$copy_comm"/ > config_worker.sh.in;
+
+	generate_workergs_script_sh_in
+
+	if [ x"@exec_environment@" == x"MN_SCRATCH" ]; then
+                if ! test x"@QUEUE_SUBMIT_MN@" = x"none" ; then
+                        generate_workergs_sh_MN "@QUEUE_SUBMIT_MN@"
+                else
+                        generate_workergs_sh_LL "@QUEUE_SUBMIT_LL@"
+                fi
+        else
+                if ! test x"@QUEUE_SUBMIT_PBS@" = x"none" ; then
+                        generate_workergs_sh_PBS "@QUEUE_SUBMIT_PBS@"
+                else
+                        generate_workergs_sh_LL "@QUEUE_SUBMIT_LL@"
+                fi
+        fi
+
+        @LN_S@ -f ${appname}-worker workerGS
+	
+}
+
+build_worker() {
+	gsprefix=$1
+	appname=$2
+	./autogen.sh
+	@MAKE@
+}
+
+finish_worker_build() {
+	gsprefix=$1
+	appname=$2
+
+	@CP@ $appname-worker.pl ..
+	@CP@ -f config_worker.sh ..
+        @CP@ -f workerGS.sh ..
+        @CP@ -f workerGS_script.sh ..
+
+	cd ..
+	@RM@ -rf gsbuild
+	@LN_S@ -f $appname-worker.pl workerGS
+}
+
+clean_worker() {
+	@RM@ -f ${appname}-worker.pl workerGS.sh workerGS_script.sh config_worker.sh
+}
+
+# All functions
+prepare_all_build() {
+        gsprefix=$1
+        appname=$2
+        if test -d gsbuild ; then
+                echo "The gsbuild directory already exists from a previous build. Removing."
+                @RM@ -rf gsbuild
+        fi
+
+        @MKDIR@ gsbuild
+        cd gsbuild
+        @LN_S@ -f ../*.idl . || error
+        @LN_S@ -f ../${appname}_functions.pm . || error
+}
+
+copy_all_build_env() {
+        gsprefix=$1
+        appname=$2
+        @CP@ @prefix@/share/gridsuperscalar/build/perl/all/Makefile.am Makefile.am.source
+        @CAT@ @prefix@/share/gridsuperscalar/build/perl/all/configure.in | @SED@ -e s/PACKAGE/"$appname"/g | @SED@ -e s/CLASSADS_SUPPORT/"@with_classads@"/g | @SED@ -e s/execution_env/"@exec_environment@"/g > configure.in
+        @CP@ @prefix@/share/gridsuperscalar/build/perl/all/acinclude.m4 acinclude.m4
+        @CAT@ Makefile.am.source | @SED@ 's/PACKAGE/'$appname'/g' > Makefile.am
+        generate_autogen_sh
+        @TOUCH@ NEWS README AUTHORS ChangeLog
+
+        path_to_dist="@prefix@";
+        path_to_dist=$(echo $path_to_dist | @SED@ 's/\//\\\//g')
+        copy_comm="@copy_command@";
+        copy_comm=$(echo $copy_comm | @SED@ 's/\//\\\//g');
+        copy_comm_flags="@copy_command_flags@";
+        copy_comm_flags=$(echo $copy_comm_flags | @SED@ 's/\//\\\//g');
+	@CAT@ @prefix@/share/gridsuperscalar/build/scripts/config_script.sh.in | @SED@ 's/PACKAGE/'$path_to_dist'/g' |
+                @SED@ -e s/_REMOTE_COPY_COMMAND_FLAGS_/"$copy_comm_flags"/ |
+                @SED@ -e s/_REMOTE_COPY_COMMAND_/"$copy_comm"/ > config_all.sh.in;
+
+        generate_workergs_script_sh_in
+	if [ x"@exec_environment@" == x"MN_SCRATCH" ]; then
+                if ! test x"@QUEUE_SUBMIT_MN@" = x"none" ; then
+                        generate_workergs_sh_MN "@QUEUE_SUBMIT_MN@"
+                else
+                        generate_workergs_sh_LL "@QUEUE_SUBMIT_LL@"
+                fi
+        else
+                if ! test x"@QUEUE_SUBMIT_PBS@" = x"none" ; then
+                        generate_workergs_sh_PBS "@QUEUE_SUBMIT_PBS@"
+                else
+                        generate_workergs_sh_LL "@QUEUE_SUBMIT_LL@"
+                fi
+        fi
+
+        @LN_S@ -f ${appname}-worker workerGS
+
+}
+
+build_all() {
+        gsprefix=$1
+        appname=$2
+        ./autogen.sh
+        @MAKE@
+}
+
+finish_all_build() {
+        gsprefix=$1
+        appname=$2
+	@CP@ ${appname}.so ..
+        @CP@ ${appname}.pm ..
+        @CP@ -f config_all.sh ..
+        
+        @CP@ $appname-worker.pl ..
+        @CP@ -f workerGS.sh ..
+        @CP@ -f workerGS_script.sh ..
+
+        cd ..
+        @RM@ -rf gsbuild
+	@RM@ -f config_all.sh.in
+        @LN_S@ -f $appname-worker.pl workerGS
+}
+
+clean_all() {
+        @RM@ -f ${appname}-worker.pl ${appname}.so ${appname}.pm workerGS workerGS.sh workerGS_script.sh config_all.sh
+}
+
+
+# main code
+if test $# != 3 ; then
+	usage
+fi
+
+action=$1
+component=$2
+appname=$3
+
+if test x"$GS_LOCATION" != x ; then
+	echo "Using environment variable GS_LOCATION."
+	gsprefix=$GS_LOCATION
+else
+	gsprefix=@prefix@
+fi
+
+
+case $action in
+	copy)
+		case $component in
+			master)
+				echo "Preparing master build environment"
+				copy_master_build_env $gsprefix $appname
+				;;
+			worker)
+				echo "Preparing worker build environment"
+				copy_worker_build_env $gsprefix $appname
+				;;
+			all)
+				echo "Preparing all build environment"
+				copy_all_build_env $gsprefix $appname
+				;;
+			*)
+				usage
+				;;
+		esac
+		;;
+	build)
+		case $component in
+			master)
+				echo "Building master"
+				prepare_master_build $gsprefix $appname
+				copy_master_build_env $gsprefix $appname
+				build_master $gsprefix $appname
+				finish_master_build $gsprefix $appname
+				;;
+			worker)
+				echo "Building worker"
+				prepare_worker_build $gsprefix $appname
+				copy_worker_build_env $gsprefix $appname
+				build_worker $gsprefix $appname
+				finish_worker_build $gsprefix $appname
+				;;
+			all)
+				echo "Building all"
+				prepare_all_build $gsprefix $appname
+				copy_all_build_env $gsprefix $appname
+				build_all $gsprefix $appname
+				finish_all_build $gsprefix $appname
+				;;
+			*)
+				usage
+				;;
+		esac
+		;;
+	clean)
+		case $component in
+			master)
+				echo "Cleaning master"
+				clean_master
+				;;
+			worker)
+				echo "Cleaning worker"
+				clean_worker
+				;;
+			all)
+				echo "Cleaning master and worker"
+				clean_all
+				;;
+			*)
+				usage
+				;;
+		esac
+		;;
+	*)
+		usage
+		;;
+esac
+
+
+echo "Command succesful."
+
+

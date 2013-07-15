@@ -1,0 +1,16 @@
+#ifndef _TEST04_IDL
+#define _TEST04_IDL
+
+#include <file.idl>  
+
+interface MC {
+	void StrangeSymbols01(in char buffer[]);
+	void StrangeSymbols02(in char bufer{});
+	void StrangeSymbols03(in char buff-);
+	void StrangeSymbols04(in char buff) {
+	// No way!!!
+	}
+	
+};
+
+#endif // _TEST04_IDL

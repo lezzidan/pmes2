@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ProActiveDescriptor xmlns="urn:proactive:deployment:3.3"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:proactive:deployment:3.3 deployment.xsd">
+	<componentDefinition>
+		<virtualNodesDefinition>
+			<virtualNode name="Master" property="unique"/>
+		</virtualNodesDefinition>
+	</componentDefinition>
+	<deployment>
+           <register virtualNode="Master" protocol="rmi"/> 
+           <mapping>
+			<map virtualNode="Master">
+				<jvmSet>
+					<vmName value="ITJvm"/>
+				</jvmSet>
+			</map>
+		</mapping>
+		<jvms>
+			<jvm name="ITJvm">
+				<creation>
+					<processReference refid="ITProcess"/>
+				</creation>
+			</jvm>
+		</jvms>
+	</deployment>
+	<infrastructure>
+		<processes>
+			<processDefinition id="ITProcess">
+				<jvmProcess class="org.objectweb.proactive.core.process.JVMNodeProcess"/>
+			</processDefinition>
+		</processes>
+	</infrastructure>
+</ProActiveDescriptor>

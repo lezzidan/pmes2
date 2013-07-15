@@ -1,0 +1,653 @@
+# Copyright 2002-2007 Barcelona Supercomputing Center (www.bsc.es)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#!@SH@
+
+set -e
+
+export PATH=@ac_rtpath@$PATH
+
+function exittrap {
+	rc=$?
+	if test x"$rc" != x"0" ; then
+		echo "ERROR: Command exited with status" $rc"." 1>&2
+		exit $rc
+	fi
+}
+
+trap exittrap 0
+
+
+# message functions
+usage() {
+
+	echo  Usage\: `basename $0` \<action\> \<component\> \<appname\>
+	echo ""
+	echo "  Available actions:"
+	echo "    copy         Setup a compilation environment for the component for customization."
+	echo "    build        Build the selected component ."
+	echo "    clean        Remove generated binaries."
+	echo ""
+	echo "  Available components:"
+	echo "    master       Build or copy the master part."
+	echo "    worker       Build or copy the worker part."
+	echo "    all          Build or copy the master and workers parts."
+	echo ""
+	echo "  <appname> corresponds to the name of the application used for source files and IDL files."
+	exit 1
+}
+
+
+error() {
+	echo "An error occurred, please check the output."
+	exit 1;
+}
+
+generate_workergs_script_sh_in() {
+	{ /bin/cat <<EOF
+#!@SH_noreplace@
+
+. \${PWD}/config.worker
+
+#zeropading of numbers in order to have fixed length callbacks
+zeropad ()
+{
+	number=\$@;
+	count=\$((padding_length - \${#number}));
+
+	while [ \$count -ne 0 ]; do
+		number=0\$number;
+		count=\$((\$count - 1));
+	done
+	echo \$number;
+}
+
+# interrupt handling function. Notify master & then exit
+killed ()
+{
+	echo Worker was signaled;
+	notify \$@;
+	exit -1;
+}
+
+notify ()
+{
+EOF
+} | sed -e "s/_noreplace//g" > workerGS_script.sh.in;
+if [ x"@exec_environment@" == x"GRID" ]; then
+	{ /bin/cat <<EOF
+		notification="\$zeropadded_task_num \$1 \$2 \$3";
+		command="\$SSH \$master @SH_noreplace@ -c \"echo \$notification > \$notification_pipe\"";
+		execute_with_retries \$command || echo "FATAL ERROR : COULDN'T CONTACT MASTER";
+EOF
+	} | sed -e "s/_noreplace//g" >> workerGS_script.sh.in;
+elif [ x"@exec_environment@" == x"CLUSTER" ]; then
+	echo "\${COMMAND} \$master \$task_num \$1 \$2 \$3 \$notification_port" >> workerGS_script.sh.in;
+	fi
+	{ /bin/cat <<EOF
+}
+execute_binary ()
+{
+        tid="task\${zeropadded_task_num}";
+        TMPDIR='';
+
+        if [ \$logs -eq 0 ]; then
+                ( TMPDIR=\`@MKTEMP_noreplace@ -d -p\${TMPPREFIX}\` &&
+                  cd \${TMPDIR} &&
+                  @LN_noreplace@ -s \${workerdir}/\${EXECUTABLE} \${EXECUTABLE} &&
+                  \${COMMAND} \$@ &&
+                  cd - &&
+                  @RM_noreplace@ -rf \${TMPDIR}
+                ) 1>\${TMPPREFIX}\${tid}.out 2>\${TMPPREFIX}\${tid}.err
+                result=\$?;
+        else
+                ( TMPFILE=\`@MKTEMP_noreplace@ -d -p\${TMPPREFIX}\` && 
+                  cd ${TMPDIR} &&
+                  @LN_noreplace@ -s \${workerdir}/\${EXECUTABLE} \${EXECUTABLE} &&
+                  \${COMMAND} \$@ &&
+                  cd - &&
+                  @RM_noreplace@ -rf \${TMPFILE} ) 1>>\${workerdir}/\${tid}.out 2>>\${workerdir}\/${tid}.err
+                result=\$?;
+        fi
+        if [ \$result -eq 0 ]; then
+                @RM_noreplace@ -f \${TMPPREFIX}\${tid}.out \${TMPPREFIX}\${tid}.err;
+        else
+                @RM_noreplace@ \${TMPPREFIX}\${tid}.out \${TMPPREFIX}\${tid}.err \${workerdir};
+        fi
+        return \${result};
+}
+
+execute_with_retries ()
+{
+	retries=0;
+	command=\$@;
+	# check if we want logs
+	if [ \$logs -eq 0 ]; then
+		stdout=/dev/null;
+		stderr=/dev/null;
+	elif [ \$logs -eq 1 ]; then
+		stdout="task\${zeropadded_task_num}.out";
+		stderr="task\${zeropadded_task_num}.err";
+	fi
+	while [ \$retries -ne \$max_retries ]; do
+		\$command 1>>\${stdout} 2>>\${stderr} && return 0;
+		@SLEEP_noreplace@ \$((5 + \${retries}*\${RANDOM} % \${max_time_before_retry}));
+		retries=\$((\$retries+1));
+	done
+	return \$errorcode;
+}
+
+# read arguments
+cd \$1;
+mode=\$2;
+logs=\$3;
+master_src_dir=\$4;
+EOF
+} | sed -e "s/_noreplace//g" >> workerGS_script.sh.in;
+
+if [ x"@exec_environment@" == x"CLUSTER" ]; then
+	echo "notification_port=\$5" >> workerGS_script.sh.in;
+elif [ x"@exec_environment@" == x"GRID" ]; then
+	echo "notification_pipe=\$5" >> workerGS_script.sh.in;
+fi
+	{ /bin/cat <<EOF
+shift 5;
+
+if [ \$mode -eq \$EXECUTE ]; then 
+	# read numers of files to be cleaned up and staged in
+	nstagein=\$1;
+	cleanup_files_num=\$2;
+	shift 2;
+
+	# builds the string holding the files to be staged in
+	i=0;
+	while [ \$i -lt \$nstagein ]; do
+		input_files="\$input_files \$1 "\`echo \$2 | @SED_noreplace@ -e 's/^.*\///'\`;
+		shift 2;
+		i=\$((\$i+1));
+	done
+	i=0;
+
+	# builds a string holding the files to be cleaned up
+	while [ \$i -lt \$cleanup_files_num ]; do
+		rmfiles="\$rmfiles \$1";
+		shift;
+		i=\$((\$i+1));
+	done
+
+	# read number of input/output files & master hostname( indexed backwards )
+	j=0;
+	for i in \$@; do
+		args[\$j]=\$i;
+		j=\$((\$j+1));
+	done
+
+	input_files_num=\${args[\$j-5]}
+	output_files_num=\${args[\$j-4]}
+	master=\${args[\$j-3]}
+	task_num=\${args[0]}
+	zeropadded_task_num=\`zeropad \$task_num\`
+
+	#remove logs from previous executions
+	if [ \$logs == 1 ]; then
+		@RM_noreplace@ -f task\${zeropadded_task_num}.out task\${zeropadded_task_num}.err task_clean_up.out task_clean_up.err;
+	fi
+
+	# trap SIGHUP, SIGINT, SIGQUIT, SIGTERM
+	trap "killed \$USER_CANCEL \$TASK_ENDS" 1 2 3 15;
+
+	# stage in files
+	j=0;
+	for i in \$input_files; do
+		if [ \$j -eq 1 ]; then
+			files="\$files \${PWD}/\$i";
+			j=0;
+			execute_with_retries \$SCP \$SCP_FLAGS \$files; 
+			if [ \$? -ne 0 ]; then
+				notify \$STAGEIN_ERROR \$TASK_ENDS;
+				exit -1;
+			fi
+		else
+			files="\$i";
+			j=1;
+		fi
+	done
+
+	# notify for active state
+	notify \$TASK_ACTIVE \$TASK_ENDS;
+
+	# check if number of arguments is ok */
+	if test ! -e "\${EXECUTABLE}"; then 
+		notify \$WORKER_EXEC_NF \$TASK_ENDS;
+		exit -1;
+	fi
+	if ! execute_binary \$@; then
+		notify \$WORKER_ERROR \$TASK_ENDS;
+		exit -1;
+	fi
+	if test ! -f "destGen.\$task_num"; then
+		notify \$DESTGEN_NF \$TASK_ENDS;
+		exit -1;
+	fi
+EOF
+	} | sed -e "s/_noreplace//g" >> workerGS_script.sh.in;
+	if [ x"@exec_environment@" == x"GRID" ]; then
+	{ /bin/cat <<EOF
+		if ! execute_with_retries "\$SCP \$SCP_FLAGS \${PWD}/destGen.\$task_num \$master:\${master_src_dir}"; then
+			notify \$DESTGEN_NF \$TASK_ENDS;
+			exit -1;
+		else
+			@RM_noreplace@ -f destGen.\$task_num;
+		fi
+EOF
+	} | sed -e "s/_noreplace//g" >> workerGS_script.sh.in;
+	elif [ x"@exec_environment@" == x"CLUSTER" ]; then
+	{ /bin/cat <<EOF
+ 		if ! execute_with_retries "\$SCP \$SCP_FLAGS \${PWD}/destGen.\$task_num \${master_src_dir}"; then
+			notify \$DESTGEN_NF \$TASK_ENDS;
+			exit -1;
+		else
+			@RM_noreplace@ -f destGen.\$task_num;
+		fi
+EOF
+	} | sed -e "s/_noreplace//g" >> workerGS_script.sh.in;
+	fi	
+	{ /bin/cat <<EOF
+	# cleanup phase
+	for i in \$rmfiles; do
+		@RM_noreplace@ -f \$i;
+	done
+	
+	notify \$TASK_DONE \$TASK_ENDS;
+
+elif [ \$mode -eq \$CLEANUP ]; then
+	master=\$1;
+	num_of_stageout=\$2;
+	shift 2;
+	i=0;
+	task_num=0;
+	zeropadded_task_num="_clean_up";	
+	
+	while [ \$i -lt \$num_of_stageout ]; do 
+EOF
+	} | sed -e "s/_noreplace//g" >> workerGS_script.sh.in;
+		if [ x"@exec_environment@" == x"GRIDS" ]; then
+			echo "command=\"\$SCP \$SCP_FLAGS \${PWD}/\$1 \$master:\$2\"" >> workerGS_script.sh.in;
+		elif [ x"@exec_environment@" == x"CLUSTERS" ]; then
+			echo "command=\"\$SCP \$SCP_FLAGS \${PWD}/\$1 \$2\"" >> workerGS_script.sh.in;
+		fi		
+	{ /bin/cat <<EOF
+		execute_with_retries \$command;
+		shift 2;
+		i=\$((\$i+1));
+	done
+	for i in \$@; do
+		@RM_noreplace@ -f \$i;
+	done
+	notify \$CLEANUP_DONE \$RM_ENDS; 
+fi
+EOF
+	} | sed -e "s/_noreplace//g" >> workerGS_script.sh.in;
+}
+
+generate_workergs_sh_PBS() {
+
+        queue_submit_com=$1;
+
+        { @CAT@ <<EOF
+#!@SH_noreplace@
+
+task_num=\$1;
+queue=\$2;
+shift 2;
+
+cd \$1;
+
+. \${PWD}/config.worker;
+
+if [ x\$queue = x"none" ]; then
+        exec \${PWD}/workerGS_script.sh \$@ 2>/dev/null 1>/dev/null &
+else
+        {
+                @CAT_noreplace@ <<EOT
+                        #!@CSH_noreplace@
+                        ## JobName
+                        #PBS -N GS.\$task_num
+                        ## Job is not re-runable
+                        #PBS -r n
+                        ## Outputs
+                        #PBS -e GS.\${task_num}.err
+                        #PBS -o GS.\${task_num}.out
+                        # export all my environment variables to the job
+                        #PBS -V 
+                        #########
+
+                        # change to working directory
+                        cd \$1
+
+                        ./workerGS_script.sh \$@ && @RM_noreplace@ -f GS.\${task_num}.out;
+EOT
+        } | exec $queue_submit_com -q \$queue 1>/dev/null 2>/dev/null 
+fi
+EOF
+	} | sed -e "s/_noreplace//g" > workerGS.sh.in;
+}
+
+generate_workergs_sh_LL() {
+
+        queue_submit_com=$1;
+
+        { @CAT@ <<EOF
+#!@SH_noreplace@
+
+task_num=\$1;
+queue=\$2;
+shift 2;
+
+cd \$1;
+
+. \${PWD}/config.worker;
+
+if [ x\$queue = x"none" ]; then
+        exec \${PWD}/workerGS_script.sh \$@ 2>/dev/null 1>/dev/null &
+else
+        {       
+                @CAT_noreplace@ <<EOT
+                        # @ shell = @CSH_noreplace@
+                        # @ job_type = parallel 
+                        # @ job_name = GS.\${task_num}
+                        # @ output = GS.\${task_num}.out
+                        # @ error = GS.\${task_num}.err
+                        # @ initialdir = \$1
+                        # @ class = \${queue}
+                        # @ group = \`id -gn\`
+                        # @ node = 1
+                        # @ total_tasks = 1 
+                        # @ queue
+                
+                        cd \$1;
+
+                        ./workerGS_script.sh \$@ && @RM_noreplace@ -f GS.\${task_num}.out;
+EOT
+        } | exec $queue_submit_com - 1>/dev/null 2>/dev/null 
+fi
+EOF
+	} | sed -e "s/_noreplace//g" > workerGS.sh.in;
+}
+
+generate_autogen_sh() {
+        @CAT@ > autogen.sh << EOF
+#!@SH@
+set -e
+@AUTOHEADER@
+@LIBTOOLIZE@ -c
+@ACLOCAL@
+@AUTOMAKE@ -a -c
+@AUTOCONF@
+
+if test x"@ac_cv_use_gssperl_dir@" != x"" ; then
+	./configure --with-gs-prefix=$gsprefix --with-gssperl-dir=@ac_cv_use_gssperl_dir@ $*
+else
+	./configure --with-gs-prefix=$gsprefix $*
+fi
+
+for script in workerGS.sh workerGS_script.sh config_worker.sh config_master.sh ssh_execute.sh; do
+	if ( test -e \$script && ! test -x \$script ); then
+		@CHMOD@ +x \$script;
+	fi
+done
+
+EOF
+        @CHMOD@ +x autogen.sh
+}
+
+# master functions
+prepare_master_build() {
+	gsprefix=$1
+	appname=$2
+	if test -d gsbuild ; then
+		echo "The gsbuild directory already exists from a previous build. Removing."
+		@RM@ -rf gsbuild
+	fi
+
+	@MKDIR@ gsbuild
+	cd gsbuild
+	@LN_S@ -f ../*.idl . || error
+	@LN_S@ -f ../${appname}.pl . || error
+
+#	@LN_S@ -f @prefix@/etc/gss-master-env.sh .
+#	@LN_S@ -f @prefix@/etc/gss-master-env.csh .
+}
+
+copy_master_build_env() {
+	gsprefix=$1
+	appname=$2
+	@CP@ @prefix@/share/gridsuperscalar/build/perl/master/Makefile.am Makefile.am.source
+	@CAT@ @prefix@/share/gridsuperscalar/build/perl/master/configure.in | @SED@ -e s/PACKAGE/"$appname"/g |
+                                                                       @SED@ -e s/CLASSADS_SUPPORT/"@ac_cv_use_classads@"/g > configure.in
+	@CP@ @prefix@/share/gridsuperscalar/build/perl/master/acinclude.m4 acinclude.m4
+	@CAT@ Makefile.am.source | @SED@ 's/PACKAGE/'$appname'/g' > Makefile.am
+	generate_autogen_sh 
+	@TOUCH@	NEWS README AUTHORS ChangeLog
+	echo "" > empty.cc
+
+	path_to_dist="@prefix@";
+	path_to_dist=$(echo $path_to_dist | @SED@ 's/\//\\\//g')
+	copy_comm="@copy_command@";
+	copy_comm=$(echo $copy_comm | @SED@ 's/\//\\\//g');
+	copy_comm_flags="@copy_command_flags@";
+	copy_comm_flags=$(echo $copy_comm_flags | @SED@ 's/\//\\\//g');
+
+	@CAT@ @prefix@/share/gridsuperscalar/build/perl/master/config_master.sh.in | @SED@ 's/PACKAGE/'$path_to_dist'/g' |
+		@SED@ -e s/_REMOTE_COPY_COMMAND_FLAGS_/"$copy_comm_flags"/ |
+		@SED@ -e s/_REMOTE_COPY_COMMAND_/"$copy_comm"/ > config_master.sh.in;
+}
+
+build_master() {
+	gsprefix=$1
+	appname=$2
+	./autogen.sh
+	@MAKE@
+}
+
+finish_master_build() {
+	gsprefix=$1
+	appname=$2
+
+	@CP@ ${appname}.so ..
+        @CP@ ${appname}.pm ..
+	@CP@ -f config_master.sh ..
+
+        cd ..
+        @RM@ -rf gsbuild
+        @RM@ -f config_master.sh.in
+}
+
+clean_master() {
+        @RM@ -f $appname.so ${appname}.pm || exit
+}
+
+
+# worker functions
+prepare_worker_build() {
+	gsprefix=$1
+	appname=$2
+	if test -d gsbuild ; then
+		echo "The gsbuild directory already exists from a previous build. Removing."
+		@RM@ -rf gsbuild
+	fi
+
+	@MKDIR@ gsbuild
+	cd gsbuild
+	@LN_S@ -f ../*.idl . || error
+	@LN_S@ -f ../${appname}_functions.pm . || error
+}
+
+copy_worker_build_env() {
+	gsprefix=$1
+	appname=$2
+	@CP@ @prefix@/share/gridsuperscalar/build/perl/worker/Makefile.am Makefile.am.source
+	@CAT@ @prefix@/share/gridsuperscalar/build/perl/worker/configure.in | @SED@ 's/PACKAGE/'$appname'/g' > configure.in
+	@CP@ @prefix@/share/gridsuperscalar/build/perl/worker/acinclude.m4 acinclude.m4
+	@CAT@ Makefile.am.source | @SED@ 's/PACKAGE/'$appname'/g' > Makefile.am
+	generate_autogen_sh
+	@TOUCH@ NEWS README AUTHORS ChangeLog
+
+	path_to_dist="@prefix@";
+	path_to_dist=$(echo $path_to_dist | @SED@ 's/\//\\\//g')
+	copy_comm="@copy_command@";
+	copy_comm=$(echo $copy_comm | @SED@ 's/\//\\\//g');
+	copy_comm_flags="@copy_command_flags@";
+	copy_comm_flags=$(echo $copy_comm_flags | @SED@ 's/\//\\\//g');
+
+	@CAT@ @prefix@/share/gridsuperscalar/build/perl/worker/config_worker.sh.in | @SED@ 's/PACKAGE/'$path_to_dist'/g' |
+		@SED@ -e s/_REMOTE_COPY_COMMAND_FLAGS_/"$copy_comm_flags"/ |
+		@SED@ -e s/_REMOTE_COPY_COMMAND_/"$copy_comm"/ > config_worker.sh.in;
+
+	generate_workergs_script_sh_in
+	
+        if ! test x"@QUEUE_SUBMIT_PBS@" = x"none" ; then
+                generate_workergs_sh_PBS "@QUEUE_SUBMIT_PBS@"
+        else
+                generate_workergs_sh_LL "@QUEUE_SUBMIT_LL@"
+        fi
+	
+	@LN_S@ -f Worker.class workerGS
+}
+
+build_worker() {
+	gsprefix=$1
+	appname=$2
+	./autogen.sh
+	@MAKE@
+}
+
+finish_worker_build() {
+	gsprefix=$1
+	appname=$2
+
+	@CP@ $appname-worker.pl ..
+	@CP@ -f config_worker.sh ..
+        @CP@ -f workerGS.sh ..
+        @CP@ -f workerGS_script.sh ..
+
+	cd ..
+	@RM@ -rf gsbuild
+	@LN_S@ -f $appname-worker.pl workerGS
+}
+
+clean_worker() {
+	@RM@ -f ${appname}-worker.pl workerGS.sh
+}
+
+
+# main code
+if test $# != 3 ; then
+	usage
+fi
+
+action=$1
+component=$2
+appname=$3
+
+if test x"$GS_LOCATION" != x ; then
+	echo "Using environment variable GS_LOCATION."
+	gsprefix=$GS_LOCATION
+else
+	gsprefix=@prefix@
+fi
+
+
+case $action in
+	copy)
+		case $component in
+			master)
+				echo "Preparing master build environment"
+				copy_master_build_env $gsprefix $appname
+				;;
+			worker)
+				echo "Preparing worker build environment"
+				copy_worker_build_env $gsprefix $appname
+				;;
+			all)
+				echo "Cannot copy master and worker environment. Please, select master or worker only."
+				;;
+			*)
+				usage
+				;;
+		esac
+		;;
+	build)
+		case $component in
+			master)
+				echo "Building master"
+				prepare_master_build $gsprefix $appname
+				copy_master_build_env $gsprefix $appname
+				build_master $gsprefix $appname
+				finish_master_build $gsprefix $appname
+				;;
+			worker)
+				echo "Building worker"
+				prepare_worker_build $gsprefix $appname
+				copy_worker_build_env $gsprefix $appname
+				build_worker $gsprefix $appname
+				finish_worker_build $gsprefix $appname
+				;;
+			all)
+				echo "Building master"
+				prepare_master_build $gsprefix $appname
+				copy_master_build_env $gsprefix $appname
+				build_master $gsprefix $appname
+				finish_master_build $gsprefix $appname
+
+				echo "Building worker"
+				prepare_worker_build $gsprefix $appname
+				copy_worker_build_env $gsprefix $appname
+				build_worker $gsprefix $appname
+				finish_worker_build $gsprefix $appname
+				;;
+			*)
+				usage
+				;;
+		esac
+		;;
+	clean)
+		case $component in
+			master)
+				echo "Cleaning master"
+				clean_master
+				;;
+			worker)
+				echo "Cleaning worker"
+				clean_worker
+				;;
+			all)
+				echo "Cleaning master and worker"
+				clean_master
+				clean_worker
+				;;
+			*)
+				usage
+				;;
+		esac
+		;;
+	*)
+		usage
+		;;
+esac
+
+
+echo "Command succesful."
+
+

@@ -1,0 +1,32 @@
+/* Copyright 2002-2007 Barcelona Supercomputing Center (www.bsc.es)
+
+/*------------------------------------------------------------------------*/
+/*                                                                        */
+/*                BSC - Barcelona Supercomputing Center                   */       
+/*     		             COMPS Superscalar 				  */
+/*			 						  */
+/*                              README FILE                    		  */
+/*									  */
+/*                                                                        */
+/*------------------------------------------------------------------------*/
+
+
+Building and Installing
+=======================
+
+In order to build and install the COMP Superscalar framework:
+
+Execute ./install.sh path_to_install_COMPSs
+
+ex: ./install.sh /home/user
+
+For detailed information on the use of COMP Superscalar, please download the manual from the website:
+http://www.bsc.es/compss
+
+License
+=======================
+
+COMPSs is distributed under the terms of the Apache v2 license.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0

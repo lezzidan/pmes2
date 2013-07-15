@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE definition PUBLIC "-//objectweb.org//DTD Fractal ADL 2.0//EN" "classpath://org/objectweb/proactive/core/component/adl/xml/proactive.dtd">
+
+<definition name="integratedtoolkit.filetransfermanagerType">
+  <interface signature="integratedtoolkit.components.FileTransfer" role="server" name="FileTransfer"/>
+  <interface signature="integratedtoolkit.components.FileInfoUpdate" role="server" name="FileInfoUpdate"/>
+  <interface signature="integratedtoolkit.components.Preparation" role="server" name="Preparation"/>
+  <interface signature="integratedtoolkit.control.ITAttributeController" role="server" name="attribute-controller"/>
+  <interface signature="integratedtoolkit.components.TransferStatus" role="client" name="TransferStatus"/>
+  <interface signature="integratedtoolkit.components.FileInformation" role="client" name="FileInformation"/>
+  <interface signature="integratedtoolkit.components.JobCreation" role="client" name="NewJob"/>
+  <interface signature="integratedtoolkit.components.AppFileEvents" role="client" name="AppTransferEvents" contingency="optional"/>
+  <interface signature="integratedtoolkit.interfaces.ITError" role="client" name="ErrorReport" contingency="optional"/>
+  <interface signature="integratedtoolkit.components.SchedFTMUpdate" role="client" name="SchedFTMUpdate"/>
+</definition>

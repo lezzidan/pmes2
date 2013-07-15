@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE definition PUBLIC "-//objectweb.org//DTD Fractal ADL 2.0//EN" "classpath://org/objectweb/proactive/core/component/adl/xml/proactive.dtd">
+
+<definition name="integratedtoolkit.taskanalyserType">
+  <interface signature="integratedtoolkit.components.TaskStatus" role="server" name="TaskStatus"/>
+  <interface signature="integratedtoolkit.components.TaskCreation" role="server" name="TaskCreation"/>
+  <interface signature="integratedtoolkit.components.Preparation" role="server" name="Preparation"/>
+  <interface signature="integratedtoolkit.control.ITAttributeController" role="server" name="attribute-controller"/>
+  <interface signature="integratedtoolkit.components.Schedule" role="client" name="NewTask"/>
+  <interface signature="integratedtoolkit.components.FileAccess" role="client" name="FileAccess"/>
+  <interface signature="integratedtoolkit.components.FileTransfer" role="client" name="NewTransfer"/>
+  <interface signature="integratedtoolkit.components.AppTaskEvents" role="client" name="AppTaskEvents" contingency="optional"/>
+  <interface signature="integratedtoolkit.interfaces.ITError" role="client" name="ErrorReport" contingency="optional"/>
+</definition>

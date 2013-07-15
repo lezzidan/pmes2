@@ -1,0 +1,42 @@
+#ifndef _TEST02_IDL
+#define _TEST02_IDL
+
+#include <file.idl>  
+
+interface MC {
+	void Subst(in File referenceCFG, in double seed, out File newCFG);
+	void Dimem(in File newCFG, in File traceFile, out File DimemasOUT);
+	void Post(in File newCFG, in File DimemasOUT, inout File FinalOUT);
+	Error1(in File dummy);
+	void Error2(in);
+	void Error3(in File);
+	void Error4(File dummy);
+	void Error5(in dummy);
+	void Error6(in File dummy in File dummy2);
+	void Error7(in in File dummy);
+	void Error8 in File dummy);
+	void Error9(in File dummy)
+	void continues(out File dummy2);
+	void Error10(in File dummy,);
+	void Error11(in File dummy));
+	void Error12((in File dummy);
+	void Error13();;
+	void NonError();
+	long Types(in char a, out long b, in float c, out double d, in boolean e, out File f, in unsigned long g, out unsigned float h, in unsigned double i, out unsigned short j);
+	void Error14(in unsigned File a);
+	void Error15(in unsigned boolean a);
+	void Error16(in unsigned void a);
+	void Error17(in void a);
+	void NonError2(in
+File
+file1
+,
+out
+char
+c
+)
+;
+
+};
+
+#endif // _TEST02_IDL

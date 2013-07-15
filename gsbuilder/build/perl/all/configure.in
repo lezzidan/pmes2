@@ -1,0 +1,165 @@
+# Copyright 2002-2007 Barcelona Supercomputing Center (www.bsc.es)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT()
+AC_CONFIG_HEADERS([config.h])
+
+AM_INIT_AUTOMAKE(all, 0.0.0)
+
+AC_CANONICAL_HOST
+
+AC_MSG_CHECKING([if we should activate AIX workarounds])
+case $host_os in
+	aix*)
+		AC_MSG_RESULT([yes])
+		CC=xlc
+		CXX=xlC
+		LD=xlC
+		LDFLAGS=-bmaxdata:0x70000000
+		IS_AIX=yes
+		AC_SUBST(IS_AIX)
+		AC_PATH_PROG(AIX_MK_CXX_SO, "makeC++SharedLib", "/usr/vacpp/bin/makeC++SharedLib")
+		break;
+		;;
+	*)
+		AC_MSG_RESULT([no])
+		break;
+		;;
+esac
+AC_CHECK_PERL
+AC_CHECK_GSMASTER_PERL
+AC_CHECK_GSWORKER_PERL
+
+dnl Check for libtool.
+AC_DISABLE_STATIC
+AM_PROG_LIBTOOL
+
+dnl Initialize maintainer mode
+AM_MAINTAINER_MODE
+
+EXEC_ENV=execution_env
+PROG_LANG="PERL"
+MODE="ALL"
+
+AC_SUBST(EXEC_ENV)
+AC_SUBST(PROG_LANG)
+AC_SUBST(MODE)
+
+dnl Checks for programs.
+AC_PROG_CXX
+AC_PROG_AWK
+AC_PROG_CC
+AC_PROG_CPP
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AC_PROG_LIBTOOL
+AC_PATH_PROG(GSSTUBGEN, gsstubgen, none)
+if test x"$GSSTUBGEN" = x"none" ; then
+	AC_MSG_ERROR([required gsstubgen program missing])
+fi
+AC_PATH_PROG(SWIG, swig, none)
+if test x"$SWIG" = x"none" ; then
+	AC_MSG_ERROR([cannot find swig])
+fi
+
+
+AC_ARG_WITH([gs-prefix],
+	[  --with-gs-prefix=[prefix]  set the prefix under which the Grid Superscalar library is installed],
+	[
+		ac_cv_use_gs_prefix=$withval
+		LIBS="-L$ac_cv_use_gs_prefix/lib $LIBS"
+		CPPFLAGS="-I$ac_cv_use_gs_prefix/include $CPPFLAGS"
+		AC_SUBST(ac_cv_use_gs_prefix)
+	]
+)
+
+dnl Checks for libraries.
+AC_CHECK_LIB(GS-master, GS_On,, [ AC_MSG_ERROR([required Grid Supercalar library cannot be found]) ])
+
+AC_PATH_PROG(SH, bash, none)
+AC_PATH_PROG(SSH, ssh, none)
+AC_PATH_PROG(CSH, csh, none)
+AC_PATH_PROG(BASH, bash, none)
+AC_PATH_PROG(CP, cp, none)
+AC_PATH_PROG(SCP, scp, none)
+AC_PATH_PROG(MV, mv, none)
+AC_PATH_PROG(RM, rm, none)
+AC_PATH_PROG(LN, ln, none)
+AC_PATH_PROG(MKDIR, mkdir, none)
+AC_PATH_PROG(MKTEMP, mktemp, none)
+AC_PATH_PROG(CHMOD, chmod, none)
+AC_PATH_PROG(CAT, cat, none)
+AC_PATH_PROG(SED, sed, none)
+AC_PATH_PROG(SLEEP, sleep, none)
+AC_PATH_PROG(GREP, grep, none)
+AC_PATH_PROG(PS, ps, none)
+AC_PATH_PROG(SRUN, srun, none)
+AC_PATH_PROG(SL_MACHINE_LIST, sl_get_machine_list, none)
+AC_PATH_PROG(LL_MACHINE_LIST, ll_get_machine_list, none)
+
+for comm in $SH $SSH $CP $SCP $MV $BASH $RM $LN $MKDIR $MKTEMP $CHMOD $CSH $CAT $SED $SLEEP $GREP $PS; do
+        if test x"$comm" = x"none" ; then
+                AC_MSG_ERROR([ Required commands missing. Please check that your path is correct ])
+        fi
+done
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS([limits.h unistd.h])
+AC_CHECK_HEADERS([gs_base64.h GS_master.h], [], [AC_MSG_ERROR([cannot find GRID superscalar include files.])])
+AC_CHECK_HEADERS([EXTERN.h perl.h XSUB.h], [], [AC_MSG_ERROR([cannot find perl include files.])])
+
+dnl Check if classads are supported. Variable set at library instalation time
+AM_CONDITIONAL(USE_CLASSADS, test x"CLASSADS_SUPPORT" == x"yes")
+if test x"CLASSADS_SUPPORT" == x"yes" ; then
+        AC_ARG_WITH([classads],
+                [  --with-classads=[prefix]  set the classads installation to be used],
+                [
+                        ac_cv_use_classads=$withval
+                        LIBS="-L$ac_cv_use_classads/lib $LIBS"
+                        CPPFLAGS="$CPPFLAGS -I$ac_cv_use_classads/include"
+                ]
+        )
+        AC_LANG([C++])
+        AC_CHECK_HEADER(classad_distribution.h,
+                [],
+                [AC_MSG_ERROR([classads include files not found])]
+        )
+        AC_CHECK_LIB([classad], [cclassad_create],
+                [ LIBS="$LIBS -lclassad" ],
+                [ AC_MSG_ERROR([classad library cannot be found]) ]
+        )
+        AC_LANG([C])
+fi
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+
+dnl Checks for library functions.
+AC_CHECK_FUNCS(strtod)
+
+AC_SUBST(MODULE_NAME)
+
+AC_OUTPUT(Makefile config_all.sh workerGS.sh workerGS_script.sh)
+
+if test x"$ac_cv_use_gssperl_dir" != x"" ; then
+	echo ""
+	echo "Don't forget to put the following line:"
+	echo "    use lib '$ac_cv_use_gssperl_dir';"
+	echo "at the begining your code before using the GSMaster module."
+	echo ""
+fi
+

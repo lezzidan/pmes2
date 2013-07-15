@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="lib" path="lib/antcontrib/ant-contrib-1.0b3.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient/commons-httpclient-3.1.jar"/>
+	<classpathentry kind="lib" path="lib/javassist/javassist.jar"/>
+	<classpathentry kind="lib" path="lib/jsch/jsch-0.1.24.jar"/>
+	<classpathentry kind="lib" path="lib/xalan/serializer.jar"/>
+	<classpathentry kind="lib" path="lib/xalan/xalan.jar"/>
+	<classpathentry kind="lib" path="lib/xalan/xercesImpl.jar"/>
+	<classpathentry kind="lib" path="lib/xalan/xml-apis.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/Users/lezzi/work/compss/PROACTIVE/lib/fractal-adl.jar"/>
+	<classpathentry kind="lib" path="/Users/lezzi/work/compss/PROACTIVE/lib/fractal.jar"/>
+	<classpathentry kind="lib" path="/Users/lezzi/work/compss/PROACTIVE/dist/lib/ProActive.jar"/>
+	<classpathentry kind="lib" path="/Users/lezzi/work/compss/apache-log4j-1.2.15/log4j-1.2.15.jar"/>
+	<classpathentry kind="lib" path="/Users/lezzi/work/compss/JAVA_GAT/lib/GAT-API.jar"/>
+	<classpathentry kind="output" path="build"/>
+</classpath>

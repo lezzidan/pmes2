@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE definition PUBLIC "-//objectweb.org//DTD Fractal ADL 2.0//EN" "classpath://org/objectweb/proactive/core/component/adl/xml/proactive.dtd">
+
+<definition extends="integratedtoolkit.IntegratedToolkitType" name="integratedtoolkit.IntegratedToolkit">
+  <component definition="integratedtoolkit.taskanalyser" name="Task Analyser"/>
+  <component definition="integratedtoolkit.taskscheduler" name="Task Scheduler"/>
+  <component definition="integratedtoolkit.jobmanager" name="Job Manager"/>
+  <component definition="integratedtoolkit.filemanager" name="File Manager"/>
+  <binding client="this.TaskSubscription" server="Task Analyser.TaskStatus"/>
+  <binding client="this.TaskCreation" server="Task Analyser.TaskCreation"/>
+  <binding client="this.FileTransfer" server="File Manager.FileTransfer"/>
+  <binding client="this.FileAccess" server="File Manager.FileAccess"/>
+  <binding client="this.FileInformation" server="File Manager.FileInformation"/>
+  <binding client="this.Preparation" server="Task Analyser.Preparation"/>
+  <binding client="this.Preparation" server="Task Scheduler.Preparation"/>
+  <binding client="this.Preparation" server="Job Manager.Preparation"/>
+  <binding client="this.Preparation" server="File Manager.Preparation"/>
+  <binding client="Job Manager.JobStatus" server="Task Scheduler.JobStatus"/>
+  <binding client="Job Manager.Reschedule" server="Task Scheduler.Schedule"/>
+  <binding client="Job Manager.NewTransfer" server="File Manager.FileTransfer"/>
+  <binding client="Job Manager.NewVersion" server="File Manager.FileInfoUpdate"/>
+  <binding client="Job Manager.NewLocation" server="File Manager.FileInformation"/>
+  <binding client="Job Manager.ErrorReport" server="this.ErrorManagement"/>
+  <binding client="Task Analyser.NewTask" server="Task Scheduler.Schedule"/>
+  <binding client="Task Analyser.FileAccess" server="File Manager.FileAccess"/>
+  <binding client="Task Analyser.NewTransfer" server="File Manager.FileTransfer"/>
+  <binding client="Task Analyser.AppTaskEvents" server="this.ApplicationEvents"/>
+  <binding client="Task Analyser.ErrorReport" server="this.ErrorManagement"/>
+  <binding client="File Manager.TransferStatus" server="Job Manager.TransferStatus"/>
+  <binding client="File Manager.NewJob" server="Job Manager.JobCreation"/>
+  <binding client="File Manager.SchedFIUpdate" server="Task Scheduler.SchedFIUpdate"/>
+  <binding client="File Manager.SchedFTMUpdate" server="Task Scheduler.SchedFTMUpdate"/>
+  <binding client="File Manager.AppFileEvents" server="this.ApplicationEvents"/>
+  <binding client="File Manager.ErrorReport" server="this.ErrorManagement"/>
+  <binding client="Task Scheduler.TaskStatus" server="Task Analyser.TaskStatus"/>
+  <binding client="Task Scheduler.NewJob" server="Job Manager.JobCreation"/>
+  <binding client="Task Scheduler.FileLocation" server="File Manager.FileInformation"/>
+  <binding client="Task Scheduler.ErrorReport" server="this.ErrorManagement"/>
+  <controller desc="/control/IT-composite-controller-config.xml"/>
+  <virtual-node cardinality="single" name="Master"/>
+  <coordinates color="-73" y0="0.16636887054539753" x1="0.9213298840887922" y1="0.33926766985929147" name="Job Manager" x0="0.6819747834682508"/>
+  <coordinates color="-73" y0="0.16537529151693808" x1="0.3400584116201774" y1="0.3343541144744322" name="Task Analyser" x0="0.12800767166246096"/>
+  <coordinates color="-73" y0="0.510722610722611" x1="0.8099451308133607" y1="0.9094405594405601" name="File Manager" x0="0.167376052994902">
+    <coordinates color="-73" y0="0.4729147273936172" x1="0.47056565838786935" y1="0.8479147273936174" name="File Information Provider" x0="0.05185334952141902"/>
+    <coordinates color="-73" y0="0.3788857677902622" x1="0.9433822678492392" y1="0.7455524344569289" name="File Transfer Manager" x0="0.5253184124369958"/>
+  </coordinates>
+  <coordinates color="-73" y0="0.16596298438403728" x1="0.6106962382455416" y1="0.3377578561789092" name="Task Scheduler" x0="0.3798375756315598"/>
+</definition>

@@ -1,0 +1,166 @@
+<?xml version="1.0"?>
+
+<project name="IT" default="install" basedir=".">
+    
+    <description>
+        Integrated Toolkit project build file
+    </description>
+    
+    <property environment="env"/>
+    
+    <property name="dist" location="dist"/>
+    <property name="worker_class_dir" location="integratedtoolkit/build/integratedtoolkit/worker"/>
+    
+    <property name="worker" location="worker"/>
+    <property name="guapp" location="gridunawareapps"/>
+    <property name="remote.worker" value="IT_worker"/>
+    <property name="tmp" location="tmp"/>
+    <property name="resources.file" location="resource_list"/>
+    
+    <taskdef resource="net/sf/antcontrib/antlib.xml"/>
+    
+    <target name="install" depends="it,guapp,scripts,jsch,antcontrib" description="Install IT"/>
+    
+    <target name="it" description="Build the Integrated Toolkit">
+        <ant antfile="build.xml" dir="integratedtoolkit" target="lib"/>
+    </target>
+    
+    <target name="guapp" depends="it" description="Build the test applications">
+        <ant antfile="build.xml" dir="gridunawareapps" target="lib"/>
+    </target>
+    
+    <target name="dist" depends="it,guapp" description="generate the distribution">
+        <!-- Create the time stamp -->
+        <tstamp/>
+        <mkdir dir="${dist}"/>
+        <!-- Put everything in ${build} into the IntegratedToolkit-general-${DSTAMP}.tar file -->
+        <tar tarfile="${dist}/IntegratedToolkit-general-${DSTAMP}.tar.gz" basedir="." compression="gzip">
+            <exclude name="dist"/>
+            <exclude name="**/*.tar.gz"/>
+            <exclude name="**/build/"/>
+	    <exclude name="integratedtoolkit/**/*.class"/>
+	    <exclude name="gridunawareapps/**/*.class"/>
+            <exclude name="**/IT.jar"/>
+            <exclude name="**/guapp.jar"/>
+            <exclude name="**/.project"/>
+            <exclude name="**/.classpath"/>
+	    <exclude name=".git/"/>
+	    <exclude name=".gitignore"/>
+        </tar>
+    </target>
+    
+    <target name="scripts" description="change the file permissions of the scripts">
+        <chmod file="${guapp}/*.sh" perm="u+x"/>
+    </target>
+    
+    <target name="jsch">
+        <copy file="${env.IT_HOME}/integratedtoolkit/lib/jsch/jsch-0.1.24.jar" todir="${env.HOME}/.ant/lib"/>
+    </target>
+    
+    <target name="antcontrib">
+        <copy file="${env.IT_HOME}/integratedtoolkit/lib/antcontrib/ant-contrib-1.0b3.jar" todir="${env.HOME}/.ant/lib"/>
+    </target>   
+    
+    <target name="classes" depends="guapp, it" description="Annotate and deploy the worker and usage record classes">
+        
+        <!-- Set up directory structure -->
+        <mkdir dir="${tmp}/${remote.worker}"/>
+        <mkdir dir="${tmp}/${remote.worker}/files"/>
+        <mkdir dir="${tmp}/${remote.worker}/integratedtoolkit/util/ur/"/>
+        
+        <!-- copy usage record class to a temporary directory -->
+        <copy file="integratedtoolkit/build/integratedtoolkit/util/ur/UsageRecord.class" todir="${tmp}/${remote.worker}/integratedtoolkit/util/ur"/>
+        
+        <!-- Copy worker class to a temporary directory -->          
+        <copy file="${worker}/Worker.class" todir="${tmp}/${remote.worker}"/>
+            
+        <!-- Copy implementation of methods of sample applications to a temporary directory -->
+        <copy todir="${tmp}/${remote.worker}/worker">
+            <fileset dir="${guapp}/build/worker"/>
+        </copy> 
+        
+        <!-- Load resource file -->
+        <loadfile property="resources" srcFile="${resources.file}"/>
+        <property name="at" value="@"/>
+        <for list="${resources}" delimiter="&#10;" param="line" trim="true" parallel="true" threadCount="3" keepgoing="false">
+            <sequential>
+		<!-- Match user, host and path -->
+                <propertyregex property="user_@{line}" input="@{line}" regexp="([^@]*)(@)([^@:]*)(:)([^:]*)" select="\1"/>
+                <propertyregex property="host_@{line}" input="@{line}" regexp="([^@]*)(@)([^@:]*)(:)([^:]*)" select="\3"/>
+                <propertyregex property="path_@{line}" input="@{line}" regexp="([^@]*)(@)([^@:]*)(:)([^:]*)" select="\5"/>
+
+		<!-- Create directory (just in case) -->
+		<sshexec host="${host_@{line}}" username="${env.USER}" keyfile="${env.HOME}/.ssh/id_dsa" passphrase="" command="/bin/mkdir -p ${path_@{line}}"/>
+
+                <!-- Copy worker files to destination -->
+                <scp todir="${user_@{line}}${at}${host_@{line}}:${path_@{line}}" keyfile="${env.HOME}/.ssh/id_dsa" passphrase="">
+                    <fileset dir="${tmp}"/>
+                </scp>
+            </sequential>
+        </for>
+        <delete dir="${tmp}"/>
+
+    </target>
+    
+    <target name="wscript" description="deploy the worker script">
+        <!-- Load resource file -->
+        <loadfile property="resources" srcFile="${resources.file}"/>
+        <property name="at" value="@"/>
+        <for list="${resources}" delimiter="&#10;" param="line" trim="true" parallel="true" threadCount="3" keepgoing="false">
+            <sequential>
+		<!-- Match user, host and path -->
+		<propertyregex property="user_@{line}" input="@{line}" regexp="([^@]*)(@)([^@:]*)(:)([^:]*)" select="\1"/>
+		<propertyregex property="host_@{line}" input="@{line}" regexp="([^@]*)(@)([^@:]*)(:)([^:]*)" select="\3"/>
+		<propertyregex property="path_@{line}" input="@{line}" regexp="([^@]*)(@)([^@:]*)(:)([^:]*)" select="\5"/>
+
+		<!-- Create directory (just in case) -->
+                <sshexec host="${host_@{line}}" username="${env.USER}" keyfile="${env.HOME}/.ssh/id_dsa" passphrase="" command="/bin/mkdir -p ${path_@{line}}"/>
+	
+                <!-- Copy worker files to destination and build the worker script -->
+		<scp file="${worker}/build.xml" todir="${user_@{line}}${at}${host_@{line}}:${path_@{line}}/${remote.worker}" keyfile="${env.HOME}/.ssh/id_dsa" passphrase=""/>
+		<sshexec host="${host_@{line}}" username="${user_@{line}}" keyfile="${env.HOME}/.ssh/id_dsa" passphrase="" command="$ANT_HOME/bin/ant -f ${path_@{line}}/${remote.worker}/build.xml"/>
+            </sequential>
+        </for>
+    </target>
+    
+    <target name="worker" depends="classes, wscript" description="deploy the worker files"/>
+
+    <target name="workerclean" description="clean the worker files">
+        <!-- Load resource file -->
+        <loadfile property="resources" srcFile="${resources.file}"/>
+        <property name="at" value="@"/>
+        <for list="${resources}" delimiter="&#10;" param="line" trim="true" parallel="true" threadCount="3" keepgoing="false">
+            <sequential>
+		<!-- Match user, host and path -->
+ 	        <propertyregex property="user_@{line}" input="@{line}" regexp="([^@]*)(@)([^@:]*)(:)([^:]*)" select="\1"/>
+         	<propertyregex property="host_@{line}" input="@{line}" regexp="([^@]*)(@)([^@:]*)(:)([^:]*)" select="\3"/>
+	        <propertyregex property="path_@{line}" input="@{line}" regexp="([^@]*)(@)([^@:]*)(:)([^:]*)" select="\5"/>
+
+                <sshexec host="${host_@{line}}" username="${user_@{line}}" keyfile="${env.HOME}/.ssh/id_dsa" passphrase="" command="${path_@{line}}/${remote.worker}/clean.sh ${path_@{line}}/${remote.worker}/files"/>
+            </sequential>
+        </for>
+    </target>
+
+    <target name="workerkill" description="kill the worker jvms">
+        <!-- Load resource file -->
+        <loadfile property="resources" srcFile="${resources.file}"/>
+        <property name="at" value="@"/>
+        <for list="${resources}" delimiter="&#10;" param="line" trim="true" parallel="true" threadCount="3" keepgoing="false">
+            <sequential>
+		<!-- Match user and host -->
+		<propertyregex property="user_@{line}" input="@{line}" regexp="([^@]*)(@)([^@:]*)(:)([^:]*)" select="\1"/>
+                <propertyregex property="host_@{line}" input="@{line}" regexp="([^@]*)(@)([^@:]*)(:)([^:]*)" select="\3"/>
+
+                <sshexec host="${host_@{line}}" username="${user_@{line}}" keyfile="${env.HOME}/.ssh/id_dsa" passphrase="" command="/usr/bin/killall java"/>
+            </sequential>
+        </for>
+    </target>
+
+    <target name="clean" description="clean up">
+        <!-- Clean the entire project -->
+	<ant antfile="build.xml" dir="integratedtoolkit" target="clean"/>
+	<ant antfile="build.xml" dir="gridunawareapps" target="clean"/>
+ 	<!-- <delete dir="${dist}"/> -->
+    </target>
+    
+</project>

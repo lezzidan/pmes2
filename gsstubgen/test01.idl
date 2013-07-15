@@ -1,0 +1,12 @@
+#ifndef _MCARLO_IDL
+#define _MCARLO_IDL
+
+#include <file.idl>  
+
+interface MC {
+	void Subst(in File referenceCFG, in double seed, out double newCFG);
+	void Dimem(in File newCFG, in File traceFile, out File DimemasOUT);
+	void Post(in File newCFG, in File DimemasOUT, inout File FinalOUT);
+};
+
+#endif // _MCARLO_IDL

@@ -1,0 +1,1647 @@
+# Copyright 2002-2007 Barcelona Supercomputing Center (www.bsc.es)
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#!@BASH@
+
+build_config_worker ()
+{
+@CAT@ > config.worker <<EOF
+
+if [ x"$LD_LIBRARY_PATH" != x ]; then
+        export LD_LIBRARY_PATH=${SSHGS_LIBRARY_PATH:-"PACKAGE/lib"}:${LD_LIBRARY_PATH};
+else
+        export LD_LIBRARY_PATH=${SSHGS_LIBRARY_PATH:-"PACKAGE/lib"};
+fi;
+
+if [ x"$NEW_PATH" != x ]; then
+        export PATH=${NEW_PATH};
+else
+        export PATH=${PATH};
+fi
+BINDIR=$PWD;
+EOF
+case @PROG_LANG@ in
+	"C")
+	@CAT@ >> config.worker <<EOF
+EXECUTABLE="workerGS";
+COMMAND="\${BINDIR}/workerGS";
+EOF
+	;;
+	"JAVA")
+	@CAT@ >> config.worker <<EOF
+EXECUTABLE="Worker.class";
+COMMAND="@JAVA_noreplace@ ${NEW_WORKER_JAVA_FLAGS} Worker";
+EOF
+	;;
+	"PERL")
+@CAT@ >> config.worker <<EOF
+EXECUTABLE="Worker.pl";
+COMMAND="@PERL_noreplace@ ${NEW_WORKER_PERL_FLAGS} Worker.pl";
+EOF
+esac
+@CAT@ >> config.worker <<EOF	
+
+#prefix of each task temporary execution directory
+TMPPREFIX='${NEW_TMPPREFIX:-"/scratch/tmp/"}'
+
+#remote shell and copy commands
+SSH='${RSH:-"@SSH@"}';
+SCP='${RCP:-"_REMOTE_COPY_COMMAND_"}';
+
+#remote shell and copy flags
+SSH_FLAGS='${RSH_FLAGS:-"-q -o StrictHostKeyChecking=no"}';
+SCP_FLAGS='${RCP_FLAGS:-"_REMOTE_COPY_COMMAND_FLAGS_"}';
+
+#max time before try to reconnect in msecs
+max_time_before_retry=${MAX_TIME_BEFORE_RETRY:-"10"};
+max_retries=${MAX_RETRIES:-"5"};
+
+#####DON'T EDIT BELOW THIS POINT #####
+
+padding_length=12;
+
+#callback errcode & callback state done
+TASK_ACTIVE="000 1"
+TASK_DONE="000 3"
+CLEANUP_DONE="000 3"
+TEST_NOTIFY="000 3"
+
+#callback errcode & callback state error
+WRONG_ARGS="100 4"
+WORKER_EXEC_NF="101 4"
+WORKER_ERROR="102 4"
+DESTGEN_NF="103 4"
+STAGEIN_ERROR="104 4"
+USER_CANCEL="105 4"
+QSYS_CANCEL="106 4"
+STAGEOUT_ERROR="107 4"
+QSUB_ERROR="108 4"
+CLEANUP_ERROR="109 4"
+
+#callback_type
+TASK_ENDS=5
+TRF_ENDS=6
+RM_ENDS=7
+TEST_ENDS=8
+
+#workerGS.sh script modes
+EXECUTE=0;
+CLEANUP=1;
+STAGEOUT=2;
+ACTIVE=3;
+CANCEL=4;
+TEST=5;
+NOTIFY=6;
+
+CLEANUP_TASK=-1;
+TEST_TASK=-2;
+ISNOTMASTER=0;
+ISMASTER=1;
+
+#return errors
+PROCESS_FNFND=4;
+PROCESS_NFND=3;
+PROCESS_NACT=2;
+
+#executions environments
+ENV_SCRATCH=0;
+ENV_GPFS=1;
+EOF
+}
+
+
+build_execute_ssh_script ()
+{
+
+if test -e execute_ssh.sh; then
+        echo -n "Warning...execute_ssh.sh script exists. Do you want to overwrite it?[Y/N];"
+        read answear;
+        while   [ x${answear} != x"y" ] &&
+                [ x${answear} != x"Y" ] &&
+                [ x${answear} != x"n" ] &&
+                [ x${answear} != x"N" ]; do
+                echo -n "[Y/N]" please...;
+                read answear;
+        done
+
+        case "$answear" in
+                Y)
+                        echo ok, overwritting...
+                ;;
+                y)
+                        echo ok, overwritting...
+                ;;
+                N)
+			@MV@ -f execute_ssh.sh execute_ssh.sh.old;
+                        echo old execute_ssh.sh saved to execute_ssh.sh.old;
+                ;;
+                n)
+			@MV@ -f execute_ssh.sh execute_ssh.sh.old;
+                        echo old execute_ssh.sh saved to execute_ssh.sh.old;
+                ;;
+        esac
+fi
+if [ $EXEC_CONFIGURATION == "mn" ]; then
+@CAT@ > execute_ssh.sh <<EOF
+#!@BASH@
+RSH='${RSH:-"@SRUN@"}';
+RSHFLAGS='${RSHFLAGS:-"-n1 -m hostfile -N1"}';
+EOF
+else
+@CAT@ > execute_ssh.sh <<EOF
+#!@BASH@
+RSH='${RSH:-"@SSH@"}';
+RSHFLAGS='${RSHFLAGS:-"-n -q -o StrictHostKeyChecking=no"}';
+EOF
+fi
+@CAT@ >> execute_ssh.sh <<EOF
+RCP='${RCP:-"_REMOTE_COPY_COMMAND_"}';
+RCPFLAGS='${RCPFLAGS:-"_REMOTE_COPY_COMMAND_FLAGS_"}';
+
+#max time before try to reconnect in msecs
+max_time_before_retry=${MAX_TIME_BEFORE_RETRY:-"10"};
+max_retries=${MAX_RETRIES:-"5"};
+
+export LD_LIBRARY_PATH=${SSHGS_LIBRARY_PATH:-"${LD_LIBRARY_PATH}"};
+export PATH=${NEWPATH:-"$PATH"};
+
+execute_with_retries ()
+{
+        retries=0;
+        command=\$@;
+
+        while [ \$retries -ne \$max_retries ]; do
+                \$command && return 0;
+                sleep \$((5 + \${retries}*\${RANDOM} % \${max_time_before_retry}));
+                retries=\$(($retries+1));
+        done
+        return \$errorcode;
+}
+
+#invoked with arguments or not
+if [ x"\$#" == x"0" ]; then
+	while [ true ]; do
+		read -a message
+
+		if [ x"\${message[*]}" != x"stop" ]; then
+			type=\${message[0]};
+			if [ x"\$type" == x"0" ]; then
+				machine=\${message[1]};
+				command="\$RSH \$RSHFLAGS \$machine \${message[@]:2}";
+			else
+				if [ x"\$type" == x"" ]; then
+                                        break
+                                else
+					command="\$RCP \$RCPFLAGS \${message[@]:1}";
+				fi
+			fi
+			execute_with_retries \${command};
+		else
+			break
+		fi
+	done	
+else
+	type=\$1;
+	shift;
+
+	if [ x"\$type" == x"0" ]; then
+EOF
+if [ $EXEC_CONFIGURATION == "mn" ]; then
+@CAT@ >> execute_ssh.sh <<EOF
+		hostfile=\$1;
+		shift 2;
+		export SLURM_HOSTFILE=\${hostfile};
+		command="\$RSH \$RSHFLAGS \$@";
+EOF
+else
+@CAT@ >> execute_ssh.sh <<EOF
+		shift;
+               	command="\$RSH \$RSHFLAGS \$@";
+EOF
+fi
+@CAT@ >> execute_ssh.sh <<EOF
+	else
+		command="\$RCP \$RCPFLAGS \$@";
+		
+	fi
+	\${command};
+	result=\$?
+        if [ \${result} -ne 0 ]; then
+                exit \${result};
+        fi	
+fi
+EOF
+@CHMOD@ +x execute_ssh.sh;
+}
+
+build_project_gsdeploy ()
+{
+
+if test -e project.gsdeploy; then
+        echo -n "Warning...project.gsdeploy configuration file. Do you want to overwrite it?[Y/N];"
+        read answear;
+        while   [ x${answear} != x"y" ] &&
+                [ x${answear} != x"Y" ] &&
+                [ x${answear} != x"n" ] &&
+                [ x${answear} != x"N" ]; do
+                echo -n "[Y/N]" please...;
+                read answear;
+        done
+
+        case "$answear" in
+                Y)
+                        echo ok, overwritting...
+                ;;
+                y)
+                        echo ok, overwritting...
+                ;;
+                N)
+			@MV@ -f project.gsdeploy project.gsdeploy.old
+                        echo old project.gsdeploy saved to project.gsdeploy.old;
+                ;;
+                n)
+			@MV@ -f project.gsdeploy project.gsdeploy.old
+                        echo old execute_ssh.sh saved to execute_ssh.sh.old;
+                        echo old execute_ssh.sh saved to execute_ssh.sh.old;
+                ;;
+        esac
+fi
+@CAT@ > project.gsdeploy <<EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="${APP_NAME}" masterSourceDir="" workerSourceDir="" masterBuildScript="" workerBuildScript="" masterName="${HOSTNAME}" masterInstallDir="${MASTER_DIR}" masterBandwidth="100000" isSimple="yes">
+<disks>
+<disk name="_MasterDisk_"/>
+EOF
+if test ${WORKER_DIR} != ${WORKING_DIR}; then
+HLIST=${WORKER_NODES}
+for nodename in `echo ${WORKER_NODES}`; do
+        taskspernode=`echo ${HLIST} | @SED@ -e 's/\ /\n/g' | grep ${nodename} | wc -l`;
+
+        if [ "${taskspernode}" -ne 0 ]; then
+		@CAT@ >> project.gsdeploy <<EOF
+<disk name="_WorkingDisk_${nodename}"/>
+EOF
+        fi
+        HLIST=`echo ${HLIST} | @SED@ -e "s/${nodename}//g"`;
+done
+	
+else
+	if test ${MASTER_DIR} != ${WORKER_DIR} ; then
+		@CAT@ >> project.gsdeploy <<EOF
+<disk name="_WorkingDisk_"/>
+EOF
+	fi
+fi
+if [ x"@EXEC_ENV@" != x"GRID" ]; then
+@CAT@ >> project.gsdeploy <<EOF
+<disk name="_SharedDisk_"/>
+EOF
+fi
+@CAT@ >> project.gsdeploy <<EOF
+</disks>
+<directories>
+<directory path="${MASTER_DIR}" disk="_MasterDisk_" isWorkingPath="yes"/>
+EOF
+if [ x"@EXEC_ENV@" != x"GRID" ]; then
+@CAT@ >> project.gsdeploy <<EOF
+<directory path="/" disk="_SharedDisk_" isWorkingPath="no"/>
+EOF
+fi
+@CAT@ >> project.gsdeploy <<EOF
+</directories>
+<workers>
+EOF
+HLIST=${WORKER_NODES}
+for nodename in `echo ${WORKER_NODES}`; do
+        taskspernode=`echo ${HLIST} | @SED@ -e 's/\ /\n/g' | grep ${nodename} | wc -l`;
+
+        if [ "${taskspernode}" -ne 0 ]; then
+		if [ x"${QUEUE}" == x"none" ]; then
+                	@CAT@ >> project.gsdeploy <<EOF
+<worker name="${nodename}" installDir="${WORKER_DIR}" deploymentStatus="deployed" Queue="none" LimitOfJobs="${taskspernode}" NetKbps="100000" Arch="i686" OpSys="Linux" GFlops="1.0" Mem="16" NCPUs="1" Quota="0"> 
+<directories>
+EOF
+		else
+			@CAT@ >> project.gsdeploy <<EOF 
+<worker name="${nodename}" installDir="${WORKER_DIR}" deploymentStatus="deployed" Queue="${QUEUE}" LimitOfJobs="${QWORKERS_LIMIT}" NetKbps="100000" Arch="i686" OpSys="Linux" GFlops="1.0" Mem="16" NCPUs="1" Quota="0">
+<directories>
+EOF
+		fi
+		if test ${WORKER_DIR} != ${WORKING_DIR}; then
+			@CAT@ >> project.gsdeploy <<EOF
+<directory path="${WORKING_DIR}" disk="_WorkingDisk_${nodename}" isWorkingPath="yes"/>
+EOF
+		else
+			if test ${MASTER_DIR} != ${WORKER_DIR} ; then
+				@CAT@ >> project.gsdeploy <<EOF
+<directory path="${WORKER_DIR}" disk="_WorkingDisk_" isWorkingPath="yes"/>
+EOF
+			else
+				@CAT@ >> project.gsdeploy <<EOF
+<directory path="${WORKER_DIR}" disk="_MasterDisk_" isWorkingPath="yes"/>
+EOF
+			fi
+		fi
+		if [ x"@EXEC_ENV@" != x"GRID" ]; then
+			@CAT@ >> project.gsdeploy <<EOF
+<directory path="/" disk="_SharedDisk_" isWorkingPath="no"/>
+EOF
+		fi
+@CAT@ >> project.gsdeploy <<EOF
+</directories>
+</worker>
+EOF
+	fi
+	HLIST=`echo ${HLIST} | @SED@ -e "s/${nodename}//g"`;
+done
+@CAT@ >> project.gsdeploy <<EOF
+<!-- 
+If another node is needed for the execution, uncomment (and copy and paste as much times as desired) to put another worker node in the interactive execution.
+The worker name is blank, user should supply the node name for the additional nodes.
+-->
+<!--
+<worker name="" installDir="${WORKER_DIR}" deploymentStatus="deployed" Queue="none" LimitOfJobs="2" NetKbps="100000" Arch="i686" OpSys="Linux" GFlops="1.0" Mem="16" NCPUs="1" Quota="0">
+<directories>
+EOF
+if test ${WORKER_DIR} != ${WORKING_DIR} ; then
+	@CAT@ >> project.gsdeploy <<EOF
+<directory path="${WORKING_DIR}" disk="_WorkingDisk_WORKER" isWorkingPath="yes"/>
+EOF
+else
+	if test ${MASTER_DIR} != ${WORKER_DIR} ; then
+		@CAT@ >> project.gsdeploy <<EOF
+<directory path="${WORKER_DIR}" disk="_WorkingDisk_" isWorkingPath="yes"/>
+EOF
+	else
+	@CAT@ >> project.gsdeploy <<EOF
+	<directory path="${WORKER_DIR}" disk="_MasterDisk_" isWorkingPath="yes"/>
+EOF
+	fi
+fi
+if [ x"@EXEC_ENV@" != x"GRID" ]; then
+@CAT@ >> project.gsdeploy <<EOF
+<directory path="/" disk="_SharedDisk_" isWorkingPath="no"/>
+EOF
+fi
+@CAT@ >> project.gsdeploy <<EOF
+</directories>
+</worker>
+-->
+</workers>
+</project>
+EOF
+}
+
+LoadLeveler_requirements ()
+{
+if [ x"$REQUIREMENTS" != x"" ]; then	
+	printf "# @ requirements = ";
+	for req in $REQUIREMENTS; do
+		printf "$req && ";
+	done
+fi
+}
+
+build_queue_script()
+{
+if test -e "${1}_script.csh"; then
+        echo -n "Warning...${1}_script.csh script exists. Do you want to overwrite it?[Y/N];"
+        read answear;
+        while   [ x${answear} != x"y" ] &&
+                [ x${answear} != x"Y" ] &&
+                [ x${answear} != x"n" ] &&
+                [ x${answear} != x"N" ]; do
+                echo -n "[Y/N]" please...;
+                read answear;
+        done
+
+        case "$answear" in
+                Y)
+                        echo ok, overwritting...
+                ;;
+                y)
+                        echo ok, overwritting...
+                ;;
+                N)
+                        @MV@ -f ${1}_script.csh ${1}_script.csh.old
+                        echo old ${1}_script.csh saved to ${1}_script.csh.old;
+                ;;
+                n)
+                        @MV@ -f ${1}_script.csh ${1}_script.csh.old
+                        echo old ${1}_script.csh saved to ${1}_script.csh.old;
+                ;;
+        esac
+fi
+
+@CAT@ > ${1}_script.csh <<EOF
+#!@CSH@
+#
+EOF
+case $1 in
+	"slurm_moab")
+	if [ x"$CLASS" != x"" ]; then
+		@CAT@ >> ${1}_script.csh <<EOF
+# @ class = ${CLASS}
+EOF
+	fi
+	@CAT@ >> ${1}_script.csh <<EOF
+# @ initialdir = ${MASTER_DIR:-"$PWD"}
+# @ job_name = ${JOB_NAME:-"${APP_NAME}"}
+# @ output = ${STDOUT:-"${APP_NAME}.%j.out"}
+# @ error =  ${STDERR:-"${APP_NAME}.%j.err"}
+EOF
+	if [ x"$2" != x"queued" ]; then
+		@CAT@ >> ${1}_script.csh <<EOF
+# @ total_tasks = ${TASKS}
+EOF
+	else
+		@CAT@ >> ${1}_script.csh <<EOF 
+# @ total_tasks = 2
+EOF
+	fi
+	if [ x"$WALL_CLOCK" != x"" ]; then
+        	@CAT@ >> ${1}_script.csh <<EOF
+# @ wall_clock_limit = ${WALL_CLOCK}
+EOF
+	fi
+	if [ x"$GS_FT" == x"yes" ]; then
+	@CAT@ >> ${1}_script.csh <<EOF
+# @ kill_on_failure = 0
+EOF
+	fi
+	@CAT@ >> ${1}_script.csh <<EOF
+${REQUIREMENTS}
+# @ queue
+set STARTLIST = \`@SL_MACHINE_LIST@ | @SED@ -e 's/\.[^\ ]*//g'\`;
+EOF
+	;;
+	"LoadLeveler")
+		@CAT@ >> ${1}_script.csh <<EOF
+# @ job_type = parallel
+# @ class = ${CLASS:-"debug"}
+# @ group = ${GROUP:-"`id -gn`"}
+# @ initialdir = ${MASTER_DIR:-"$PWD"}
+# @ job_name = ${JOB_NAME:-"${APP_NAME}"}
+# @ output = ${STDOUT:-"${APP_NAME}.\$(schedd_hostname).\$(jobid).\$(stepid).out"}
+# @ error =  ${STDERR:-"${APP_NAME}.\$(schedd_hostname).\$(jobid).\$(stepid).err"}
+# @ restart = ${RESTART:-"no"}
+EOF
+		if [ x"$2" != x"queued" ]; then
+                        @CAT@ >> ${1}_script.csh <<EOF
+# @ total_tasks = ${TASKS}
+# @ blocking = 4
+EOF
+		else
+			@CAT@ >> ${1}_script.csh <<EOF
+# @ total_tasks = 2
+# @ blocking = unlimited
+EOF
+		fi
+		if [ x"$WALL_CLOCK" != x"" ]; then
+        		@CAT@ >> ${1}_script.csh <<EOF
+# @ wall_clock_limit = ${WALL_CLOCK}
+EOF
+		fi
+@CAT@ >> ${1}_script.csh <<EOF
+${REQUIREMENTS}
+# @ queue
+
+set STARTLIST = \`@LL_MACHINE_LIST@ | @SED@ -e 's/\.[^\ ]*//g'\`;
+EOF
+	;;
+	"PBS")
+		@CAT@ >> ${1}_script.csh <<EOF
+#PBS -N ${JOB_NAME:-"${APP_NAME}"}
+EOF
+		if [ x"$2" != x"queued" ]; then
+			@CAT@ >> ${1}_script.csh <<EOF
+#PBS -l nodes=${NODES}:ppn=${TASKS}
+EOF
+		else
+			@CAT@ >> ${1}_script.csh <<EOF	
+#PBS -l nodes=1:ppn=1
+EOF
+		fi
+		@CAT@ >> ${1}_script.csh <<EOF
+#PBS -q ${CLASS:-"debug"}
+#PBS -o ${STDOUT:-"${APP_NAME}.out"}
+#PBS -e ${STDERR:-"${APP_NAME}.err"}
+#PBS -me
+#PBS -M ${NOTIFY_USER:-"`id -nu`@localhost"}
+#PBS -r `echo $RESTART | head -c1`
+
+set STARTLIST = \`@CAT@ \${PBS_NODEFILE}\`;
+EOF
+	;;
+esac
+@CAT@ >> ${1}_script.csh <<EOF
+# USER must define these variables
+setenv GS_HOME PACKAGE
+set MDIRECTORY = "${MASTER_DIR}"
+set WDIRECTORY = "${WORKER_DIR}"
+set PROJECT_DEPLOY = "${PROJECT_FILE}"
+EOF
+case @PROG_LANG@ in
+	"C")
+		@CAT@ >> ${1}_script.csh <<EOF
+set EXECUTABLE = "${MASTER_DIR}/`echo ${APP_NAME} | @SED@ -e 's/.*\///g'`";
+EOF
+	;;
+	"JAVA")
+		@CAT@ >> ${1}_script.csh <<EOF
+setenv CLASSPATH ${NEW_CLASSPATH:-"PACKAGE/lib/GridSuperscalarMaster.jar"}:.:${CLASSPATH};
+set EXECUTABLE = "`echo ${APP_NAME} | @SED_noreplace@ -e 's/.*\///g'`";
+EOF
+	;;
+	"PERL")
+		@CAT@ >> ${1}_script.csh <<EOF
+set EXECUTABLE = "${APP_NAME}.pl"
+EOF
+	;;
+esac
+@CAT@ >> ${1}_script.csh <<EOF		
+set ARGS = "${APP_PARAMS:-''}";
+
+#environment
+
+setenv LD_LIBRARY_PATH ${SSHGS_LIBRARY_PATH:-"PACKAGE/lib"}:${LD_LIBRARY_PATH};
+setenv PATH ${NEW_PATH:-$PATH};
+#GS_vars
+EOF
+if [ x"${1}" == x"slurm_moab" ]; then
+        @CAT@ >> ${1}_script.csh <<EOF
+setenv GS_APPNUM \${SLURM_JOBID};
+EOF
+fi
+if [ x"${GSDEBUG}" != x"" ]; then
+        @CAT@ >> ${1}_script.csh <<EOF
+setenv GS_DEBUG ${GSDEBUG};
+EOF
+else
+        @CAT@ >> ${1}_script.csh <<EOF
+setenv GS_DEBUG 0
+EOF
+fi
+if [ x"${GSLOGS}" != x"" ]; then
+        @CAT@ >> ${1}_script.csh <<EOF
+setenv GS_LOGS ${GSLOGS};
+EOF
+else
+        @CAT@ >> ${1}_script.csh <<EOF
+setenv GS_LOGS 0
+EOF
+fi
+@CAT@ >> ${1}_script.csh <<EOF
+setenv GS_PROJECT_DEPLOY \${PROJECT_DEPLOY};
+EOF
+if [ x"@EXEC_ENV@" == x"MN_SCRATCH" ]; then
+        @CAT@ >> ${1}_script.csh <<EOF
+setenv GS_EXEC_ENV ${EXEC_ENV};
+EOF
+fi
+if [ x"${GS_FT}" == x"yes" ]; then
+	if [ x"${GS_FT_TIMEOUT}" != x"" ]; then
+@CAT@ >> ${1}_script.csh <<EOF
+#Fault Tolerance variables
+setenv GS_TIMEOUT_FACTOR ${GS_FT_TIMEOUT};
+EOF
+	else
+@CAT@ >> ${1}_script.csh <<EOF
+#Fault Tolerance variables
+setenv GS_TIMEOUT_FACTOR 1.25;
+EOF
+	fi
+	if [ x"${GS_FT_RESUBMIT}" != x"" ]; then
+@CAT@ >> ${1}_script.csh <<EOF
+#Fault Tolerance variables
+setenv GS_RESUBMIT_FACTOR ${GS_FT_RESUBMIT};
+EOF
+	else
+	@CAT@ >> ${1}_script.csh <<EOF
+#Fault Tolerance variables
+setenv GS_RESUBMIT_FACTOR 2;
+EOF
+	fi
+	if [ x"${GS_MRETRIES}" != x"" ]; then
+@CAT@ >> ${1}_script.csh <<EOF
+setenv GS_MACHINE_RETRIES ${GS_MRETRIES};
+EOF
+	else
+	@CAT@ >> ${1}_script.csh <<EOF
+setenv GS_MACHINE_RETRIES 3;
+EOF
+	fi
+else
+@CAT@ >> ${1}_script.csh <<EOF
+#Fault Tolerance variables
+setenv GS_TIMEOUT_FACTOR 0;
+EOF
+fi
+@CAT@ >> ${1}_script.csh <<EOF
+set SHAREDDISK = "/"
+set MASTERNODE = \`hostname -s\`;
+set HLIST = \`echo \${STARTLIST} | @SED@ -e "s/\${MASTERNODE}//"\`;
+set STARTLIST = \`echo \${HLIST}\`;
+
+# Headers of XML configuration file
+@CAT@ >\${PROJECT_DEPLOY} <<EOT
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="clustalw" masterSourceDir="" workerSourceDir="" masterBuildScript="" workerBuildScript="" masterName="\${MASTERNODE}" masterInstallDir="\${MDIRECTORY}" masterBandwidth="100000" isSimple="yes">
+<disks>
+        <disk name="_MasterDisk_"/>
+EOF
+if test ${WORKER_DIR} != ${WORKING_DIR}; then
+	if [ x"$2" != x"queued" ]; then
+		@CAT@ >> slurm_moab_script.csh <<EOF
+EOT
+foreach nodename (\`echo \${STARTLIST}\`)
+        @ taskspernode = \`echo \${HLIST} | @SED@ -e 's/\ /\n/g' | grep \${nodename} | wc -l\`;
+
+        if ( \${taskspernode} != 0 ) then
+@CAT@ >>\${PROJECT_DEPLOY} <<EOT
+        <disk name="_WorkingDisk_\${nodename}"/>
+EOT
+        endif
+        set HLIST = \`echo \${HLIST} | @SED@ -e "s/\${nodename}//g"\`;
+end
+@CAT@ >>\${PROJECT_DEPLOY} <<EOT
+EOF
+	fi	
+else
+        if test ${WORKER_DIR} != ${MASTER_DIR}; then
+@CAT@ >> slurm_moab_script.csh <<EOF
+        <disk name="_WorkingDisk_"/>
+EOF
+        fi
+fi
+
+if [ x"@EXEC_ENV@" != x"GRID" ]; then
+@CAT@ >> ${1}_script.csh <<EOF
+        <disk name="_SharedDisk_"/>
+EOF
+fi
+@CAT@ >> ${1}_script.csh <<EOF
+</disks>
+<directories>
+        <directory path="\${MDIRECTORY}" disk="_MasterDisk_" isWorkingPath="yes"/>
+EOF
+if [ x"@EXEC_ENV@" != x"GRID" ]; then
+@CAT@ >> ${1}_script.csh <<EOF
+        <directory path="\${SHAREDDISK}" disk="_SharedDisk_" isWorkingPath="no"/>
+EOF
+fi
+@CAT@ >> ${1}_script.csh <<EOF
+</directories>
+<workers>
+EOF
+
+if [ x"$2" != x"queued" ]; then
+	@CAT@ >> ${1}_script.csh <<EOF
+EOT
+set HLIST = \`echo \${STARTLIST}\`;
+foreach nodename (\`echo \${STARTLIST}\`)
+        @ taskspernode = \`echo \${HLIST} | @SED@ -e 's/\ /\n/g' | grep \${nodename} | wc -l\`;
+
+        if ( \${taskspernode} != 0 ) then
+@CAT@ >>\${PROJECT_DEPLOY} <<EOT
+        <worker name="\${nodename}" installDir="\${WDIRECTORY}" deploymentStatus="deployed" Queue="none" LimitOfJobs="\${taskspernode}" NetKbps="100000" Arch="i686" OpSys="Linux" GFlops="1.0" Mem="16" NCPUs="1" Quota="0">
+        <directories>
+EOF
+  if test ${WORKER_DIR} != ${WORKING_DIR}; then
+@CAT@ >> ${1}_script.csh <<EOF
+                <directory path="${WORKING_DIR}" disk="_WorkingDisk_\${nodename}" isWorkingPath="yes"/>
+EOF
+  else
+        if test ${MASTER_DIR} != ${WORKER_DIR}; then
+@CAT@ >> ${1}_script.csh <<EOF
+                <directory path="\${WDIRECTORY}" disk="_WorkingDisk_" isWorkingPath="yes"/>
+EOF
+        else
+@CAT@ >> ${1}_script.csh <<EOF
+                <directory path="\${WDIRECTORY}" disk="_MasterDisk_" isWorkingPath="yes"/>
+EOF
+        fi
+  fi
+  if [ x"@EXEC_ENV@" != x"GRID" ]; then
+@CAT@ >> ${1}_script.csh <<EOF
+                <directory path="\${SHAREDDISK}" disk="_SharedDisk_" isWorkingPath="no"/>
+EOF
+  fi
+@CAT@ >> ${1}_script.csh <<EOF
+        </directories>
+        </worker>
+EOT
+        endif
+        set HLIST = \`echo \${HLIST} | @SED@ -e "s/\${nodename}//g"\`;
+end
+
+        @CAT@ >>\${PROJECT_DEPLOY} <<EOT
+EOF
+else
+@CAT@ >> ${1}_script.csh <<EOF
+        <worker name="\${MASTERNODE}" installDir="\${WDIRECTORY}" deploymentStatus="deployed" Queue="${QUEUE}" LimitOfJobs="${QWORKERS_LIMIT}" NetKbps="100000" Arch="i686" OpSys="Linux" GFlops="1.0" Mem="16" NCPUs="1" Quota="0">
+        <directories>
+EOF
+  if test ${MASTER_DIR} != ${WORKER_DIR}; then
+	if test	${WORKER_DIR} != ${WORKING_DIR}; then
+		@CAT@ >> ${1}_moab_script.csh <<EOF
+		<directory path="\${WORKING_DIR}" disk="_WorkingDisk_" isWorkingPath="yes"/>
+EOF
+	else
+		@CAT@ >> ${1}_script.csh <<EOF
+                <directory path="\${WDIRECTORY}" disk="_WorkingDisk_" isWorkingPath="yes"/>
+EOF
+	fi
+  else
+@CAT@ >> ${1}_script.csh <<EOF
+                <directory path="\${WDIRECTORY}" disk="_MasterDisk_" isWorkingPath="yes"/>
+EOF
+  fi
+  if [ x"@EXEC_ENV@" != x"GRID" ]; then
+@CAT@ >> ${1}_script.csh <<EOF
+                <directory path="\${SHAREDDISK}" disk="_SharedDisk_" isWorkingPath="no"/>
+EOF
+  fi
+
+@CAT@ >> ${1}_script.csh <<EOF
+        </directories>
+        </worker>
+EOF
+fi
+@CAT@ >> ${1}_script.csh <<EOF
+</workers>
+</project>
+EOT
+EOF
+
+@CAT@ >> ${1}_script.csh <<EOF
+# run application
+EOF
+case @PROG_LANG@ in
+	"C")
+		@CAT@ >> ${1}_script.csh <<EOF
+# run actual executable
+\${EXECUTABLE} \${ARGS}
+EOF
+	;;
+	"JAVA")
+		@CAT@ >> ${1}_script.csh <<EOF
+@JAVA@ ${NEW_JAVA_FLAGS} \${EXECUTABLE} \${ARGS}
+EOF
+	;;
+	"PERL")
+		@CAT@ >> ${1}_script.csh <<EOF
+@PERL@ ${NEW_PERL_FLAGS} \${EXECUTABLE} \${ARGS}
+EOF
+	;;
+esac
+@CHMOD@ +x ${1}_script.csh
+
+}
+
+usage ()
+{
+if [ x"@MODE@" == x"WORKER" ]; then
+	echo "Usage:    $0 [ <general_options> ] [<worker_parameters>]";
+else
+	echo "Usage: 	$0 interactive [ <general_options> ] <interactive_required_parametes> [<worker_parameters>] [<worker_queue_parameters>]";
+  if [ x"@EXEC_ENV@" != x"MN_SCRATCH" ]; then
+    if [ x"@EXEC_ENV@" == x"GRID" ]; then
+	echo;
+    else	
+        echo "  $0 {pbs|ll} [ <general_options> ] <queue_required_parameters> [ <queue_options> ] [<worker_queue_parameters>]";
+    fi	
+  else
+        echo "  $0 {mn|ll|pbs} [ <general_options> ] <queue_required_parameters> [ <queue_options> ] [<worker_queue_parameters>]";
+  fi
+fi
+	echo;
+	echo "General Options";
+	echo "  -P <path_to_executables>				Path to executables";
+	echo "  -L <GridSuperscalar_library_path>			Path to Grid Superscalar library";
+if [ x"@PROG_LANG@" == x"JAVA" ]; then
+	echo "  --classpath=<path to jars>				Set CLASSPATH env variable";
+	echo "  --java-flags=\"<java_flags>\"                           Set java interpreter flags";
+fi
+if [ x"@PROG_LANG@" == x"PERL" ]; then
+	echo "  --perl-flags=\"<perl_flags>\"                           Set perl interpreter flags";
+fi
+	echo "  --rsh=<remote_shell_command>				Remote shell command to override 'ssh'";
+	echo "  --rsh-flags=<remote_shell_command_flags>		Remote shell command flags to override '-q -o StrictHostKeyChecking=no'";
+	echo "  --rcp=<remote_copy_command>				Remote copy command to override 'scp'";
+	echo "  --rcp-flags=<remote_copy_command_flags>			Remote copy command flags to override '-q -o StrictHostKeyChecking=no'";
+	echo "  --max-time-before-retry=<seconds>			Max time before reconnecting to a remote host in case of a connection failure (default=10)";
+	echo "  --max-retries=<retries>					Maximum times to retry a connection that fails (default=5)";
+	echo "  -v							Verbose mode";
+	echo "  -q							Quiet mode. Don't print warnings.";
+	echo;
+if [ x"@MODE@" != x"WORKER" ]; then
+	echo "Common Required Parameters";
+	echo "  --app-name=<app-name>                                   Application name";
+	echo;
+	echo "Common Optional Parameters";
+	echo "  --master-dir=</path/to/master_dir>			The path to the master directory. Default is PWD";
+	echo "  --worker-dir=</path/to/worker_dir>			The path to the worker directory. Default is PWD";
+	echo "  --worker-wkgdir=</path/to/worker_workingdir>            The path to the worker working directory. Default is worker-dir ";
+	echo;
+	echo "Interactive Optional Parameters";
+	echo "  --worker-nodes=\"node1 node2\"				List of worker nodes. Default is current host";
+	echo;
+	echo "Queue Required Parameters";
+	echo "  --app-name=<app-name>					Application name";
+	echo;
+  	echo "- MN required parameters"; 
+        echo "  --total-tasks=<task_number>				Specify the total number of the maximum concurrent tasks";
+        echo "  --wall-clock-limit=<HH:MM:SS>				Application wall_clock_limit";
+	echo;	
+	echo "- Queue Generic Required Parameters";
+        echo "  --total-tasks=<task_number>				LoadLeveler : Specify the total number of concurrent tasks";
+        echo "  --nodes=<node_number>					PBS : Specify the number of nodes which will be used for the execution";
+        echo "  --tasks-per-node=<task_number>				PBS : Specify the number of concurrent tasks in each node";
+	echo;
+	echo "Queue Optional Parameters";
+	echo;
+        echo "- Queue Manager parameters";
+	echo "  --class=<queue_name>					The name of the target queue";
+   if [ x"@EXEC_ENV@" != x"MN_SCRATCH" ]; then
+        echo "  --wall-clock-limit=<HH:MM:SS>                           Application wall_clock_limit";
+   fi
+	echo "  --group=<group_name>					Specify the group which the user belongs";
+	echo "  --job-name=<my_job_name>				The name with which the job will appear in the queue system";
+	echo "  --output=<stdout.txt>					Standar output log file";
+	echo "  --error=<stderr.txt>					Standar error log file";
+	echo "  --restart={yes|no}					Specifies whether the job is rerunable";
+	echo "  --notification={always|error|start|never|complete}	Specifies when and if the user should be notified via mail";
+	echo "  --notify-user=<mail@to.user>				Specifies the email of the user to be contacted based on the 'notification' keyword'";
+   if [ x"@EXEC_ENV@" == x"MN_SCRATCH" ]; then
+        echo "  --cpus-per-task = <#cpus/task>                          Number of cpus assigned by the queue manager to each task";
+   fi
+	echo "  --requirements=<requirements>				Specify execution requirements (e.g. --requirements=(Feature == \"myrinet\") )";
+	echo "  --app-params=\"<app-param1> <app-param2>...\"		Application parameters (in case of input files, give full path)";
+	echo;
+	echo "- Grid Superscalar in queue parameters";
+        echo "  --project-file=<file_name>				Project configuration file name";
+	echo "  --with-ft=<yes|no>					Enable | disable Fault tolerance functionalities";
+	echo "	   --with-timeout-factor=<#factor>			Set time out factor for fault tolerance features";
+	echo " 	   --with-resubmit-factor=<#bigger than 1>		Set resubmit factor for fault tolerance features";
+	echo "	   --with-machine-retries=<#retries>			Set number of retries if there is a fault in a machine";
+        echo "  --with-debug=<10,20,30>                                 Show GS debug information";
+        echo "  --with-logs=<0,1>                                       Keep log files of GS tasks";
+  if [ x"@EXEC_ENV@" == x"MN_SCRATCH" ]; then
+        echo "  --exec-environment=<GPFS|SCRATCH>			GPFS: GPFS aware application";
+        echo "  							SCRATCH: Run application workers in the local disks";
+  fi
+fi
+if [ x"@MODE@" != x"MASTER" ]; then
+	echo;
+	echo "Worker Parameters";
+        echo "  --with-tmpdir=<temp_dir_prefix>  			Set temporary directories prefix for executions. Defaults to worker directory.";
+	echo;
+else
+	echo "Worker Queue Parameters";
+        echo "  --worker-queue-class=<worker_queue_class>		Queue class where workers will be submited. Default is 'none'"
+        echo "  --queued-workers-limit=<queued_workers_number>	Limit number of queued workers simultaneously. Default is 2"
+        echo "  --worker-wc-limit=<HH:MM:SS>				Wall clock limit for worker jobs (e.g. --worker-wc-limit=00:30:00)"
+        echo;
+fi
+	exit 1;
+}
+
+log ()
+{
+	OUTPUT="${OUTPUT}#$1";
+}
+
+warn ()
+{
+	WARNINGS="${WARNINGS}#$1";
+}
+
+undefined ()
+{
+	UNDEFINED="${UNDEFINED}#$1";
+}
+
+print_verbose ()
+{
+	echo $OUTPUT | @SED@ -e 's/#/\n/g';
+}
+
+print_warnings ()
+{
+	echo $WARNINGS | @SED@ -e 's/#/\n/g';
+}
+
+print_undefined ()
+{
+	echo $UNDEFINED | @SED@ -e 's/#/\n/g';
+	exit -1;
+}
+
+#Main code starts...
+if [ x"@MODE@" != x"WORKER" ]; then
+  if [ x"@EXEC_ENV@" == x"MN_SCRATCH" ]; then
+        if [ x$1 != x"interactive" ] && [ x$1 != x"mn" ] && [ x$1 != x"ll" ] && [ x$1 != x"pbs" ]; then
+                echo "Please choose the execution configuration that you want.";
+                echo "You can choose 'interactive' if you want to execute ";
+                echo "master code interatively or 'mn', 'll', 'pbs' if you want ";
+                echo "to enqueue the application in a SLURM, LoadLeveler or PBS ";
+                echo "queue system respectively.";
+                echo;
+                usage;
+                exit 1;
+        else
+                EXEC_CONFIGURATION=$1;
+        fi
+  else
+   if [ x"@EXEC_ENV@" == x"GRID" ]; then
+
+	if [ x$1 != x"interactive" ]; then
+		echo "Please choose the execution configuration that you want.";
+                echo "You can only choose 'interactive' to execute ";
+                echo "master code interatively."; 
+                echo;
+                usage;
+                exit 1;
+        else
+                EXEC_CONFIGURATION=$1;
+        fi
+   else	
+        if [ x$1 != x"interactive" ] && [ x$1 != x"pbs" ] && [ x$1 != x"ll" ]; then
+                echo "Please choose the execution configuration that you want.";
+                echo "You can choose 'interactive' if you want to execute ";
+                echo "master code interatively or 'pbs', 'll' if you want ";
+                echo "to enqueue the application in a PBS or LoadLeveler ";
+                echo "queue system respectively.";
+                echo;
+                usage;
+                exit 1;
+        else
+                EXEC_CONFIGURATION=$1;
+        fi
+   fi
+  fi
+fi
+shift;
+verbose=0;
+warnings=1;
+OUTPUT="Verbose mode ...";
+WARNINGS="Warnings...";
+RESTART="no";
+QUEUE=none;
+WC_LIMIT=unlimited;
+EXEC_ENV=GPFS;
+WORKER_NODES=`hostname -s`;
+PROJECT_FILE=project.gsdeploy;
+while getopts vqhL:P:c:-: o
+do case "$o" in
+	v)	
+		verbose=1;	
+	;;
+	q)	
+		warnings=0;	
+	;;
+	L)
+		log "Grid Superscalar library path set to : ${OPTARG}";
+		if [ x$LD_LIBRARY_PATH == x"" ]; then
+			SSHGS_LIBRARY_PATH=${OPTARG};
+		else
+			SSHGS_LIBRARY_PATH=${LD_LIBRARY_PATH}:${OPTARG};
+		fi
+	;;
+	P)
+		NEW_PATH=${OPTARG}:${PATH};
+		log "Paths to look for executables : ${NEW_PATH}";
+		;;
+	h)
+		usage;
+		exit 0;
+		;;
+	-) 
+		case "$OPTARG" in
+			class)
+				echo "Give parameter using e.g. --class=debug syntax";
+				echo;
+				usage;
+			;;
+			class=*)
+				if [ x$EXEC_CONFIGURATION == x"interactive" ]; then
+					log "Parameter $OPTARG not available on interactive execution. Parameter ignored..."
+				else
+					CLASS=`echo $OPTARG | @SED@ -e 's/class=//g'`;
+					log "Class set to \"$CLASS\"";
+				fi
+			;;
+			job-name)
+				echo "Give parameter using e.g. --job-name=my_execution syntax";
+				echo;
+				usage;
+			;;
+			job-name=*)
+				if [ x$EXEC_CONFIGURATION == x"interactive" ]; then
+					log "Parameter $OPTARG not available on interactive execution. Parameter ignored...";	
+				else
+					JOB_NAME=`echo $OPTARG | @SED@ -e 's/job-name=//g'`;
+					log "Job name set to $JOB_NAME";
+				fi
+			;;
+			master-dir)
+				echo "Give parameter using e.g. --master-dir=/path/to/master-dir";
+				echo;
+				usage;
+			;;
+			master-dir=*)
+				MASTER_DIR=`echo $OPTARG | @SED@ -e 's/master-dir=//g'`;
+				log "Master directory set to $MASTER_DIR";
+			;;
+			worker-dir)
+				echo "Give parameter using e.g. --worker-dir=/path/to/worker-dir";
+				echo;
+				usage;
+			;;
+			worker-dir=*)
+				WORKER_DIR=`echo $OPTARG | @SED@ -e 's/worker-dir=//g'`;
+				log "Worker directory set to $WORKER_DIR";
+			;;
+			worker-wkgdir)
+                                echo "Give parameter using e.g. --worker-workingdir=/path/to/worker-workingdir";
+                                echo;
+                                usage;
+                        ;;
+                        worker-wkgdir=*)
+                                WORKING_DIR=`echo $OPTARG | @SED@ -e 's/worker-wkgdir=//g'`;
+                                log "Worker working directory set to $WORKING_DIR";
+                        ;;
+			worker-nodes)
+				echo "Give parameter using e.g. --worker-nodes=\"node1 node2\"";
+                                echo;
+                                usage;
+                        ;;
+			worker-nodes=*)
+				WORKER_NODES=`echo $OPTARG | @SED@ -e 's/worker-nodes=//g'`;
+                                log "Worker working directory set to $WORKER_NODES";
+                        ;;
+			app-name)
+				echo "Give parameter using e.g. --app-name=<app-name>";
+				echo;
+				usage;
+			;;
+			app-name=*)
+				APP_NAME=`echo $OPTARG | @SED@ -e 's/app-name=//g'`;
+				log "Application to be executed is $APP_NAME";
+			;;
+			app-params)
+				echo "Give parameter using e.g. --app-params=\"<app-name>\"";
+				echo;
+				usage;
+			;;
+			app-params=*)
+				if [ x$EXEC_CONFIGURATION == x"interactive" ]; then
+					log "Parameter $OPTARG not available on interactive execution. Parameter ignored...";	
+				else
+					APP_PARAMS=`echo $OPTARG | @SED@ -e 's/app-params=//g'`;
+					log "Application parameters are ${APP_PARAMS}";
+				fi
+			;;
+			wall-clock-limit)
+                                echo "Give parameter using e.g. --wall-clock-limit=01:30:00 syntax";
+                                echo;
+                                usage;
+                        ;;
+                        wall-clock-limit=*)
+                                if [ x$EXEC_CONFIGURATION == x"interactive" ]; then
+                                        log "Parameter $OPTARG not available on interactive execution. Parameter ignored...";
+                                else
+                                        WALL_CLOCK=`echo $OPTARG | @SED@ -e 's/wall-clock-limit=//g'`;
+                                        log "Application wall_clock_limit set to $WALL_CLOCK.";
+                                fi
+			;;
+			output)
+				echo "Give parameter using e.g. --output=output.txt syntax";
+				echo;
+				usage;
+			;;
+			output=*)
+				if [ x$EXEC_CONFIGURATION == x"interactive" ]; then
+					log "Parameter $OPTARG not available on interactive execution. Parameter ignored...";	
+				else
+					STDOUT=`echo $OPTARG | @SED@ -e 's/output=//g'`;
+					log "Standar output set to $STDOUT."; 
+				fi
+			;;
+			error)
+				echo "Give parameter using e.g. --error=error.txt syntax";
+				echo;
+				usage;
+			;;
+			error=*)
+				if [ x$EXEC_CONFIGURATION == x"interactive" ]; then
+					log "Parameter $OPTARG not available on interactive execution. Parameter ignored...";	
+				else
+					STDERR=`echo $OPTARG | @SED@ -e 's/error=//g'`;
+					log "Standar error set to $STDERR."; 
+				fi
+			;;
+			restart)
+				echo "Give parameter using --restart={yes|no} syntax";
+				echo;
+				usage;
+			;;
+			restart=*)
+				if [ x$EXEC_CONFIGURATION == x"interactive" ]; then
+					log "Parameter $OPTARG not available on interactive execution. Parameter ignored...";	
+				else
+					RESTART=`echo $OPTARG | @SED@ -e 's/restart=//g'`;
+					if [ x$RESTART != x"yes" ] && [ x$RESTART != x"no" ]; then
+						echo "Give parameter using --restart=[yes|no] syntax";
+						echo;
+						usage;
+					fi
+					log "Restart set to '$RESTART'."; 
+				fi
+			;;
+			notify-user)
+				echo "Give parameter using --notify-user=<mail@to.user> syntax";
+				echo;
+				usage;
+			;;
+			notify-user=*)
+				if [ x$EXEC_CONFIGURATION == x"interactive" ]; then
+					log "Parameter $OPTARG available only in LoadLeveler executions. Parameter ignored..."
+				else
+					NOTIFY_USER=`echo $OPTARG | @SED@ -e 's/notify-user=//g'`;
+					log "Mail address to contact user set to $NOTIFY_USER.";
+				fi
+			;;
+			requirements)
+				echo "Give parameter using e.g. --requirements=(Feature == \"myrinet\") syntax";
+				echo;
+				usage;
+			;;
+			requirements=*)
+				if [ x$EXEC_CONFIGURATION != x"ll" ]; then
+					log "Parameter $OPTARG only available on LoadLeveler execution. Parameter ignored...";	
+				else
+					REQUIREMENTS="# @ $OPTARG";
+					log "Requirements of the execution are $REQUIREMENTS";
+				fi
+			;;
+			nodes)
+				echo "Give parameter using e.g. --nodes=5 syntax";
+				echo;
+				usage;
+			;;
+			nodes=*)
+				if [ x$EXEC_CONFIGURATION == x"interactive" ]; then
+					log "Parameter $OPTARG not available on interactive execution. Parameter ignored...";	
+				else 
+					if [ x$EXEC_CONFIGURATION != x"pbs" ]; then
+						log "Parameter $OPTARG only available on PBS execution. Parameter ignored...";
+					else
+						NODES=`echo $OPTARG | @SED@ -e 's/nodes=//g'`;
+						log "Number of nodes set to $NODES";####################################if no number return error
+					fi
+				fi
+			;;
+			total-tasks)
+				echo "Give parameter using e.g. --tasks=10 syntax";
+				echo;
+				usage;
+			;;
+			total-tasks=*)
+				if [ x$EXEC_CONFIGURATION == x"pbs" ]; then
+					log "Parameter $OPTARG only available on LoadLeveler execution. Parameter ignored...";	
+				else
+					TASKS=`echo $OPTARG | @SED@ -e 's/total-tasks=//g'`;
+					log "Number of total tasks set to $TASKS."; ####################### if no number return error
+				fi
+			;;
+			tasks-per-node)
+				echo "Give parameter using e.g. --tasks-per-node=2 syntax";
+				echo;
+				usage;
+			;;
+			tasks-per-node=*)
+				if [ x$EXEC_CONFIGURATION != x"pbs" ]; then
+					log "Parameter $OPTARG only available on PBS execution. Parameter ignored...";	
+				else
+					TASKS=`echo $OPTARG | @SED@ -e 's/tasks-per-node=//g'`;
+					log "Number of tasks per node set to $TASKS."; ####################### if no number return error
+				fi
+			;;
+                        cpus-per-task)
+                                echo "Give parameter using e.g. --cpus-per-task=2 syntax";
+                                echo;
+                                usage;
+                        ;;
+                        cpus-per-task=*)
+                                if [ x$EXEC_CONFIGURATION != x"mn" ]; then
+                                        log "Parameter $OPTARG only available on MN execution. Parameter ignored...";
+                                else
+                                        CPUSTASK=`echo $OPTARG | @SED@ -e 's/cpus-per-task=//g'`;
+                                        log "Number of cpus per task set to $CPUSTASK."; ####################### if no number return error
+                                fi
+                        ;;			
+			#queued workers parameters
+			worker-queue-class)
+				echo "Give parameter using e.g. --worker-queue-class=debug syntax";
+                                echo;
+                                usage;
+			;;
+			worker-queue-class=*)
+				if [ x$TASKS != x"" ]; then
+					warn "Parameters 'total-tasks' or 'tasks-per-node' incompatible with worker queued execution. Parameter ignored...";
+				fi
+				if [ x$NODES != x"" ]; then
+					warn "Parameter 'nodes' incompatible with worker queued execution. Parameter ignored...";
+				fi
+				QUEUE=`echo $OPTARG | @SED@ -e 's/worker-queue-class=//g'`;
+				log "Worker queue set to $QUEUE.";
+			;;
+			queued-workers-limit)
+                                echo "Give parameter using e.g. --queued-workers-limit=2 syntax";
+                                echo;
+                                usage;
+                        ;;
+                        queued-workers-limit=*)
+                                if [ x$QUEUE != x"none" ]; then
+					QWORKERS_LIMIT=`echo $OPTARG | @SED@ -e 's/queued-workers-limit=//g'`;
+                                	log "Queued workers limit set to $QWORKERS_LIMIT.";
+				else
+					log "Parameter $QWORKERS_LIMIT only available with worker-queue-class defined. Parameter ignored...";
+				fi
+                        ;;
+			worker-wc-limit)
+                                echo "Give parameter using e.g. --worker-wc-limit=01:30:00 syntax";
+                                echo;
+                                usage;
+                        ;;
+                        worker-wc-limit=*)
+                                if [ x$QUEUE != x"none" ]; then
+                                        WC_LIMIT=`echo $OPTARG | @SED@ -e 's/worker-wc-limit=//g'`;
+                                        log "Workers wall_clock_limit set to $WC_LIMIT.";
+                                else
+                                        log "Parameter worker-wc-limit $WC_LIMIT only available with worker-queue-class defined. Parameter ignored...";
+                                fi
+                                
+                        ;;
+			# End of worker queued parameters
+			# Workers parameters
+			classpath)
+                                echo "Specify classpath with the following syntax --classpath=/path/to/java/jars:..."
+                        ;;
+                        classpath=*)
+                                NEW_CLASSPATH=`echo $OPTARG | @SED@ -e 's/classpath=//g'`;
+                                log "User specified classpath $NEW_CLASSPATH";
+                        ;;
+                        with-tmpdir)
+                                echo "Specify temporary directories prefix with the following syntax --tmp-dir=/tmp/dir/"
+                        ;;
+                        with-tmpdir=*)
+                                NEW_TMPPREFIX=`echo "${OPTARG}/" | @SED@ -e 's/with-tmpdir=//g' -e 's/\/\//\//g'`;
+                                log "User specified tmp dir $NEW_TMPPREFIX";
+                        ;;
+			#End of worker parameters
+			#General Parameters
+			exec-environment)
+				echo "Give execution environment using e.g. --EXEC_ENV=GPFS syntax.";
+                                echo;
+                                usage;
+			;;
+			exec-environment=*)
+				EXEC_ENV=`echo $OPTARG | @SED@ -e 's/exec-environment=//g'`;
+                                log "Execution environment set as ${EXEC_ENV}"; 
+			;;
+                        with-debug)
+                                echo "Give debug option using e.g. --with-debug=10 syntax.";
+                                echo;
+                                usage;
+                        ;;
+                        with-debug=*)
+                                GSDEBUG=`echo $OPTARG | @SED@ -e 's/with-debug=//g'`;
+                                log "GS_DEBUG set as ${GSDEBUG}";
+                        ;;
+                        with-logs)
+                                echo "Give logs option using e.g. --with-logs=1 syntax.";
+                                echo;
+                                usage;
+                        ;;
+                        with-logs=*)
+                                GSLOGS=`echo $OPTARG | @SED@ -e 's/with-logs=//g'`;
+                                log "GS_LOGS set as ${GSLOGS}";
+                        ;;
+			project-file)
+                                echo "Give project file configuration using e.g. --project-file=applic.gsdeploy.";
+                                echo;
+                                usage;
+			;;
+                        project-file=*)
+                                PROJECT_FILE=`echo $OPTARG | @SED@ -e 's/project-file=//g'`;
+                                log "Project configuration file set as ${PROJET_FILE}";
+                        ;;
+			with-ft)
+                                echo "Give fault tolerance option using e.g. --with-ft=yes or no syntax.";
+                                echo;
+                                usage;
+                        ;;
+			with-ft=*)
+                                GS_FT=`echo $OPTARG | @SED@ -e 's/with-ft=//g'`;
+                                log "GS_FT set as ${GS_FT}";
+                        ;;
+			with-timeout-factor)
+                                echo "Give timeout factor option using e.g. --with-timeout-factor=1.5 syntax.";
+                                echo;
+                                usage;
+			;;
+                        with-timeout-factor=*)
+                                GS_FT_TIMEOUT=`echo $OPTARG | @SED@ -e 's/with-timeout-factor=//g'`;
+                                log "GS_FT_TIMEOUT set as ${GS_FT_TIMEOUT}";
+                        ;;
+			with-resubmit-factor)
+                                echo "Give resubmit option using e.g. --with-resubmit-factor=2.";
+                                echo;
+                                usage;
+                        ;;
+                        with-resubmit-factor=*)
+                                GS_FT_RESUBMIT=`echo $OPTARG | @SED@ -e 's/with-resubmit-factor=//g'`;
+                                log "GS_FT_RESUBMIT set as ${GS_FT_RESUBMIT}";
+                        ;;
+			with-machine-retries)
+                                echo "Give machine retries option using e.g. --with-machine-retries=2.";
+                                echo;
+                                usage;
+                        ;;
+                        with-machine-retries=*)
+                                GS_MRETRIES=`echo $OPTARG | @SED@ -e 's/with-machine-retries=//g'`;
+                                log "GS_MRETRIES set as ${GS_MRETRIES}";
+                        ;;
+			java-flags)
+                                echo "Specify java flags with the following syntax --java-flags=\"-Xms32m -Xmx128\"";
+                        ;;
+                        java-flags=*)
+                                NEW_JAVA_FLAGS=`echo $OPTARG | @SED@ -e 's/java-flags=//g'`;
+                                log "User specified java flags $NEW_JAVA_FLAGS";
+			;;
+			perl-flags)
+                                echo "Specify perl flags with the following syntax --perl-flags=\"-perl -flags\"";
+                        ;;
+                        perl-flags=*)
+                                NEW_PERL_FLAGS=`echo $OPTARG | @SED@ -e 's/perl-flags=//g'`;
+                                log "User specified perl flags $NEW_PERL_FLAGS";
+                        ;;
+			rsh)
+				echo "Give remote shell command using e.g. --rsh=ssh syntax.";
+				echo;
+				usage;
+			;;
+			rsh=*)
+				RSH=`echo $OPTARG | @SED@ -e 's/rsh=//g'`;
+				log "Default remote shell command ssh, overriden by $RSH";
+			;;
+			rsh-flags)
+				echo "Give remote shell command flags using e.g. --rsh-flags=\"-q -o StrictHostKeyChecking=no\"";
+				echo;
+				usage;
+			;;
+			rsh-flags=*)
+				RSH_FLAGS=`echo $OPTARG | @SED@ -e 's/rsh-flags=//g'`;
+				log "Default remote shell command flags overriden by $RSH_FLAGS";
+			;;
+			rcp)
+				echo "Give remote copy command using e.g. --rcp=scp syntax";
+				echo;
+				usage;
+			;;
+			rcp=*)
+				RCP=`echo $OPTARG | @SED@ -e 's/rcp=//g'`;
+				log "Default remote copy command scp, overriden by $RCP";
+			;;
+			rcp-flags)
+				echo "Give remote copy command flags using e.g. --rsh-flags=\"-q -o StrictHostKeyChecking=no\"";
+				echo;
+				usage;
+			;;
+			rcp-flags=*)
+				RCP_FLAGS=`echo $OPTARG | @SED@ -e 's/rsh-flags=//g'`;
+				log "Default remote shell command flags overriden by $RCP_FLAGS";
+			;;
+			max-time-before-retry)
+				echo "Give maximum time before retrying connection using the followin syntax --max-time-before-retry=10";
+				echo;
+				usage;
+			;;
+			max-time-before-retry=*)
+				MAX_TIME_BEFORE_RETRY=`echo $OPTARG | @SED@ -e 's/max-time-before-retry=//g'`;
+				log "10 seconds of default waiting time before retrying connection to a host overriden by $MAX_TIME_BEFORE_RETRY";
+			;;
+			max-retries)
+				echo "Give maximum number of retries before quit trying using the following syntax --max-retires=5";
+				echo;
+				usage;
+			;;
+			max-retries=*)
+				MAX_RETRIES=`echo $OPTARG | @SED@ -e 's/max-retries=//g'`;
+				log "5 retries before quit trying connect to a host overriden by $MAX_RETRIES";
+			;;
+			help)
+				usage;
+				exit 0;
+			;;
+			*) 
+				echo "An unexpected double-hyphen option was encountered.";
+				echo;
+				usage;
+			;;
+			esac
+	;;			
+	[?])
+		usage;
+	;;
+	esac
+done
+
+if [ x"@MODE@" != x"WORKER" ]; then
+#check for required parameters
+  if [ x"$MASTER_DIR" == x"" ]; then
+	if [ x"$WORKER_DIR" == x"" ]; then
+        	MASTER_DIR=$PWD;
+                WORKER_DIR=$PWD;
+                if [ x"$WORKING_DIR" == x"" ]; then
+                        WORKING_DIR=$PWD;
+                fi
+        else
+                MASTER_DIR=$PWD;
+        fi
+  fi
+  if [ x"$WORKER_DIR" == x"" ]; then
+	if [ x"$MASTER_DIR" == x"" ]; then
+                MASTER_DIR=$PWD;
+                WORKER_DIR=$PWD;
+        	if [ x"$WORKING_DIR" == x"" ]; then
+                        WORKING_DIR=$PWD;
+                fi
+        else
+                undefined "Worker directory must be defined if master-dir is defined";
+        fi
+  fi
+  if [ x"$WORKING_DIR" == x"" ]; then
+        if [ x"$WORKER_DIR" != x"" ]; then
+                WORKING_DIR=$WORKER_DIR;
+        else
+		if [ x"$MASTER_DIR" != x"" ]; then
+                        undefined "Worker working directory must be defined";
+                else
+                        MASTER_DIR=$PWD;
+                        WORKER_DIR=$PWD;
+                        WORKING_DIR=$PWD;
+                fi
+        fi
+  fi
+  if [ $EXEC_CONFIGURATION == "interactive" ]; then
+	# check for the required parameters
+	
+	if [ x"$QUEUE" != x"none" ]; then
+                if [ x"$QWORKERS_LIMIT" == x"" ]; then
+                        undefined "Limit of enqueued workers must be defined";
+                fi
+        else
+                QWORKERS_LIMIT=4;
+        fi
+	if [ x"$APP_NAME" == x"" ]; then
+		undefined "Application name must be defined";
+	fi
+	# if one of the required parameters not given, exit;
+	if [ x"$UNDEFINED" != x"" ]; then
+		print_undefined;
+	fi
+  else
+	# check for the required parameters
+	if [ x"$NODES" == x"" ]; then 
+		if [ $EXEC_CONFIGURATION == "pbs" ]; then
+			undefined "Number of nodes must be defined";
+		fi
+	fi
+	if [ x"$TASKS" == x"" ]; then
+		if [ x"$QUEUE" == x"none" ]; then
+			undefined "Number of tasks must be defined";
+		elif [ x"$QWORKERS_LIMIT" == x"" ]; then
+			undefined "Number queued_workers_limit must be defined";
+		fi
+	fi
+	
+	if [ x"$APP_NAME" == x"" ]; then
+		undefined "Application name must be defined";
+	fi
+
+	if [ x"$QUEUE" != x"none" ]; then
+		if [ x"$QWORKERS_LIMIT" == x"" ]; then
+			undefined "Limit of enqueued workers must be defined";
+		fi
+	else
+		QWORKERS_LIMIT=4;	
+	fi
+    if [ x"@EXEC_ENV@" == x"MN_SCRATCH" ]; then
+        if [ x"$WALL_CLOCK" == x"" ]; then
+                if [ $EXEC_CONFIGURATION == "mn" ]; then
+                        undefined "Application wall clock limit must be defined";
+                fi
+        fi
+    fi
+	if [ x"$GS_FT_TIMEOUT" != x"" ] || [ x"$GS_FT_RESUBMIT" != x"" ] ; then
+		if [ x"$GS_FT" != x"yes" ]; then
+			undefined "with-ft flags must be set to yes"; 
+		fi
+	fi
+	# if one of the required parameters not given, exit;
+	if [ x"$UNDEFINED" != x"" ]; then
+		print_undefined;
+	fi
+
+	# warn user for the default values the script has
+	if [ x"$JOB_NAME" == x"" ]; then
+		warn "Job name not specified, \"$APP_NAME\" given by default...";
+	fi
+	if [ x"$STDOUT" == x"" ]; then
+		warn "Stdout file not specified, ${APP_NAME}.<schedd_name>.<job_id>.<step_id>.out given by default...";
+	fi
+	if [ x"$STDERR" == x"" ]; then
+		warn "Stderr file not specified, ${APP_NAME}.<schedd_name>.<job_id>.<step_id>.out given by default...";
+	fi
+	#if [ x"$RESTART" == x"" ]; then
+	#	warn "Value for the restart parameter not given, \"restart=no\" used by default...";
+	#fi
+	#if [ x"$CLASS" == x"" ]; then
+	#	warn "Queue class not specified, \"default\" class is used...";
+	#fi
+	#if [ x"$NOTIFY_USER" == x"" ]; then
+	#	warn "User to be notified not specified, \"`id -nu`@localhost\" is used...";
+	#fi
+  fi
+fi
+if [ $verbose -eq 1 ]; then
+	print_verbose;
+fi
+
+if [ $warnings -eq 1 ]; then
+	print_warnings;
+fi
+if [ x"@MODE@" != x"WORKER" ]; then
+  build_execute_ssh_script
+  if [ x"@EXEC_ENV@" == x"MN_SCRATCH" ]; then
+        if [ $EXEC_CONFIGURATION == "ll" ]; then
+                if [ x"$QUEUE" == x"none" ]; then
+                        build_queue_script LoadLeveler none
+                else
+                        build_queue script LoadLeveler queued
+                fi
+
+        elif [ $EXEC_CONFIGURATION == "mn" ]; then
+                if [ x"$QUEUE" == x"none" ]; then
+                        build_queue_script slurm_moab none
+                else
+                        build_queue_script slurm_moab queued
+                fi
+	elif [ $EXEC_CONFIGURATION == "pbs" ]; then
+                if [ x"$QUEUE" == x"none" ]; then
+                        build_queue_script PBS none
+                else
+                        build_queue_script PBS queued
+                fi
+
+        else
+                build_project_gsdeploy
+        fi
+  else
+        if [ $EXEC_CONFIGURATION == "ll" ]; then
+                if [ x"$QUEUE" == x"none" ]; then
+                        build_queue_script LoadLeveler none
+                else
+                        build_queue_script LoadLeveler queued
+                fi
+
+        elif [ $EXEC_CONFIGURATION == "pbs" ]; then
+                if [ x"$QUEUE" == x"none" ]; then
+                        build_queue_script PBS none
+                else
+                        build_queue_script PBS queued
+                fi
+        else
+                build_project_gsdeploy
+        fi
+  fi
+fi
+if [ x"@MODE@" != x"MASTER" ]; then
+	build_config_worker 
+fi
+

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE definition PUBLIC "-//objectweb.org//DTD Fractal ADL 2.0//EN" "classpath://org/objectweb/proactive/core/component/adl/xml/proactive.dtd">
+
+<definition extends="integratedtoolkit.filemanagerType" name="integratedtoolkit.filemanager">
+  <component definition="integratedtoolkit.filetransfermanager" name="File Transfer Manager"/>
+  <component definition="integratedtoolkit.fileinfoprovider" name="File Information Provider"/>
+  <binding client="this.FileTransfer" server="File Transfer Manager.FileTransfer"/>
+  <binding client="this.FileAccess" server="File Information Provider.FileAccess"/>
+  <binding client="this.FileInformation" server="File Information Provider.FileInformation"/>
+  <binding client="this.Preparation" server="File Information Provider.Preparation"/>
+  <binding client="this.FileInfoUpdate" server="File Transfer Manager.FileInfoUpdate"/>
+  <binding client="this.Preparation" server="File Transfer Manager.Preparation"/>
+  <binding client="File Information Provider.NewVersion" server="File Transfer Manager.FileInfoUpdate"/>
+  <binding client="File Information Provider.ErrorReport" server="this.ErrorReport"/>
+  <binding client="File Information Provider.SchedFIUpdate" server="this.SchedFIUpdate"/>
+  <binding client="File Transfer Manager.SchedFTMUpdate" server="this.SchedFTMUpdate"/>
+  <binding client="File Transfer Manager.TransferStatus" server="this.TransferStatus"/>
+  <binding client="File Transfer Manager.FileInformation" server="File Information Provider.FileInformation"/>
+  <binding client="File Transfer Manager.NewJob" server="this.NewJob"/>
+  <binding client="File Transfer Manager.AppTransferEvents" server="this.AppFileEvents"/>
+  <binding client="File Transfer Manager.ErrorReport" server="this.ErrorReport"/>
+  <controller desc="/control/IT-composite-controller-config.xml"/>
+  <virtual-node cardinality="single" name="Master"/>
+</definition>

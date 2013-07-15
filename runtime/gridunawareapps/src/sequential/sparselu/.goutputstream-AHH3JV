@@ -1,0 +1,58 @@
+
+package sequential.sparselu;
+
+import integratedtoolkit.types.annotations.MethodConstraints;
+import integratedtoolkit.types.annotations.ClassName;
+import integratedtoolkit.types.annotations.ParamMetadata;
+import integratedtoolkit.types.annotations.ParamMetadata.Direction;
+import integratedtoolkit.types.annotations.ParamMetadata.Type;
+
+
+public interface SparseLUItf {
+
+	@MethodConstraints(processorSpeed = 1.8f, processorCPUCount = 2, operatingSystemType = "Linux", processorArchitecture = "Intel")
+	@ClassName("worker.sparselu.SparseLUImpl")
+	void lu0(
+		@ParamMetadata(type = Type.FILE, direction = Direction.INOUT)
+		String diag
+	);
+	
+	@MethodConstraints(processorSpeed = 1.8f, processorCPUCount = 2, memoryPhysicalSize = 0.5f, operatingSystemType = "Linux", processorArchitecture = "IA32")
+	@ClassName("worker.sparselu.SparseLUImpl")
+    void bdiv(
+    	@ParamMetadata(type = Type.FILE, direction = Direction.IN)
+    	String diag,
+    	@ParamMetadata(type = Type.FILE, direction = Direction.INOUT)
+    	String row
+    );
+
+	@MethodConstraints(processorSpeed = 1.8f, processorCPUCount = 1, memoryPhysicalSize = 1.0f, operatingSystemType = "Linux", processorArchitecture = "IA32")
+	@ClassName("worker.sparselu.SparseLUImpl")
+    void bmod(
+    	@ParamMetadata(type = Type.FILE, direction = Direction.IN)
+    	String row,
+    	@ParamMetadata(type = Type.FILE, direction = Direction.IN)
+    	String col,
+    	@ParamMetadata(type = Type.FILE, direction = Direction.INOUT)
+    	String inner
+    );
+	
+	@MethodConstraints(processorSpeed = 1.8f, processorCPUCount = 1, operatingSystemType = "Linux", processorArchitecture = "IA32")
+	@ClassName("worker.sparselu.SparseLUImpl")
+    void fwd(
+    	@ParamMetadata(type = Type.FILE, direction = Direction.IN)
+		String a,
+		@ParamMetadata(type = Type.FILE, direction = Direction.INOUT)
+		String b
+	);
+
+	
+	@MethodConstraints(processorSpeed = 1.8f, processorCPUCount = 1, operatingSystemType = "Linux", processorArchitecture = "IA32")
+	@ClassName("worker.sparselu.SparseLUImpl")
+    void buida(
+    	@ParamMetadata(type = Type.FILE, direction = Direction.IN)
+		String a,
+		@ParamMetadata(type = Type.FILE, direction = Direction.INOUT)
+		String b
+	); 
+}

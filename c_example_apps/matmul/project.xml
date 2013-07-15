@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><Project>
+
+    <Worker Name="bscgrid02.bsc.es">
+        <InstallDir>/home/username/app/worker/</InstallDir>
+        <WorkingDir>/home/username/app/worker/files/</WorkingDir>
+        <User>username</User>
+    </Worker>
+
+    <Worker Name="bscgrid03.bsc.es">
+        <InstallDir>/home/username/app/worker/</InstallDir>
+        <WorkingDir>/home/username/app/worker/files/</WorkingDir>
+        <User>username</User>
+    </Worker>
+   
+    <Worker Name="bscgrid04.bsc.es">
+        <InstallDir>/home/username/app/worker/</InstallDir>
+        <WorkingDir>/home/username/app/worker/files/</WorkingDir>
+        <User>username</User>
+    </Worker>
+
+    <Worker Name="bscgrid06.bsc.es">
+        <InstallDir>/home/username/app/worker/</InstallDir>
+        <WorkingDir>/home/username/app/worker/files/</WorkingDir>
+        <User>username</User>
+    </Worker>
+
+   <!-- <MaxRetries>2</MaxRetries> -->
+</Project>
+

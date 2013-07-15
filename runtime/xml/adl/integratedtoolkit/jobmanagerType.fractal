@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE definition PUBLIC "-//objectweb.org//DTD Fractal ADL 2.0//EN" "classpath://org/objectweb/proactive/core/component/adl/xml/proactive.dtd">
+
+<definition name="integratedtoolkit.jobmanagerType">
+  <interface signature="integratedtoolkit.components.JobCreation" role="server" name="JobCreation"/>
+  <interface signature="integratedtoolkit.components.TransferStatus" role="server" name="TransferStatus"/>
+  <interface signature="integratedtoolkit.components.Preparation" role="server" name="Preparation"/>
+  <interface signature="integratedtoolkit.control.ITAttributeController" role="server" name="attribute-controller"/>
+  <interface signature="integratedtoolkit.components.JobStatus" role="client" name="JobStatus"/>
+  <interface signature="integratedtoolkit.components.Schedule" role="client" name="Reschedule"/>
+  <interface signature="integratedtoolkit.components.FileTransfer" role="client" name="NewTransfer"/>
+  <interface signature="integratedtoolkit.components.FileInfoUpdate" role="client" name="NewVersion"/>
+  <interface signature="integratedtoolkit.components.FileInformation" role="client" name="NewLocation"/>
+  <interface signature="integratedtoolkit.interfaces.ITError" role="client" name="ErrorReport" contingency="optional"/>
+</definition>

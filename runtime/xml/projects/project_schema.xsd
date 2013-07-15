@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+<xsd:element name="Project" type="projectType"/>
+	
+<xsd:complexType name="projectType">
+
+	<xsd:sequence>
+		<xsd:element name="RUS" type="rusType" minOccurs="0"/>
+		<xsd:element name="Worker" type="workerType" maxOccurs="unbounded"/>
+		<xsd:element name="DataNode" type="datanodeType" minOccurs="0"/>
+		<xsd:element name="MaxRetries" type="xsd:nonNegativeInteger" minOccurs="0"/>
+		<xsd:element name="Locations" type="locationsType" minOccurs="0" maxOccurs="1"/>
+	</xsd:sequence>
+<!--	<xsd:attribute name="AppName" type="xsd:string"/>
+	<xsd:attribute name="AppWorkingDir" type="xsd:string"/>
+	<xsd:attribute name="AppHost" type="xsd:string"/> -->
+</xsd:complexType>
+
+<xsd:complexType name="workerType">
+	<xsd:sequence>
+		<xsd:element name="InstallDir" type="xsd:string"/>
+		<xsd:element name="WorkingDir" type="xsd:string"/>
+		<xsd:element name="User" type="xsd:string" minOccurs="0"/>
+		<xsd:element name="LimitOfTasks" type="xsd:nonNegativeInteger" minOccurs="0"/>
+		<xsd:element name="LimitOfJobs" type="xsd:nonNegativeInteger" minOccurs="0"/>
+		<xsd:element name="MaxClusterSize" type="xsd:nonNegativeInteger" minOccurs="0"/>
+	</xsd:sequence>
+	<xsd:attribute name="Name" type="xsd:string" use="required"/>
+</xsd:complexType>
+
+<xsd:complexType name="rusType">
+	<xsd:attribute name="Name" type="xsd:string" use="required"/>
+	<xsd:attribute name="Port" type="xsd:int" use="required"/>
+	<xsd:attribute name="Path" type="xsd:string" use="required"/>
+</xsd:complexType>
+
+<xsd:complexType name="datanodeType">
+         <xsd:sequence>
+	 <xsd:element name="User" type="xsd:string"/>
+	 </xsd:sequence>
+<xsd:attribute name="Name" type="xsd:string" use="required"/>
+</xsd:complexType>
+
+<xsd:complexType name="fileType">
+	<xsd:sequence>
+	<xsd:element name="Path" type="xsd:string" minOccurs="1" maxOccurs="unbounded"/>
+	</xsd:sequence>
+        <xsd:attribute name="Name" type="xsd:string" use="required"/>
+	<xsd:attribute name="LastModDate" type="xsd:nonNegativeInteger" use="required"/>
+</xsd:complexType>
+
+<xsd:complexType name="locationsType">
+ 	 <xsd:sequence> 
+         <xsd:element name="File" type="fileType" minOccurs="1" maxOccurs="unbounded"/>
+	 </xsd:sequence>
+</xsd:complexType>
+
+</xsd:schema>

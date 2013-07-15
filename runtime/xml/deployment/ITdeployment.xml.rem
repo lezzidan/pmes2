@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ProActiveDescriptor xmlns="urn:proactive:deployment:3.3"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:proactive:deployment:3.3 deployment.xsd">
+	<variables>
+		<descriptorVariable name="IT_HOME"
+                        value="/home/etejedor/IT" />
+                <descriptorVariable name="PROACTIVE_HOME"
+                        value="/home/etejedor/PROACTIVE" />
+		<descriptorVariable name="GAT_LOCATION"
+                        value="/home/etejedor/JAVA_GAT/1.6/1.6-Rob-Nou" />	
+                <descriptorVariable name="JAVA_HOME"
+                        value="/home/etejedor/ibm-java2-ppc64-50" />
+                <!-- Path of the remote JVM , CHANGE ME!!!! -->
+        </variables>
+	<componentDefinition>
+		<virtualNodesDefinition>
+			<virtualNode name="TaskJob"/>
+                        <virtualNode name="File"/>
+                </virtualNodesDefinition>
+	</componentDefinition>
+	<deployment>
+           	<!-- <register virtualNode="TaskJob" protocol="rmi"/>
+		<register virtualNode="File" protocol="rmi"/> -->
+           	<mapping>
+			<map virtualNode="TaskJob">
+				<jvmSet>
+					<vmName value="jvmTJ"/>
+				</jvmSet>
+			</map>
+			<map virtualNode="File">
+                                <jvmSet>
+                                        <vmName value="jvmF"/>
+                                </jvmSet>
+                        </map>
+		</mapping>
+		<jvms>
+			<jvm name="jvmTJ">
+				<creation>
+					<processReference refid="localProcessTJ"/>
+				</creation>
+			</jvm>
+			<jvm name="jvmF">
+                                <creation>
+                                        <processReference refid="sshProcessF"/>
+                                </creation>
+                        </jvm>
+		</jvms>
+	</deployment>
+	<infrastructure>
+		<processes>
+			<processDefinition id="localProcessTJ">
+                                <jvmProcess class="org.objectweb.proactive.core.process.JVMNodeProcess"/>
+                        </processDefinition>
+
+			<processDefinition id="jvmProcess">
+				<jvmProcess class="org.objectweb.proactive.core.process.JVMNodeProcess">
+                                        <classpath>
+						<absolutePath value="${PROACTIVE_HOME}/classes"/>
+                                                <absolutePath value="${PROACTIVE_HOME}/lib/javassist.jar"/>
+                                                <absolutePath value="${PROACTIVE_HOME}/lib/bouncycastle.jar"/>
+                                                <absolutePath value="${PROACTIVE_HOME}/lib/components/fractal.jar"/>
+                                                <absolutePath value="${PROACTIVE_HOME}/lib/log4j.jar"/>
+                                                <absolutePath value="${PROACTIVE_HOME}/lib/xercesImpl.jar"/>
+                                                <!-- <absolutePath value="${PROACTIVE_HOME}/lib/jsch.jar"/> -->
+                                                <absolutePath value="${IT_HOME}/integratedtoolkit/lib/IT.jar"/>
+						<absolutePath value="${IT_HOME}/gridunawareapps/lib/guapp.jar"/>
+						<absolutePath value="${GAT_LOCATION}/engine/lib/GAT.jar"/>
+						<absolutePath value="${GAT_LOCATION}/engine/lib/colobus.jar"/>
+						<absolutePath value="${GAT_LOCATION}/engine/lib/ibis-util-1.4.jar"/>
+						<absolutePath value="${GAT_LOCATION}/adaptors/external/jsch-0.1.29.jar"/>
+                                        </classpath>
+                                        <javaPath>
+                                                <absolutePath value="${JAVA_HOME}/bin/java"/>
+                                        </javaPath>
+                                        <policyFile>
+                                                <absolutePath value="${PROACTIVE_HOME}/scripts/proactive.java.policy"/>
+                                        </policyFile>
+                                        <log4jpropertiesFile>
+                                                <absolutePath value="${PROACTIVE_HOME}/compile/proactive-log4j"/>
+                                        </log4jpropertiesFile>
+                                        <jvmParameters>
+                                                <parameter value="-Dproactive.communication.protocol=rmissh"/>
+                                        </jvmParameters>
+                                </jvmProcess>
+			</processDefinition>
+
+			<processDefinition id="sshProcessF">
+                                <sshProcess class="org.objectweb.proactive.core.process.ssh.SSHProcess" hostname="b3" username="etejedor">
+                                        <processReference refid="jvmProcess"/>
+                                </sshProcess>
+                        </processDefinition>
+
+		</processes>
+	</infrastructure>
+</ProActiveDescriptor>

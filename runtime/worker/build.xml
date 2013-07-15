@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+
+<project name="IT" default="install" basedir=".">
+
+    <description>
+        IT worker build file
+    </description>
+
+    <property environment="env"/>
+
+    <property name="files" location="files"/>
+    <property name="exec_script" value="worker.sh"/>
+    <property name="clean_script" value="clean.sh"/>
+
+    <target name="install" depends="scripts,filedir" description="Worker preparation"/>
+
+    <target name="scripts" description="Build the worker scripts">
+        <echo file="${exec_script}">
+#!/bin/sh
+
+working_dir=$1
+debug=$2
+app=$3
+method=$4
+nparams=$5
+shift 5 
+params=$*
+
+JAVA_HOME=${env.JAVA_HOME}
+
+JAVA_HOME=${JAVA_HOME-NULL};
+if [ "$JAVA_HOME" = "NULL" ]
+then
+echo 1>&amp;2
+echo 1>&amp;2 "Enviroment variable JAVA_HOME not set"
+echo 1>&amp;2 "Please set it and rebuild this worker script"
+exit 7
+fi
+
+#echo ----- WORKER: Executing application $app, method $method, $nparams parameters: $params, at host ${env.HOST} -----
+
+cd ${working_dir}
+${env.JAVA_HOME}/bin/java -classpath `dirname $0` Worker $debug $app $method $nparams $params
+
+if [ $? -eq 0 ]
+then
+exit 0
+else
+echo 1>&amp;2 "Application method failed"
+exit 7
+fi
+        </echo>
+
+	<echo file="${clean_script}">
+#!/bin/sh
+
+rm -rf $1/*.IT
+        </echo>
+
+        <chmod file="${exec_script}" perm="u+x"/>
+	<chmod file="${clean_script}" perm="u+x"/>
+    </target>
+
+   <target name="filedir" description="Create the file directory">
+	<mkdir dir="${files}"/>
+   </target>
+
+</project>
