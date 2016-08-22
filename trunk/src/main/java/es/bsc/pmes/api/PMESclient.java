@@ -56,7 +56,7 @@ public class PMESclient {
      * @param jobIds
      * @return
      */
-    public ArrayList<String> terminationMessages(ArrayList<String> jobIds){
+    public ArrayList<String> terminateActivity(ArrayList<String> jobIds){
         return null;
     }
 

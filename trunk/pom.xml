@@ -34,8 +34,8 @@
         <log4j.version>2.6.1</log4j.version>
 
         <!-- Maven Plugins -->
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.7</maven.compiler.source>
+        <maven.compiler.target>1.7</maven.compiler.target>
         <maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
         <maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
         <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
@@ -48,16 +48,30 @@
 
     <!-- DEPENCENCIES -->
     <dependencies>
-        <!--<dependency>
-            <groupId>es.bsc</groupId>
-            <artifactId>compss-connectors-commons</artifactId>
-            <version>1.0</version>
-        </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>1.7.1</version>
-        </dependency>-->
+        </dependency>
+        <dependency>
+            <groupId>es.bsc</groupId>
+            <artifactId>conn.rocci</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>/home/bscuser/subversion/projects/conn/trunk/rocci/target/compss-connectors-rocci.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>es.bsc</groupId>
+            <artifactId>conn.commons</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>/home/bscuser/subversion/projects/conn/trunk/commons/target/compss-connectors-commons.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
     </dependencies>
 
     <!-- BUILD-->
@@ -99,9 +113,9 @@
                     <archive>
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            <!--<addClasspath>true</addClasspath>
+                            <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>es.bsc.conn.rocci.test</mainClass>-->
+                            <mainClass>es.bsc.pmes.test.PMESserviceTest</mainClass>
                         </manifest>
                         <manifestEntries>
                             <Implementation-Build>$\{buildNumber}</Implementation-Build>
