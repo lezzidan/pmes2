@@ -13,10 +13,9 @@ import java.util.HashMap;
  * Created by scorella on 8/22/16.
  */
 public class PMESserviceTest {
+    public static PMESservice pmesService = new PMESservice();
 
-    public static void main(String[] args){
-        System.out.println("Test");
-        PMESservice pmesService = new PMESservice();
+    public static void testCreateActivity(){
         ArrayList<JobDefinition> jobDefinitions = new ArrayList<>();
 
         App app = new App("sleep");
@@ -42,6 +41,18 @@ public class PMESserviceTest {
 
         jobDefinitions.add(job);
         pmesService.createActivity(jobDefinitions);
+    }
+
+    public static void testJobManager(){
+
+    }
+
+    public static void main(String[] args){
+        System.out.println("Testing app");
+
+        testCreateActivity();
+
+
     }
 
 }

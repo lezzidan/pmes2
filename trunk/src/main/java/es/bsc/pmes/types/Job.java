@@ -13,6 +13,7 @@ public class Job {
     private User user;
     private ArrayList<String> dataIn;
     private ArrayList<String> dataOut;
+    private String cmd;
 
     public Job() {
         this.id = UUID.randomUUID().toString();
@@ -21,6 +22,7 @@ public class Job {
         this.user = null;
         this.dataIn = null;
         this.dataOut = null;
+        this.cmd = "";
     }
 
     public void run(){
@@ -74,5 +76,13 @@ public class Job {
 
     public void setDataOut(ArrayList<String> dataOut) {
         this.dataOut = dataOut;
+    }
+
+    public String getCmd() {
+        return cmd;
+    }
+
+    public void setCmd(String cmd) {
+        this.cmd = cmd;
     }
 }

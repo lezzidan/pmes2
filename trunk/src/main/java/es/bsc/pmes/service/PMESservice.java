@@ -43,34 +43,37 @@ public class PMESservice {
     public ArrayList<String> createActivity(ArrayList<JobDefinition> jobDefinitions) {
         // TODO: createActivity
         for (JobDefinition jobDef:jobDefinitions) {
-            // Create new job
+            /** Create new job */
             logger.trace("Creating new Job");
             Job newJob = new Job();
             newJob.setUser(jobDef.getUser());
 
-            // configure
+            /** configure */
             logger.trace("Configuring Job " + newJob.getId());
+            // Configuring Hardware
             HardwareDescription hd = new HardwareDescription();
             hd.setMemorySize(jobDef.getMemory());
             hd.setTotalComputingUnits(jobDef.getCores()*jobDef.getNumNodes());
 
+            // Configure software
             SoftwareDescription sd = new SoftwareDescription();
             sd.setImageType(jobDef.getImg().getImageType());
             sd.setImageName(jobDef.getImg().getImageName());
 
+            // Configure properties
             HashMap<String, String> prop = this.im.configureResource(jobDef);
 
-            // create resource
+            /** create resource */
             logger.trace("Creating new Resource");
             String Id = this.im.createResource(hd, sd, prop);
             newJob.setResource(this.im.getActiveResources().get(Id));
 
+            /** run */
+            this.jm.enqueueJob(newJob);
 
-            // run
+            /** loop getActivityStatus */
 
-            // loop getActivityStatus
-
-            // destroy resource
+            /** destroy resource */
             this.im.destroyResource(Id);
         }
         return null;
