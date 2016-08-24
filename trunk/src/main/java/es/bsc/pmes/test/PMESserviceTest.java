@@ -16,6 +16,7 @@ public class PMESserviceTest {
     public static PMESservice pmesService = new PMESservice();
 
     public static void testCreateActivity(){
+        // java -classpath /home/user/compss-connectors-commons.jar:/home/user/compss-connectors-rocci.jar:/home/user/pmes.jar es.bsc.pmes.test.PMESserviceTest
         ArrayList<JobDefinition> jobDefinitions = new ArrayList<>();
 
         App app = new App("sleep");
@@ -33,18 +34,14 @@ public class PMESserviceTest {
         job.setUser(usr);
         job.setInputPath("");
         job.setOutputPath("");
-        job.setWallTime(-1);
-        job.setNumNodes(-1);
-        job.setCores(-1);
-        job.setMemory(-1);
+        job.setWallTime(10);
+        job.setNumNodes(1);
+        job.setCores(16);
+        job.setMemory(1);
         job.setCompss_flags(null);
 
         jobDefinitions.add(job);
         pmesService.createActivity(jobDefinitions);
-    }
-
-    public static void testJobManager(){
-
     }
 
     public static void main(String[] args){

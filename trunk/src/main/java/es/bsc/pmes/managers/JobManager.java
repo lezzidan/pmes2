@@ -3,24 +3,28 @@ package es.bsc.pmes.managers;
 import es.bsc.pmes.types.Job;
 
 import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Queue;
 
 /**
  * Created by scorella on 8/5/16.
+ * Singleton class
  */
 public class JobManager{
+    private static JobManager jobManager = new JobManager(InfrastructureManager.getInfrastructureManager());
     private HashMap<String, Job> jobs;
-    private InfraestructureManager im;
+    private InfrastructureManager im;
     private DataManager dm;
     private SchedulerThread scheduler;
 
-    public JobManager(InfraestructureManager im){
+    private JobManager(InfrastructureManager im){
         this.jobs = new HashMap<>();
         this.im = im;
-        this.dm = new DataManager();
-        this.scheduler = new SchedulerThread();
+        this.dm = DataManager.getDataManager();
+        this.scheduler = SchedulerThread.getScheduler();
+        startScheduler();
+    }
 
+    public static JobManager getJobManager(){
+        return jobManager;
     }
 
     public void enqueueJob(Job newJob){
@@ -54,11 +58,11 @@ public class JobManager{
         this.jobs = jobs;
     }
 
-    public InfraestructureManager getIm() {
+    public InfrastructureManager getIm() {
         return im;
     }
 
-    public void setIm(InfraestructureManager im) {
+    public void setIm(InfrastructureManager im) {
         this.im = im;
     }
 

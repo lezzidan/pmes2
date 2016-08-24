@@ -16,43 +16,30 @@ import java.util.Objects;
 
 /**
  * Created by scorella on 8/5/16.
+ * Singleton class
  */
 
-public class InfraestructureManager {
+public class InfrastructureManager {
+    private static InfrastructureManager infrastructureManager = new InfrastructureManager();
     private ROCCI rocciClient;
     private HashMap<String, Resource> activeResources;
     private String provider;
 
-    private static final Logger logger = LogManager.getLogger(InfraestructureManager.class.getName());
+    private static final Logger logger = LogManager.getLogger(InfrastructureManager.class.getName());
 
-    public InfraestructureManager() {
+    private InfrastructureManager() {
         this.activeResources = new HashMap<>();
-        this.provider = "one";
+        this.provider = "one"; //openNebula by default
     }
 
-    public InfraestructureManager(String provider) {
-        this.activeResources = new HashMap<>();
-        this.provider = provider;
+    public static InfrastructureManager getInfrastructureManager(){
+        return infrastructureManager;
     }
 
     public String createResource(HardwareDescription hd, SoftwareDescription sd, HashMap<String, String> prop){
         // TODO: revisar tipo salida
         logger.trace("Creating Resource");
         if (Objects.equals("one", this.provider)) {
-            /*HardwareDescription hd = new HardwareDescription();
-            SoftwareDescription sd = new SoftwareDescription();
-            sd.setImageName("uuid_pmestestingocci_68");
-            sd.setImageType("small");
-
-            prop.put("Server", "https://rocci-server.bsc.es:11443");
-            prop.put("auth", "x509");
-            prop.put("password", "~/certs/test/scorella_test.key");
-            prop.put("ca-path", "/etc/grid-security/certificates/");
-            prop.put("user-cred", "~/certs/test/scorella_test.pem");
-            prop.put("owner", "scorella");
-            prop.put("jobname", "test");
-            prop.put("context", "user_data=\"file://$PWD/tmpfedcloud.login\"");*/
-
             try {
                 rocciClient = new ROCCI(prop);
                 VirtualResource vr = (VirtualResource) rocciClient.create(hd, sd, prop);
@@ -68,14 +55,14 @@ public class InfraestructureManager {
 
             } catch (ConnectorException e) {
                 logger.error("Error creating resource");
-                e.printStackTrace();
+                //e.printStackTrace();
+                return "-1";
             }
         }
         else {
             logger.error("Provider connector not supported");
             return null;
         }
-        return null;
     }
 
     public HashMap<String, String> configureResource(JobDefinition jobDef){

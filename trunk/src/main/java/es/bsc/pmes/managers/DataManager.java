@@ -2,12 +2,18 @@ package es.bsc.pmes.managers;
 
 /**
  * Created by scorella on 8/5/16.
+ * Singleton Class
  */
 public class DataManager {
+    private static DataManager dataManager = new DataManager();
     private String protocol;
 
-    public DataManager() {
+    private DataManager() {
         // TODO
+    }
+
+    public static DataManager getDataManager(){
+        return dataManager;
     }
 
     public void stageIn(){

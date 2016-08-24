@@ -1,6 +1,7 @@
-package es.bsc.pmes.types;
+package es.bsc.pmes.managers.execution;
 
 import es.bsc.conn.exceptions.ConnectorException;
+import es.bsc.pmes.types.Job;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,7 +19,8 @@ public class ExecutionThread extends Thread{
 
     public void run() {
         // TODO
-        System.out.println("Executing..."+this.job.getCmd());
+        job.setStatus("RUNNING");
+        System.out.println("Executing...");
     }
 
     public void sshCmdExecution(){

@@ -2,7 +2,7 @@ package es.bsc.pmes.service;
 
 import es.bsc.conn.types.HardwareDescription;
 import es.bsc.conn.types.SoftwareDescription;
-import es.bsc.pmes.managers.InfraestructureManager;
+import es.bsc.pmes.managers.InfrastructureManager;
 import es.bsc.pmes.managers.JobManager;
 import es.bsc.pmes.types.Job;
 import es.bsc.pmes.types.JobDefinition;
@@ -21,7 +21,7 @@ import org.apache.logging.log4j.LogManager;
 
 public class PMESservice {
     private JobManager jm;
-    private InfraestructureManager im;
+    private InfrastructureManager im;
 
     private static final Logger logger = LogManager.getLogger(PMESservice.class);
 
@@ -31,8 +31,8 @@ public class PMESservice {
 
     public void startService(){
         logger.trace("Starting PMESService");
-        this.im = new InfraestructureManager();
-        this.jm = new JobManager(this.im);
+        this.im = InfrastructureManager.getInfrastructureManager();
+        this.jm = JobManager.getJobManager();
 
     }
 
@@ -42,13 +42,16 @@ public class PMESservice {
 
     public ArrayList<String> createActivity(ArrayList<JobDefinition> jobDefinitions) {
         // TODO: createActivity
+        ArrayList<String> jobStatus = new ArrayList<>(jobDefinitions.size());
         for (JobDefinition jobDef:jobDefinitions) {
+
             /** Create new job */
             logger.trace("Creating new Job");
             Job newJob = new Job();
             newJob.setUser(jobDef.getUser());
+            jobStatus.add(newJob.getStatus());
 
-            /** configure */
+            /** configure Resource Petition*/
             logger.trace("Configuring Job " + newJob.getId());
             // Configuring Hardware
             HardwareDescription hd = new HardwareDescription();
@@ -64,17 +67,27 @@ public class PMESservice {
             HashMap<String, String> prop = this.im.configureResource(jobDef);
 
             /** create resource */
-            logger.trace("Creating new Resource");
-            String Id = this.im.createResource(hd, sd, prop);
-            newJob.setResource(this.im.getActiveResources().get(Id));
+            try {
+                logger.trace("Creating new Resource");
+                //String Id = this.im.createResource(hd, sd, prop);
+                //newJob.setResource(this.im.getActiveResources().get(Id));
 
-            /** run */
-            this.jm.enqueueJob(newJob);
+                /** run */
+                logger.trace("enqueuing new job");
+                this.jm.enqueueJob(newJob);
 
-            /** loop getActivityStatus */
+                /** loop getActivityStatus */
 
-            /** destroy resource */
-            this.im.destroyResource(Id);
+                /** destroy resource */
+                logger.trace("Deleting Resource");
+                newJob.setStatus("FINISHED");
+                //this.im.destroyResource(Id);
+
+            } catch (Exception e){
+                logger.error("Error creating resource " + e);
+                newJob.setStatus("FAILED");
+            }
+
         }
         return null;
     }
@@ -99,8 +112,8 @@ public class PMESservice {
 
     public void setJm(JobManager jm) { this.jm = jm; }
 
-    public InfraestructureManager getIm() { return im; }
+    public InfrastructureManager getIm() { return im; }
 
-    public void setIm(InfraestructureManager im) { this.im = im; }
+    public void setIm(InfrastructureManager im) { this.im = im; }
 
 }
