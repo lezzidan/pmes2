@@ -42,14 +42,14 @@ public class PMESservice {
 
     public ArrayList<String> createActivity(ArrayList<JobDefinition> jobDefinitions) {
         // TODO: createActivity
-        ArrayList<String> jobStatus = new ArrayList<>(jobDefinitions.size());
+        ArrayList<String> jobIds = new ArrayList<>(jobDefinitions.size());
         for (JobDefinition jobDef:jobDefinitions) {
 
             /** Create new job */
             logger.trace("Creating new Job");
             Job newJob = new Job();
             newJob.setUser(jobDef.getUser());
-            jobStatus.add(newJob.getStatus());
+            jobIds.add(newJob.getId());
 
             /** configure Resource Petition*/
             logger.trace("Configuring Job " + newJob.getId());
@@ -89,7 +89,7 @@ public class PMESservice {
             }
 
         }
-        return null;
+        return jobIds;
     }
 
     public ArrayList<String> terminateActivity(ArrayList<String> jobIds) {

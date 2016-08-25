@@ -1,11 +1,13 @@
 package es.bsc.pmes.test;
 
+import es.bsc.pmes.api.PMESclient;
 import es.bsc.pmes.service.PMESservice;
 import es.bsc.pmes.types.App;
 import es.bsc.pmes.types.Image;
 import es.bsc.pmes.types.JobDefinition;
 import es.bsc.pmes.types.User;
 
+import javax.xml.ws.Endpoint;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -13,7 +15,7 @@ import java.util.HashMap;
  * Created by scorella on 8/22/16.
  */
 public class PMESserviceTest {
-    public static PMESservice pmesService = new PMESservice();
+    public static PMESclient client;
 
     public static void testCreateActivity(){
         // java -classpath /home/user/compss-connectors-commons.jar:/home/user/compss-connectors-rocci.jar:/home/user/pmes.jar es.bsc.pmes.test.PMESserviceTest
@@ -41,15 +43,28 @@ public class PMESserviceTest {
         job.setCompss_flags(null);
 
         jobDefinitions.add(job);
-        pmesService.createActivity(jobDefinitions);
+        ArrayList<String> jobids = client.createActivity(jobDefinitions);
+        for (String id:jobids
+             ) {
+            System.out.println("Job submitted "+id);
+        }
     }
 
     public static void main(String[] args){
         System.out.println("Testing app");
 
+        client = new PMESclient("http://localhost:9998/");
+        System.out.println(client.getClichedMessage());
+
         testCreateActivity();
 
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
+        testCreateActivity();
     }
 
 }

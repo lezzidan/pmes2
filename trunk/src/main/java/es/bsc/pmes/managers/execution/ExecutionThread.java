@@ -19,8 +19,11 @@ public class ExecutionThread extends Thread{
 
     public void run() {
         // TODO
+
         job.setStatus("RUNNING");
         System.out.println("Executing...");
+
+
     }
 
     public void sshCmdExecution(){
