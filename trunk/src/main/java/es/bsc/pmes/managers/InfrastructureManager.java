@@ -44,7 +44,6 @@ public class InfrastructureManager {
                 rocciClient = new ROCCI(prop);
                 VirtualResource vr = (VirtualResource) rocciClient.create(hd, sd, prop);
                 vr = rocciClient.waitUntilCreation(vr);
-
                 logger.trace("VM id: " + vr.getId());
                 logger.trace("VM ip: " + vr.getIp());
 

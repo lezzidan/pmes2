@@ -1,8 +1,13 @@
 package es.bsc.pmes.managers;
 
+import es.bsc.conn.types.HardwareDescription;
+import es.bsc.conn.types.SoftwareDescription;
 import es.bsc.pmes.managers.execution.ExecutionThread;
 import es.bsc.pmes.types.Job;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 /**
@@ -15,6 +20,8 @@ public class SchedulerThread extends Thread{
     private static SchedulerThread scheduler = new SchedulerThread();
     private LinkedList<Job> pendingJobs;
     private Boolean stop = Boolean.FALSE;
+    private InfrastructureManager im = InfrastructureManager.getInfrastructureManager();
+    private static final Logger logger = LogManager.getLogger(SchedulerThread.class);
 
     private SchedulerThread(){
         this.pendingJobs = new LinkedList<>();
@@ -35,9 +42,7 @@ public class SchedulerThread extends Thread{
             if (!pendingJobs.isEmpty()){
                 System.out.println(pendingJobs.size());
                 Job nextJob = this.nextJob();
-                //TODO: stageIN
                 this.executeJob(nextJob);
-                //TODO: stageOut
             }
         }
     }
@@ -51,16 +56,52 @@ public class SchedulerThread extends Thread{
     }
 
     public void executeJob(Job job){
+        // Create Resource
+        // ** configure Resource Petition
+        logger.trace("Configuring Job " + job.getId());
+        // Configuring Hardware
+        HardwareDescription hd = new HardwareDescription();
+        hd.setMemorySize(job.getJobDef().getMemory());
+        hd.setTotalComputingUnits(job.getJobDef().getCores()*job.getJobDef().getNumNodes());
+
+        // Configure software
+        SoftwareDescription sd = new SoftwareDescription();
+        sd.setImageType(job.getJobDef().getImg().getImageType());
+        sd.setImageName(job.getJobDef().getImg().getImageName());
+
+        // Configure properties
+        HashMap<String, String> prop = this.im.configureResource(job.getJobDef());
+
+        //** create resource
+        logger.trace("Creating new Resource");
+        String Id = this.im.createResource(hd, sd, prop);
+        logger.trace("Resource Id " + Id);
+        job.setResource(this.im.getActiveResources().get(Id));
+
+        //StageIn
+        logger.trace("Staging in");
+        //TODO: stageIN
+
+        //Run job
         ExecutionThread executor = new ExecutionThread(job);
         executor.start();
         System.out.println("waiting");
         try {
             executor.join();
-            job.setStatus("FINISHED");
-            System.out.println("job Finished");
+            System.out.println("Execution Finished");
         } catch (Exception e){
+            job.setStatus("CANCELLED");
             System.out.println("Interrupted execution");
         }
+
+        //StageOut
+        logger.trace("Staging out");
+        //TODO: stageOut
+
+        //Destroy Resource
+        logger.trace("Deleting Resource");
+        job.setStatus("FINISHED");
+        //this.im.destroyResource(Id);
     }
 
     public void deleteJob(Job job){

@@ -14,6 +14,7 @@ public class Job {
     private ArrayList<String> dataIn;
     private ArrayList<String> dataOut;
     private String cmd;
+    private JobDefinition jobDef;
 
     public Job() {
         this.id = UUID.randomUUID().toString();
@@ -23,6 +24,7 @@ public class Job {
         this.dataIn = null;
         this.dataOut = null;
         this.cmd = "";
+        this.jobDef = null;
     }
 
     public void run(){
@@ -84,5 +86,13 @@ public class Job {
 
     public void setCmd(String cmd) {
         this.cmd = cmd;
+    }
+
+    public void setJobDef(JobDefinition jobDef) {
+        this.jobDef = jobDef;
+    }
+
+    public JobDefinition getJobDef() {
+        return jobDef;
     }
 }

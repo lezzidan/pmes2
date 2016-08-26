@@ -12,14 +12,13 @@ import com.sun.net.httpserver.HttpServer;
 import com.sun.jersey.api.container.httpserver.HttpServerFactory;
 import java.io.IOException;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.Produces;
-import javax.ws.rs.Path;
+import javax.ws.rs.*;
+
 /**
  * PMES API
  */
 
-@Path("/pmes")
+//@Path("/pmes")
 public class PMESclient {
     private String address;
     public static PMESservice pmesService;
@@ -32,27 +31,22 @@ public class PMESclient {
     public PMESclient(String address){
         this.pmesService = new PMESservice();
         this.address = address;
-
+        /*try {
+            this.startService();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
     }
 
-    // The Java method will process HTTP GET requests
-    @GET
-    // The Java method will produce content identified by the MIME Media type "text/plain"
-    @Produces("text/plain")
-    public String getClichedMessage() {
-        // Return some cliched textual content
-        return "Hello World";
-    }
+
 
     /**
      * Submits a job to the PMES service.
      * @param jobDefinitions
      * @return
      */
-    // The Java method will process HTTP GET requests
-    @GET
-    // The Java method will produce content identified by the MIME Media type "text/plain"
-    @Produces("text/plain")
+    //@POST
+    //@Produces("text/plain")
     public ArrayList<String> createActivity(ArrayList<JobDefinition> jobDefinitions){
         ArrayList<String> jobIds = this.pmesService.createActivity(jobDefinitions);
         return jobIds;
@@ -65,8 +59,11 @@ public class PMESclient {
      * @return
      */
 
+    //@GET
+    //@Produces("text/plain")
     public ArrayList<JobStatus> getActivityStatus(ArrayList<String> jobids){
-        return null;
+        ArrayList<JobStatus> jobStatuses = this.pmesService.getActivityStatus(jobids);
+        return jobStatuses;
     }
 
     /**
@@ -76,8 +73,11 @@ public class PMESclient {
      * @return
      */
 
+    //@GET
+    //@Produces("text/plain")
     public ArrayList<JobReport> getActivityReport(ArrayList<String> jobids){
-        return null;
+        ArrayList<JobReport> jobReports = this.pmesService.getActivityReport(jobids);
+        return jobReports;
     }
 
     /**
@@ -85,18 +85,22 @@ public class PMESclient {
      * @param jobIds
      * @return
      */
-
+    //@DELETE
+    //@Produces("text/plain")
     public ArrayList<String> terminateActivity(ArrayList<String> jobIds){
-        return null;
+        ArrayList<String> terminateMessages = this.pmesService.terminateActivity(jobIds);
+        return terminateMessages;
     }
 
     /**
      * Provides information about the resources consumption of the system.
      * @return
      */
-
+    //@GET
+    //@Produces("text/plain")
     public SystemStatus getSystemStatus(){
-        return null;
+        SystemStatus systemStatus = this.pmesService.getSystemStatus();
+        return systemStatus;
     }
 
     /**
@@ -121,6 +125,14 @@ public class PMESclient {
         System.out.println("Stopping server");
         server.stop(0);
         System.out.println("Server stopped");
+    }
+
+    // Test purposes
+    //@GET
+    //@Produces("text/plain")
+    public String getClichedMessage() {
+        // Return some cliched textual content
+        return "Hello World";
     }
 
 }
