@@ -1,13 +1,10 @@
 package es.bsc.pmes.service;
 
-import es.bsc.conn.types.HardwareDescription;
-import es.bsc.conn.types.SoftwareDescription;
 import es.bsc.pmes.managers.InfrastructureManager;
 import es.bsc.pmes.managers.JobManager;
 import es.bsc.pmes.types.*;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -71,8 +68,7 @@ public class PMESservice {
     }
 
     public SystemStatus getSystemStatus(){
-        // TODO: getSystemStatus
-        return null;
+        return im.getSystemStatus();
     }
 
     /** GETTERS AND SETTERS*/

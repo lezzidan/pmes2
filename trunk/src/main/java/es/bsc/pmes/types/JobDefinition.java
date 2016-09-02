@@ -19,6 +19,10 @@ public class JobDefinition {
     private Integer cores;
     private Integer memory;
     private HashMap<String, String> compss_flags;
+    private Integer initialVMs;
+    private Integer minimumVMs;
+    private Integer maximumVMs;
+    private Integer limitVMs;
 
     public JobDefinition() {
         this.id = UUID.randomUUID().toString();
@@ -33,6 +37,10 @@ public class JobDefinition {
         this.cores = -1;
         this.memory = -1;
         this.compss_flags = null;
+        this.initialVMs = 0;
+        this.minimumVMs = 0;
+        this.maximumVMs = 1;
+        this.limitVMs = 1;
     }
 
     /** GETTERS AND SETTERS*/
@@ -130,5 +138,38 @@ public class JobDefinition {
 
     public void setCompss_flags(HashMap<String, String> compss_flags) {
         this.compss_flags = compss_flags;
+    }
+
+    public Integer getInitialVMs() {
+        return initialVMs;
+    }
+
+    public void setInitialVMs(Integer initialVMs) {
+        this.initialVMs = initialVMs;
+    }
+
+    public Integer getMinimumVMs() {
+        return minimumVMs;
+    }
+
+    public void setMinimumVMs(Integer minimumVMs) {
+        this.minimumVMs = minimumVMs;
+    }
+
+    public Integer getMaximumVMs() {
+        return maximumVMs;
+    }
+
+    public void setMaximumVMs(Integer maximumVMs) {
+        this.maximumVMs = maximumVMs;
+    }
+
+
+    public Integer getLimitVMs() {
+        return limitVMs;
+    }
+
+    public void setLimitVMs(Integer limitVMs) {
+        this.limitVMs = limitVMs;
     }
 }

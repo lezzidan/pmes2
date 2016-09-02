@@ -18,24 +18,26 @@ public class ExecutionThread extends Thread{
     }
 
     public void run() {
-        // TODO
         job.setStatus("RUNNING");
         System.out.println("Executing...");
 
-        String resourceAddress = job.getResource().getIp();
+        String resourceAddress = job.getResource(0).getIp(); //get master IP
         System.out.println(resourceAddress);
+
         String user = job.getUser().getUsername();
         String address = user+"@"+resourceAddress;
-        //String address = "user@"+resourceAddress;
-        //String cmd = "pmes-testing@bscgrid20.bsc.es " + "ls -lart";
+
         String cmd = address + " " + job.getCmd();
         System.out.println(cmd);
-        //Falla pq la maquina esta en prolog
+
+        //Wait until vm is ready at login stage
         try {
             Thread.sleep(60000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        // Execute command
         Integer exitValue = executeCommand(cmd);
         System.out.println("Process exit value "+ exitValue);
     }
@@ -46,7 +48,7 @@ public class ExecutionThread extends Thread{
             Process process = runtime.exec("ssh "+cmd);
             Integer exitValue = process.waitFor();
 
-            // Output
+            // Output log
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(process.getInputStream()) );
             String line;
@@ -55,7 +57,7 @@ public class ExecutionThread extends Thread{
             }
             in.close();
 
-            //Error
+            //Error log
             BufferedReader err = new BufferedReader(
                     new InputStreamReader(process.getErrorStream()) );
             while ((line = err.readLine()) != null) {

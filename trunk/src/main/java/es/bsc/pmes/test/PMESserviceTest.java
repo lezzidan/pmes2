@@ -2,10 +2,7 @@ package es.bsc.pmes.test;
 
 import es.bsc.pmes.api.PMESclient;
 import es.bsc.pmes.service.PMESservice;
-import es.bsc.pmes.types.App;
-import es.bsc.pmes.types.Image;
-import es.bsc.pmes.types.JobDefinition;
-import es.bsc.pmes.types.User;
+import es.bsc.pmes.types.*;
 
 import javax.xml.ws.Endpoint;
 import java.util.ArrayList;
@@ -55,8 +52,12 @@ public class PMESserviceTest {
 
         client = new PMESclient("http://localhost:9998/");
         System.out.println(client.getClichedMessage());
+        SystemStatus systemStatus = client.getSystemStatus();
+        ArrayList<Host> cluster = systemStatus.getCluster();
+        System.out.println(cluster.size());
+        System.out.println(cluster.get(0).getName());
 
-        testCreateActivity();
+        //testCreateActivity();
 
         /*try {
             Thread.sleep(5000);

@@ -1,0 +1,11 @@
+<Pmes>
+    <ProviderName Name="ONE"/>
+    <EndPointROCCI>https://bscgrid20.bsc.es:11443/</EndPointROCCI>
+    <Hosts>
+        <Host>
+            <Name>bsccv19</Name>
+            <MAX_CPU>2400</MAX_CPU>
+            <MAX_MEM>99195808</MAX_MEM>
+        </Host>
+    </Hosts>
+</Pmes>

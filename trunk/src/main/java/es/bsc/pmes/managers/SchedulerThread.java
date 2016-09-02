@@ -76,7 +76,7 @@ public class SchedulerThread extends Thread{
         logger.trace("Creating new Resource");
         String Id = this.im.createResource(hd, sd, prop);
         logger.trace("Resource Id " + Id);
-        job.setResource(this.im.getActiveResources().get(Id));
+        job.addResource(this.im.getActiveResources().get(Id));
 
         //StageIn
         logger.trace("Staging in");
@@ -108,6 +108,34 @@ public class SchedulerThread extends Thread{
         this.pendingJobs.remove(job);
     }
 
+    public void configureCOMPSsExecution(Job job){
+        Integer numNodes = job.getJobDef().getNumNodes();
+
+        // Configuring Hardware
+        HardwareDescription hd = new HardwareDescription();
+        hd.setMemorySize(job.getJobDef().getMemory());
+        hd.setTotalComputingUnits(job.getJobDef().getCores()*job.getJobDef().getNumNodes());
+
+        // Configure software
+        SoftwareDescription sd = new SoftwareDescription();
+        sd.setImageType(job.getJobDef().getImg().getImageType());
+        sd.setImageName(job.getJobDef().getImg().getImageName());
+
+        // Configure properties
+        HashMap<String, String> prop = this.im.configureResource(job.getJobDef());
+
+        //** create resource
+        logger.trace("Creating new Resource");
+        String Id = this.im.createResource(hd, sd, prop);
+        logger.trace("Created Resource with Id " + Id);
+        job.addResource(this.im.getActiveResources().get(Id));
+
+        //projects and resources xml for COMPSs execution
+
+
+    }
+
+    /** GETTERS AND SETTERS*/
     public LinkedList<Job> getPendingJobs() {
         return pendingJobs;
     }
