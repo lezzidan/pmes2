@@ -2,7 +2,6 @@ package es.bsc.pmes.types;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -14,7 +13,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.UUID;
 
 /**
@@ -42,15 +40,7 @@ public class Job {
         this.cmd = "";
         this.jobDef = null;
     }
-
-    public void run(){
-        // TODO
-    }
-
-    public void stop(){
-        // TODO
-    }
-
+    /** Generate projects.xml */
     public void generateProjects(){
         try {
             DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -169,6 +159,7 @@ public class Job {
         }
     }
 
+    /** Generate resources.xml */
     public void generateResources(){
         //TODO
         try {

@@ -41,8 +41,10 @@ public class PMESservice {
             Job newJob = new Job();
             newJob.setUser(jobDef.getUser());
             newJob.setJobDef(jobDef);
+
             // Test purposes
-            newJob.setCmd("touch testFile.txt");
+            newJob.setCmd("runcompss -h");
+            //newJob.setCmd("ls -lh");
 
             jobIds.add(newJob.getId());
             logger.trace("New Job created with id "+newJob.getId());

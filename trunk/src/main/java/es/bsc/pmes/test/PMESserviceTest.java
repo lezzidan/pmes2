@@ -19,7 +19,8 @@ public class PMESserviceTest {
         ArrayList<JobDefinition> jobDefinitions = new ArrayList<>();
 
         App app = new App("sleep");
-        Image img = new Image("uuid_pmestestingocci_68", "small");
+        //Image img = new Image("uuid_pmestestingocci_68", "small");
+        Image img = new Image("uuid_testcompss14_82", "small");
         User usr = new User("scorella");
         HashMap<String, String> credentials = new HashMap<>();
         credentials.put("key", "~/certs/test/scorella_test.key");
@@ -47,6 +48,16 @@ public class PMESserviceTest {
         }
     }
 
+    public static void testGenerateProjects() {
+        Job jobTest = new Job();
+        jobTest.generateProjects();
+    }
+
+    public static void  testGenerateResources() {
+        Job jobTest = new Job();
+        jobTest.generateResources();
+    }
+
     public static void main(String[] args){
         System.out.println("Testing app");
 
@@ -57,15 +68,15 @@ public class PMESserviceTest {
         System.out.println(cluster.size());
         System.out.println(cluster.get(0).getName());
 
-        //testCreateActivity();
+        testCreateActivity();
 
-        /*try {
+        try {
             Thread.sleep(5000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
 
-        testCreateActivity();*/
+        //testCreateActivity();
     }
 
 }

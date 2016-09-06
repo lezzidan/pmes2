@@ -126,7 +126,8 @@ public class InfrastructureManager {
 
     public void configureResources() throws ParserConfigurationException {
         // TODO: change path
-        File fXML = new File("/home/bscuser/subversion/projects/pmes2/trunk/src/main/resources/config.xml");
+        File fXML = new File("/home/bscuser/subversion/projects/pmes2/trunk/src/main/resources/config.xml"); //TODO path
+        //File fXML = new File("/home/user/pmesConfig/config.xml"); //TODO path
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document doc = null;
@@ -139,6 +140,8 @@ public class InfrastructureManager {
         }
 
         doc.getDocumentElement().normalize();
+        System.out.println("Root element :"
+                + doc.getDocumentElement().getNodeName());
         NodeList nlist = doc.getElementsByTagName("host");
         for (int i = 0; i < nlist.getLength(); i++){
             Node node = nlist.item(i);

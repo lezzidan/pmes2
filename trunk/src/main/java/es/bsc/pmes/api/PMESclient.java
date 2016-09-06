@@ -18,7 +18,7 @@ import javax.ws.rs.*;
  * PMES API
  */
 
-//@Path("/pmes")
+@Path("/pmes")
 public class PMESclient {
     private String address;
     public static PMESservice pmesService;
@@ -38,7 +38,12 @@ public class PMESclient {
         }*/
     }
 
-
+    /**
+     * Instantiates a new PMES client.
+     */
+    public PMESclient(){
+        this.pmesService = new PMESservice();
+    }
 
     /**
      * Submits a job to the PMES service.
@@ -128,11 +133,12 @@ public class PMESclient {
     }
 
     // Test purposes
-    //@GET
-    //@Produces("text/plain")
-    public String getClichedMessage() {
+    @GET
+    @Path("/message")
+    @Produces("text/plain")
+    public static String getClichedMessage() {
         // Return some cliched textual content
-        return "Hello World";
+        return "pmes message";
     }
 
 }

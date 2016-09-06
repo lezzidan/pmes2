@@ -39,7 +39,7 @@ public class ExecutionThread extends Thread{
 
         // Execute command
         Integer exitValue = executeCommand(cmd);
-        System.out.println("Process exit value "+ exitValue);
+
     }
 
     public Integer executeCommand(String cmd){
