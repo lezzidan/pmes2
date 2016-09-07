@@ -1,10 +1,7 @@
 package es.bsc.pmes.api;
 
 import es.bsc.pmes.service.PMESservice;
-import es.bsc.pmes.types.JobDefinition;
-import es.bsc.pmes.types.JobReport;
-import es.bsc.pmes.types.JobStatus;
-import es.bsc.pmes.types.SystemStatus;
+import es.bsc.pmes.types.*;
 
 import java.util.ArrayList;
 
@@ -13,6 +10,9 @@ import com.sun.jersey.api.container.httpserver.HttpServerFactory;
 import java.io.IOException;
 
 import javax.ws.rs.*;
+import javax.ws.rs.core.Application;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * PMES API
@@ -48,10 +48,12 @@ public class PMESclient {
     /**
      * Submits a job to the PMES service.
      * @param jobDefinitions
-     * @return
+     * @return list of jobIds
      */
-    //@POST
-    //@Produces("text/plain")
+    @POST
+    @Path("/createActivity")
+    @Consumes("application/json")
+    @Produces("application/json")
     public ArrayList<String> createActivity(ArrayList<JobDefinition> jobDefinitions){
         ArrayList<String> jobIds = this.pmesService.createActivity(jobDefinitions);
         return jobIds;
@@ -64,8 +66,10 @@ public class PMESclient {
      * @return
      */
 
-    //@GET
-    //@Produces("text/plain")
+    @POST
+    @Path("/getActivityStatus")
+    @Consumes("application/json")
+    @Produces("application/json")
     public ArrayList<JobStatus> getActivityStatus(ArrayList<String> jobids){
         ArrayList<JobStatus> jobStatuses = this.pmesService.getActivityStatus(jobids);
         return jobStatuses;
@@ -78,8 +82,10 @@ public class PMESclient {
      * @return
      */
 
-    //@GET
-    //@Produces("text/plain")
+    @POST
+    @Path("/getActivityReport")
+    @Consumes("application/json")
+    @Produces("application/json")
     public ArrayList<JobReport> getActivityReport(ArrayList<String> jobids){
         ArrayList<JobReport> jobReports = this.pmesService.getActivityReport(jobids);
         return jobReports;
@@ -90,8 +96,10 @@ public class PMESclient {
      * @param jobIds
      * @return
      */
-    //@DELETE
-    //@Produces("text/plain")
+    @POST
+    @Path("/terminateActivity")
+    @Consumes("application/json")
+    @Produces("application/json")
     public ArrayList<String> terminateActivity(ArrayList<String> jobIds){
         ArrayList<String> terminateMessages = this.pmesService.terminateActivity(jobIds);
         return terminateMessages;
@@ -101,8 +109,9 @@ public class PMESclient {
      * Provides information about the resources consumption of the system.
      * @return
      */
-    //@GET
-    //@Produces("text/plain")
+    @GET
+    @Path("/getSystemStatus")
+    @Produces("application/json")
     public SystemStatus getSystemStatus(){
         SystemStatus systemStatus = this.pmesService.getSystemStatus();
         return systemStatus;
@@ -138,7 +147,66 @@ public class PMESclient {
     @Produces("text/plain")
     public static String getClichedMessage() {
         // Return some cliched textual content
+        //http://localhost:8081/trunk_war_exploded/pmes/message
         return "pmes message";
+    }
+
+    // Test purposes
+    @GET
+    @Path("/createActivity/{id}")
+    @Produces("text/plain")
+    public static String getAttribute(@PathParam("id") String name) {
+        // Return some cliched textual content
+        //http://localhost:8081/trunk_war_exploded/pmes/message
+        System.out.println(name);
+        return name;
+    }
+
+    // Test purposes
+    @GET
+    @Path("/get")
+    @Produces(MediaType.APPLICATION_JSON)
+    public static MyObj getAttribute() {
+        // Return some cliched textual content
+        //http://localhost:8081/trunk_war_exploded/pmes/message
+
+        MyObj obj = new MyObj("test");
+        return obj;
+    }
+
+    @POST
+    @Path("/post")
+    @Consumes("text/plain")
+    @Produces("text/plain")
+    public static String setAttribute(String name) {
+        // Return some cliched textual content
+        //http://localhost:8081/trunk_war_exploded/pmes/message
+        System.out.println(name);
+        return name;
+    }
+
+    @POST
+    @Path("/post2")
+    @Consumes("application/json")
+    @Produces("application/json")
+    public static MyObj setAttributeJSON(MyObj obj) {
+        // Return some cliched textual content
+        //http://localhost:8081/trunk_war_exploded/pmes/message
+        System.out.println(obj.name);
+        obj.name += "ret";
+        return obj;
+    }
+
+    @POST
+    @Path("/testArray")
+    @Consumes("application/json")
+    @Produces("application/json")
+    public static ArrayList<MyObj> setAttributeJSON(ArrayList<MyObj> objs) {
+        // Return some cliched textual content
+        //http://localhost:8081/trunk_war_exploded/pmes/message
+        System.out.println(objs.get(0).name);
+        objs.get(0).name += "ret";
+        return objs;
     }
 
 }

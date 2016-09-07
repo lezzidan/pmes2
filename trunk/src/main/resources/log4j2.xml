@@ -5,13 +5,17 @@
         <Console name="Console" target="SYSTEM_OUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
+        <File name="File" fileName="/home/bscuser/pmes/logs/pmes.log">
+            <PatternLayout pattern="[%d{ISO8601} %-5level] %logger{36} - %msg%n"/>
+        </File>
     </Appenders>
     <Loggers>
         <Logger name="log4j.test.Log4jTest" level="trace">
             <AppenderRef ref="Console"/>
         </Logger>
-        <Root level="trace">
+        <Root level="all">
             <AppenderRef ref="Console"/>
+            <AppenderRef ref="File" level="all"/>
         </Root>
     </Loggers>
 </Configuration>
