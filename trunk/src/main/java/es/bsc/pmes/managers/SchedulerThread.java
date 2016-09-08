@@ -2,7 +2,7 @@ package es.bsc.pmes.managers;
 
 import es.bsc.conn.types.HardwareDescription;
 import es.bsc.conn.types.SoftwareDescription;
-import es.bsc.pmes.managers.execution.ExecutionThread;
+import es.bsc.pmes.managers.execution.COMPSsExecutionThread;
 import es.bsc.pmes.types.Job;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -56,34 +56,8 @@ public class SchedulerThread extends Thread{
     }
 
     public void executeJob(Job job){
-        // Create Resource
-        // ** configure Resource Petition
-        logger.trace("Configuring Job " + job.getId());
-        // Configuring Hardware
-        HardwareDescription hd = new HardwareDescription();
-        hd.setMemorySize(job.getJobDef().getMemory());
-        hd.setTotalComputingUnits(job.getJobDef().getCores()*job.getJobDef().getNumNodes());
-
-        // Configure software
-        SoftwareDescription sd = new SoftwareDescription();
-        sd.setImageType(job.getJobDef().getImg().getImageType());
-        sd.setImageName(job.getJobDef().getImg().getImageName());
-
-        // Configure properties
-        HashMap<String, String> prop = this.im.configureResource(job.getJobDef());
-
-        //** create resource
-        logger.trace("Creating new Resource");
-        String Id = this.im.createResource(hd, sd, prop);
-        logger.trace("Resource Id " + Id);
-        job.addResource(this.im.getActiveResources().get(Id));
-
-        //StageIn
-        logger.trace("Staging in");
-        //TODO: stageIN
-
         //Run job
-        ExecutionThread executor = new ExecutionThread(job);
+        COMPSsExecutionThread executor = new COMPSsExecutionThread(job);
         executor.start();
         System.out.println("waiting");
         try {
@@ -93,46 +67,10 @@ public class SchedulerThread extends Thread{
             job.setStatus("CANCELLED");
             System.out.println("Interrupted execution");
         }
-
-        //StageOut
-        logger.trace("Staging out");
-        //TODO: stageOut
-
-        //Destroy Resource
-        logger.trace("Deleting Resource");
-        job.setStatus("FINISHED");
-        //this.im.destroyResource(Id);
     }
 
     public void deleteJob(Job job){
         this.pendingJobs.remove(job);
-    }
-
-    public void configureCOMPSsExecution(Job job){
-        Integer numNodes = job.getJobDef().getNumNodes();
-
-        // Configuring Hardware
-        HardwareDescription hd = new HardwareDescription();
-        hd.setMemorySize(job.getJobDef().getMemory());
-        hd.setTotalComputingUnits(job.getJobDef().getCores()*job.getJobDef().getNumNodes());
-
-        // Configure software
-        SoftwareDescription sd = new SoftwareDescription();
-        sd.setImageType(job.getJobDef().getImg().getImageType());
-        sd.setImageName(job.getJobDef().getImg().getImageName());
-
-        // Configure properties
-        HashMap<String, String> prop = this.im.configureResource(job.getJobDef());
-
-        //** create resource
-        logger.trace("Creating new Resource");
-        String Id = this.im.createResource(hd, sd, prop);
-        logger.trace("Created Resource with Id " + Id);
-        job.addResource(this.im.getActiveResources().get(Id));
-
-        //projects and resources xml for COMPSs execution
-
-
     }
 
     /** GETTERS AND SETTERS*/
