@@ -7,6 +7,9 @@ import java.util.ArrayList;
 
 import com.sun.net.httpserver.HttpServer;
 import com.sun.jersey.api.container.httpserver.HttpServerFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 
 import javax.ws.rs.*;
@@ -22,7 +25,7 @@ import javax.ws.rs.core.Response;
 public class PMESclient {
     private String address;
     public static PMESservice pmesService;
-    private static HttpServer server;
+    private static final Logger logger = LogManager.getLogger(PMESclient.class);
 
     /**
      * Instantiates a new PMES client.
@@ -31,11 +34,7 @@ public class PMESclient {
     public PMESclient(String address){
         this.pmesService = new PMESservice();
         this.address = address;
-        /*try {
-            this.startService();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
+        logger.trace("New PMESclient created with address "+this.address);
     }
 
     /**
@@ -43,6 +42,32 @@ public class PMESclient {
      */
     public PMESclient(){
         this.pmesService = new PMESservice();
+        this.address = "";
+        logger.trace("New PMESclient created");
+    }
+
+    /**
+     * Start pmes service
+     */
+    @GET
+    @Path("/startService/{id}")
+    @Produces("text/plain")
+    public String startService(@PathParam("id")String address){
+        logger.trace("Starting PMES client at "+this.address);
+        PMESclient client = new PMESclient(address);
+        return address;
+    }
+
+    /**
+     * Stop pmes Service
+     */
+    @GET
+    @Path("/stopService")
+    @Produces("text/plain")
+    public String stopService(){
+        logger.trace("Stopping PMES client at "+this.address);
+        // TODO
+        return this.address;
     }
 
     /**
@@ -56,6 +81,7 @@ public class PMESclient {
     @Produces("application/json")
     public ArrayList<String> createActivity(ArrayList<JobDefinition> jobDefinitions){
         ArrayList<String> jobIds = this.pmesService.createActivity(jobDefinitions);
+        logger.trace("Jobs created: "+jobIds.toString());
         return jobIds;
     }
 
@@ -117,29 +143,6 @@ public class PMESclient {
         return systemStatus;
     }
 
-    /**
-     * Start pmes service
-     * @throws IOException
-     */
-    private void startService() throws IOException{
-        server = HttpServerFactory.create(this.address);
-        //server = HttpServerFactory.create("http://localhost:9998/");
-        server.start();
-
-        System.out.println("Server running");
-        System.out.println("Visit: http://localhost:9998/pmes");
-    }
-
-    /**
-     * Stop pmes Service
-     */
-    private void stopService(){
-        //System.out.println("Hit return to stop...");
-        //System.in.read();
-        System.out.println("Stopping server");
-        server.stop(0);
-        System.out.println("Server stopped");
-    }
 
     // Test purposes
     @GET
@@ -207,6 +210,15 @@ public class PMESclient {
         System.out.println(objs.get(0).name);
         objs.get(0).name += "ret";
         return objs;
+    }
+
+    @GET
+    @Path("/pending")
+    @Produces("text/plain")
+    public String pending(){
+        logger.trace("Starting PMES client at "+this.address);
+        Integer size = this.pmesService.getJm().getJobs().size();
+        return size.toString();
     }
 
 }
