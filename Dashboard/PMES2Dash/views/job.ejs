@@ -1,0 +1,84 @@
+<form>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script>
+    <!--<div class="container">-->
+    <div id="content">
+        <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
+            <li class="active"><a href="#general" data-toggle="tab">General</a></li>
+            <li><a href="#execution" data-toggle="tab">Execution</a></li>
+        </ul>
+        <div id="my-tab-content" class="tab-content">
+            <div class="tab-pane active" id="general">
+                <div class="form-group">
+                    <label for="imageName">Image</label>
+                    <select id="imageName" class="form-control">
+                        <option>Image1</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="arguments">Arguments</label>
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Value</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td><label for="nameArg"> arg1 </label></td>
+                            <td><label for="value"><input type="text" id="value" size="10"  placeholder=" value1"></label></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="tab-pane" id="execution">
+                <div class="row">
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                        <div class="form-group">
+                            <label for="time">Wall Clock Time (min)</label>
+                            <input type="number" class="form-control" id="time" value="15" step="5">
+                        </div>
+
+
+
+                        <div class="form-group">
+                            <label for="memory">Memory (GB)</label>
+                            <input type="number" class="form-control" id="memory" value="1.0">
+                        </div>
+                        <div class="form-group">
+                            <label for="minvm">Min VMs</label>
+                            <input type="number" class="form-control" id="minvm" value="1.0">
+
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-md-6 col-lg-6">
+                        <div class="form-group">
+                            <label for="core">Cores</label>
+                            <input type="number" class="form-control" id="core" value="1">
+                        </div>
+                        <div class="form-group">
+                            <label for="disk">Disk Size (GB)</label>
+                            <input type="number" class="form-control" id="disk" value="1.0">
+
+                        </div>
+
+                        <div class="form-group">
+                            <label for="maxvm">Max VMs</label>
+                            <input type="number" class="form-control" id="maxvm" value="1.0">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        jQuery(document).ready(function ($) {
+            $('#tabs').tab();
+        });
+    </script>
+    <!--</div>-->
+
+</form>

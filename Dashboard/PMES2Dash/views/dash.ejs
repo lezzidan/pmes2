@@ -1,0 +1,252 @@
+<!doctype html>
+<html>
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+<head>
+    <title>PMES Dashboard</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+    <link rel='stylesheet' href='/stylesheets/dash.css' />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <style>
+        body        { padding-top:80px; word-wrap:break-word; }
+    </style>
+</head>
+<body ng-app="">
+<nav class="nav masthead-nav navbar-fixed-top bg-faded">
+    <div class="container-fluid">
+        <h3 class="masthead-brand" style="padding-left: 20px"> <%= title %></h3>
+        <div id="navbar" class="navbar-collapse collapse">
+            <ul class="nav masthead-nav navbar-right">
+                <li class="active"><a href="#">Dashboard</a></li>
+                <li><a href="/todo">Profile</a></li>
+                <li><a data-toggle="modal" data-target="#about">About</a></li>
+                <li><a href="/todo">log out</a></li>
+            </ul>
+        </div>
+
+    </div>
+</nav>
+
+<!-- Modal -->
+<div class="modal fade" id="about" role="dialog">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">About</h4>
+            </div>
+            <div class="modal-body">
+                <p>PMES2 version Beta.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+<div class="modal fade" id="newApp" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <form id="newAppForm" action="" method="post">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">New App</h4>
+                </div>
+                <div class="modal-body">
+                    <p>PMES2 version Beta.</p>
+                    <% include ./app%>
+
+                </div>
+                <div class="modal-footer">
+                    <button id="newAppForm" type="submit" class="btn btn-success">Save</button>
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </form>
+        <script type="text/javascript">
+            $(function(){
+                $('#newAppForm').on('submit', function(e){
+                    e.preventDefault();
+                    $.post('/newApp',
+                            $('#newAppForm').serialize(),
+                            function(data, status, xhr){
+                                // do something here with response;
+                            });
+                });
+            });
+        </script>
+    </div>
+</div>
+<div class="modal fade" id="newJob" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">New Job</h4>
+            </div>
+            <div class="modal-body">
+                <% include ./job%>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-dismiss="modal">Save</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" data-dismiss="modal">Save and run</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="newStorage" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">New Storage</h4>
+            </div>
+            <div class="modal-body">
+                <% include ./storage%>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" data-dismiss="modal">Save</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="modal fade" id="system" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">System Information</h4>
+            </div>
+            <div class="modal-body">
+                <% include ./system%>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+            <ul class="nav nav-sidebar">
+                <li class="nav-header active" style="color: white; border-bottom-color: white; font-size: large; text-align: left"><a href="#" ng-click="jobs = !jobs" ng-class="{yellow : jobs}">Jobs</a></li>
+                <li><a data-toggle="modal" data-target="#newJob"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New Job</a></li>
+                <li><a href="#">Jobs Accounting</a></li>
+                <li class="nav-divider"></li>
+            </ul>
+            <ul class="nav nav-sidebar">
+                <li class="nav-header" style="color: white; border-bottom-color: white; font-size: large; text-align: left"><a href="#" ng-click="apps = !apps">Applications</a> </li>
+                <li><a data-toggle="modal" data-target="#newApp"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New App</a></li>
+                <li class="nav-divider"></li>
+            </ul>
+            <ul class="nav nav-sidebar">
+                <li class="nav-header" style="color: white; border-bottom-color: white; font-size: large; text-align: left"><a href="#" ng-click="storages = !storages">Storages</a> </li>
+                <li><a data-toggle="modal" data-target="#newStorage"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New Storage</a></li>
+                <li class="nav-divider"></li>
+            </ul>
+            <ul class="nav nav-sidebar">
+                <li class="nav-header" style="color: white; border-bottom-color: white; font-size: large; text-align: left"><a href="#">System</a> </li>
+                <li><a data-toggle="modal" data-target="#system">Cloud Load Information</a></li>
+                <li class="nav-divider"></li>
+            </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+            <div ng-show="jobs">
+                <h1 class="page-header">Jobs</h1>
+                <table class="table table-striped">
+                    <thead>
+                    <th>Submitted</th>
+                    <th>Job Id</th>
+                    <th>User</th>
+                    <th>Type</th>
+                    <th>App Name</th>
+                    <th>Duration (s)</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="n in [1,2,3,4] track by $index">
+                        <td>{{n}}</td>
+                        <td>{{n}}</td>
+                        <td>{{n}}</td>
+                        <td>{{n}}</td>
+                        <td>{{n}}</td>
+                        <td>{{n}}</td>
+                        <td>{{n}}</td>
+                        <td><div class="btn-group" role="group" aria-label="...">
+                                <a href="#" class="btn btn-success" role="button"><span class="glyphicon glyphicon-repeat" aria-hidden="true" ></span></a>
+                                <a href="#" class="btn btn-info" role="button"><span class="glyphicon glyphicon-edit" aria-hidden="true" ></span></a>
+                                <a href="#" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
+                            </div></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div ng-show="apps">
+                <h1 class="page-header">Applications</h1>
+                <table class="table table-striped">
+                    <thead>
+                    <th>Name</th>
+                    <th>Image</th>
+                    <th>Location</th>
+                    <th>Executable</th>
+                    <th>COMPSs</th>
+                    <th>Public</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="n in [1,2,3,4] track by $index">
+                        <td>{{n}}</td>
+                        <td>{{n}}</td>
+                        <td>{{n}}</td>
+                        <td>{{n}}</td>
+                        <td>{{n}}</td>
+                        <td>{{n}}</td>
+                        <td>{{n}}</td>
+                        <td><div class="btn-group" role="group" aria-label="...">
+                                <a href="#" class="btn btn-info" role="button"><span class="glyphicon glyphicon-edit" aria-hidden="true" ></span></a>
+                                <a href="#" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
+                            </div></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div ng-show="storages">
+                <h1 class="page-header">Storages</h1>
+                <table class="table table-striped">
+                    <thead>
+                    <th>Storage</th>
+                    <th>User</th>
+                    <th>Owner</th>
+                    <th>Action</th>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="n in [1,2,3,4] track by $index">
+                        <td>{{n}}</td>
+                        <td>{{n}}</td>
+                        <td>{{n}}</td>
+                        <td><div class="btn-group" role="group" aria-label="...">
+                                <a href="#" class="btn btn-info" role="button"><span class="glyphicon glyphicon-edit" aria-hidden="true" ></span></a>
+                                <a href="#" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
+                            </div></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

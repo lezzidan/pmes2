@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <!--<title><%= title %></title>-->
+  <!--<link rel='stylesheet' href='/stylesheets/style.css' />-->
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css"> <!-- load bootstrap css -->
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.min.css"> <!-- load fontawesome -->
+  <link rel='stylesheet' href='/stylesheets/cover.css' />
+</head>
+<body>
+<div class="site-wrapper">
+  <div class="site-wrapper-inner">
+    <nav class="nav masthead-nav navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <h3 class="masthead-brand"> <%= title %></h3>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav masthead-nav navbar-right">
+            <li class="active"><a href="#">Login</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">About</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <div class="cover-container">
+      <div class="inner cover">
+        <h1 class="cover-heading">Login</h1>
+        <!-- LOGIN FORM -->
+        <form action="/login" method="post">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="text" class="form-control" name="email">
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" class="form-control" name="password">
+          </div>
+          <p class="lead">
+            <a href="#" class="btn btn-lg btn-default"><span class="fa fa-user"></span> Local Login</a>
+            <!-- <a href="/signup" class="btn btn-default"><span class="fa fa-user"></span> Local Signup</a> -->
+            <a href="#/auth/google" class="btn btn-lg btn-danger"><span class="fa fa-google-plus"></span> Google</a>
+          </p>
+        </form>
+        <p>Need an account? <a href="#">Signup</a></p>
+      </div>
+      <div class="mastfoot">
+        <div class="inner">
+          <p>PMES2 Dashboard
+            <a href="#">PMES</a>
+            , by
+            <a href="#">support@pmes.bsc.es</a>.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

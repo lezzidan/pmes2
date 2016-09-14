@@ -1,0 +1,86 @@
+<!--<form id="appForm" method="post">-->
+    <div class="row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="form-group">
+                <label for="nameApp">Name</label>
+                <input type="text" class="form-control" id="nameApp" placeholder="HelloWorld">
+            </div>
+            <div class="form-group">
+                <label for="imageName">Image</label>
+                <select id="imageName" class="form-control">
+                    <option>Image1</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="location">Location</label>
+                <select id="location" class="form-control">
+                    <option>local</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="path">Path</label>
+                <input type="text" class="form-control" id="path" placeholder="/home/">
+            </div>
+            <div class="form-group">
+                <label for="executable">Executable</label>
+                <input type="text" class="form-control" id="path" placeholder="hello.py">
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea class="form-control" rows="3" id="description"></textarea>
+            </div>
+            <div class="row">
+                <div class="col-sm-6 col-md-6 col-lg-6">
+                    <div class="form-group checkbox">
+                        <label for="compss">
+                            <input type="checkbox" id="compss"> COMPSs
+                        </label>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-6 col-lg-6">
+                    <div class="form-group checkbox">
+                        <label for="public">
+                            <input type="checkbox" id="public"> Public
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <hr width="75%">
+            <div class="form-group">
+                <label for="arguments">Arguments</label>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Default</th>
+                        <th>Prefix</th>
+                        <th>File</th>
+                        <th>Optional</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><label for="nameArg"><input type="text" id="nameArg" size="10" placeholder=" arg1"> </label></td>
+                        <td><label for="default"><input type="text" id="default" size="10"  placeholder=" value1"></label></td>
+                        <td><label for="prefix"><input type="text" id="prefix" size="10"  placeholder=" --flag"></label></td>
+                        <td><label for="file"><input type="checkbox" id="file"></label></td>
+                        <td><label for="optional"><input type="checkbox" id="optional"></label></td>
+                        <td>
+                            <div class="btn-group" role="group" aria-label="...">
+                                <a href="#" class="btn btn-success" role="button"><span class="glyphicon glyphicon-plus" aria-hidden="true" ></span></a>
+                                <a href="#" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    <div class="row">
+    </div>
+<!--</form>-->
