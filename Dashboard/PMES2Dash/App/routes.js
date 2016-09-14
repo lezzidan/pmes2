@@ -1,3 +1,4 @@
+var Application = require('./models/application');
 
 module.exports = function(app, passport) {
 
@@ -17,9 +18,11 @@ module.exports = function(app, passport) {
 
     app.post('/dash/app', function(req, res, next) {
         console.log(req.body);
-        if(!req.body.nameApp || req.body.nameApp.length < 5) {
+        if(!req.body.name || req.body.name.length < 5) {
             res.status(404).send({ error: 'NameApp too short'});
         } else {
+            var a = new Application(req.body);
+            console.log(a);
             res.send('OK');
         }
     });
@@ -61,6 +64,11 @@ module.exports = function(app, passport) {
                 time: 10,
                 status: "running"
             }
+        ]);
+    });
+
+    app.get('/dash/apps', function(req, res, next) {
+        res.send([
         ]);
     });
 

@@ -1,0 +1,30 @@
+<h1 class="page-header">Applications</h1>
+<table class="table table-striped">
+    <thead>
+    <th>Name</th>
+    <th>Image</th>
+    <th>Location</th>
+    <th>Path</th>
+    <th>Executable</th>
+    <th>COMPSs</th>
+    <th>Public</th>
+    <th>User</th>
+    <th>Action</th>
+    </thead>
+    <tbody>
+    <tr ng-repeat="app in dashCtrl.appsList">
+        <td>{{app.name}}</td>
+        <td>{{app.image}}</td>
+        <td>{{app.location}}</td>
+        <td>{{app.path}}</td>
+        <td>{{app.executable}}</td>
+        <td>{{app.compss}}</td>
+        <td>{{app.publicApp}}</td>
+        <td>{{app.user}}</td>
+        <td><div class="btn-group" role="group" aria-label="...">
+            <a href="#" class="btn btn-info" role="button"><span class="glyphicon glyphicon-edit" aria-hidden="true" ></span></a>
+            <a href="#" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
+        </div></td>
+    </tr>
+    </tbody>
+</table>

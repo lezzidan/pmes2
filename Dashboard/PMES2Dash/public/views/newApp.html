@@ -3,46 +3,46 @@
         <div class="col-sm-6 col-md-6 col-lg-6">
             <div class="form-group">
                 <label for="nameApp">Name</label>
-                <input type="text" class="form-control" id="nameApp" placeholder="HelloWorld" ng-model="dashCtrl.newApp.nameApp">
+                <input type="text" class="form-control" id="nameApp" placeholder="HelloWorld" ng-init="dashCtrl.newApp.nameApp=HelloWorld" ng-model="dashCtrl.newApp.name">
             </div>
             <div class="form-group">
                 <label for="imageName">Image</label>
-                <select id="imageName" class="form-control" ng-model="dashCtrl.newApp.imageName">
+                <select id="imageName" class="form-control" ng-model="dashCtrl.newApp.image">
                     <option>Image1</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="location">Location</label>
-                <select id="location" class="form-control">
+                <select id="location" class="form-control" ng-model="dashCtrl.newApp.location">
                     <option>local</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="path">Path</label>
-                <input type="text" class="form-control" id="path" placeholder="/home/">
+                <input type="text" class="form-control" id="path" placeholder="/home/" ng-model="dashCtrl.newApp.path">
             </div>
             <div class="form-group">
                 <label for="executable">Executable</label>
-                <input type="text" class="form-control" id="executable" placeholder="hello.py">
+                <input type="text" class="form-control" id="executable" placeholder="hello.py" ng-model="dashCtrl.newApp.executable">
             </div>
         </div>
         <div class="col-sm-6 col-md-6 col-lg-6">
             <div class="form-group">
                 <label for="description">Description</label>
-                <textarea class="form-control" rows="3" id="description"></textarea>
+                <textarea class="form-control" rows="3" id="description" ng-model="dashCtrl.newApp.description"></textarea>
             </div>
             <div class="row">
                 <div class="col-sm-6 col-md-6 col-lg-6">
                     <div class="form-group checkbox">
                         <label for="compss">
-                            <input type="checkbox" id="compss"> COMPSs
+                            <input type="checkbox" id="compss" ng-init="dashCtrl.newApp.compss=false" ng-model="dashCtrl.newApp.compss"> COMPSs
                         </label>
                     </div>
                 </div>
                 <div class="col-sm-6 col-md-6 col-lg-6">
                     <div class="form-group checkbox">
                         <label for="public">
-                            <input type="checkbox" id="public"> Public
+                            <input type="checkbox" id="public" ng-init="dashCtrl.newApp.publicApp=false" ng-model="dashCtrl.newApp.publicApp"> Public
                         </label>
                     </div>
                 </div>
@@ -62,16 +62,27 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td><label for="nameArg"><input type="text" id="nameArg" size="10" placeholder=" arg1"> </label></td>
-                        <td><label for="default"><input type="text" id="default" size="10"  placeholder=" value1"></label></td>
-                        <td><label for="prefix"><input type="text" id="prefix" size="10"  placeholder=" --flag"></label></td>
-                        <td><label for="file"><input type="checkbox" id="file"></label></td>
-                        <td><label for="optional"><input type="checkbox" id="optional"></label></td>
+                    <tr ng-repeat="arg in dashCtrl.newApp.args">
+                        <td>{{arg.name}}</td>
+                        <td>{{arg.defaultV}}</td>
+                        <td>{{arg.prefix}}</td>
+                        <td><input type="checkbox" disabled="disabled"  ng-model="arg.file"></td>
+                        <td><input type="checkbox" disabled="disabled"  ng-model="arg.optional"></td>
                         <td>
                             <div class="btn-group" role="group" aria-label="...">
-                                <a href="#" class="btn btn-success" role="button"><span class="glyphicon glyphicon-plus" aria-hidden="true" ></span></a>
-                                <a href="#" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
+                                <a ng-click="dashCtrl.removeArg(arg)" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label for="name"><input type="text" id="name" size="10" placeholder=" arg1" ng-model="arg.name"> </label></td>
+                        <td><label for="default"><input type="text" id="default" size="10"  placeholder=" value1"  ng-model="arg.defaultV"></label></td>
+                        <td><label for="prefix"><input type="text" id="prefix" size="10"  placeholder=" --flag"  ng-model="arg.prefix"></label></td>
+                        <td><label for="file"><input type="checkbox" id="file" ng-init="arg.file=false" ng-model="arg.file"></label></td>
+                        <td><label for="optional"><input type="checkbox" id="optional" ng-init="arg.optional=false" ng-model="arg.optional"></label></td>
+                        <td>
+                            <div class="btn-group" role="group" aria-label="...">
+                                <a ng-click="dashCtrl.addArg(arg)" class="btn btn-success" role="button"><span class="glyphicon glyphicon-plus" aria-hidden="true" ></span></a>
                             </div>
                         </td>
                     </tr>

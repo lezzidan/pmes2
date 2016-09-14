@@ -1,0 +1,37 @@
+<h1 class="page-header">Jobs</h1>
+<div class="container-fluid">
+    <div class="row col-md-12">
+        <div> <!-- ng-app="myApp" ng-controller="jobsController" -->
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Submitted</th>
+                    <th>Job Id</th>
+                    <th>User</th>
+                    <th>Type</th>
+                    <th>App Name</th>
+                    <th>Duration (s)</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr ng-repeat="x in dashCtrl.jobsList">
+                    <td>{{ x.date }}</td>
+                    <td>{{ x.id }}</td>
+                    <td>{{ x.user }}</td>
+                    <td>{{ x.type }}</td>
+                    <td>{{ x.app }}</td>
+                    <td>{{ x.time }}</td>
+                    <td>{{ x.status }}</td>
+                    <td><div class="btn-group" role="group" aria-label="...">
+                        <a href="#" class="btn btn-info" role="button"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true" ></span></a>
+                        <a href="#" class="btn btn-success" role="button"><span class="glyphicon glyphicon-repeat" aria-hidden="true" ></span></a>
+                        <a href="#" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
+                    </div></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

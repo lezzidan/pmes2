@@ -3,18 +3,18 @@
         <ul id="tabs" class="nav nav-tabs" data-tabs="tabs">
             <li class="active"><a href="#general" data-toggle="tab">General</a></li>
             <li><a href="#execution" data-toggle="tab">Execution</a></li>
+            <li><a href="#description" data-toggle="tab">Info</a></li>
         </ul>
         <div id="my-tab-content" class="tab-content">
             <div class="tab-pane active" id="general">
                 <div class="form-group">
-                    <label for="imageName">Image</label>
-                    <select id="imageName" class="form-control" ng-model="dashCtrl.newJob.imageName">
-                        <option>Image1</option>
+                    <label for="appName">Application</label>
+                    <select id="appName" class="form-control" ng-options="option.name for option in dashCtrl.appsList" ng-model="dashCtrl.newJob.appName">
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="arguments">Arguments</label>
+                    <label>Arguments</label>
                     <table class="table table-striped">
                         <thead>
                         <tr>
@@ -23,9 +23,9 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr>
-                            <td><label for="nameArg"> arg1 </label></td>
-                            <td><label for="value"><input type="text" id="value" size="10"  placeholder=" value1"></label></td>
+                        <tr ng-repeat="arg in dashCtrl.newJob.appName.args">
+                            <td><label>{{arg.name}}</label></td>
+                            <td><label for="value"><input type="text" id="value" size="10" placeholder="{{arg.defaultV}}" ng-model="app.args"></label></td>
                         </tr>
                         </tbody>
                     </table>
@@ -36,35 +36,38 @@
                     <div class="col-sm-6 col-md-6 col-lg-6">
                         <div class="form-group">
                             <label for="time">Wall Clock Time (min)</label>
-                            <input type="number" class="form-control" id="time" value="15" step="5">
+                            <input type="number" class="form-control" id="time" value="15" step="5" ng-model="dashCtrl.newJob.wallClock">
                         </div>
                         <div class="form-group">
                             <label for="memory">Memory (GB)</label>
-                            <input type="number" class="form-control" id="memory" value="1.0">
+                            <input type="number" class="form-control" id="memory" value="1.0" ng-model="dashCtrl.newJob.memory">
                         </div>
                         <div class="form-group">
                             <label for="minvm">Min VMs</label>
-                            <input type="number" class="form-control" id="minvm" value="1.0">
+                            <input type="number" class="form-control" id="minvm" value="1.0" ng-model="dashCtrl.newJob.minVM">
 
                         </div>
                     </div>
                     <div class="col-sm-6 col-md-6 col-lg-6">
                         <div class="form-group">
                             <label for="core">Cores</label>
-                            <input type="number" class="form-control" id="core" value="1">
+                            <input type="number" class="form-control" id="core" value="1" ng-model="dashCtrl.newJob.cores">
                         </div>
                         <div class="form-group">
                             <label for="disk">Disk Size (GB)</label>
-                            <input type="number" class="form-control" id="disk" value="1.0">
-
+                            <input type="number" class="form-control" id="disk" value="1.0" ng-model="dashCtrl.newJob.disk">
                         </div>
-
                         <div class="form-group">
                             <label for="maxvm">Max VMs</label>
-                            <input type="number" class="form-control" id="maxvm" value="1.0">
-
+                            <input type="number" class="form-control" id="maxvm" value="1.0" ng-model="dashCtrl.newJob.maxVM">
                         </div>
                     </div>
+                </div>
+            </div>
+            <div class="tab-pane" id="info">
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea class="form-control" rows="3" id="description" ng-model="dashCtrl.newJob.description"></textarea>
                 </div>
             </div>
         </div>

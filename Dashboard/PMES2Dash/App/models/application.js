@@ -12,7 +12,8 @@ var appSchema = mongoose.Schema({
     description: String,
     compss: Boolean,
     publicApp: Boolean,
-    arguments: [{argName: String, defaultValue: String, prefix: String, file: Boolean, optional: Boolean}]
+    user: String,
+    args: [{name: String, defaultV: String, prefix: String, file: Boolean, optional: Boolean}]
 
 });
 

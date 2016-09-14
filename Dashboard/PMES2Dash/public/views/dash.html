@@ -5,10 +5,9 @@
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav masthead-nav navbar-right">
                 <li class="active"><a href="#">Dashboard</a></li>
-                <li><a href="/todo">Settings</a></li>
-                <li><a href="/todo">Profile</a></li>
+                <li><a data-toggle="modal" data-target="#profile">Profile</a></li>
                 <li><a data-toggle="modal" data-target="#about">About</a></li>
-                <li><a href="/todo">log out</a></li>
+                <li><a data-toggle="modal" data-target="#logout">log out</a></li>
             </ul>
         </div>
 
@@ -16,6 +15,40 @@
 </nav>
 
 <!-- Modal -->
+<div class="modal fade" id="logout" role="dialog">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">LogOut</h4>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to exit PMES2?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" ng-click="dashCtrl.logout()">LogOut</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="profile" role="dialog">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Profile</h4>
+            </div>
+            <div class="modal-body">
+                <h1>{{dashCtrl.userName}}</h1>
+            </div>
+            <div class="modal-footer">
+            </div>
+        </div>
+
+    </div>
+</div>
 <div class="modal fade" id="about" role="dialog">
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
@@ -111,67 +144,37 @@
     <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
             <ul class="nav nav-sidebar">
-                <li class="nav-header active" style="color: white; border-bottom-color: white; font-size: large; text-align: left"><a href="#">Jobs</a> </li>
+                <li class="nav-header active" style="color: white; border-bottom-color: white; font-size: large; text-align: left"><a ng-init="jobs=true" ng-click="jobs = !jobs">Jobs</a> </li>
                 <li><a  data-toggle="modal" data-target="#newJob"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New Job</a></li>
                 <li><a href="#">Jobs Accounting</a></li>
                 <li class="nav-divider"></li>
             </ul>
             <ul class="nav nav-sidebar">
-                <li class="nav-header" style="color: white; border-bottom-color: white; font-size: large; text-align: left"><a href="#">Applications</a> </li>
+                <li class="nav-header" style="color: white; border-bottom-color: white; font-size: large; text-align: left"><a ng-click="apps = !apps">Applications</a> </li>
                 <li><a data-toggle="modal" data-target="#newApp"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New App</a></li>
                 <li class="nav-divider"></li>
             </ul>
             <ul class="nav nav-sidebar">
-                <li class="nav-header" style="color: white; border-bottom-color: white; font-size: large; text-align: left"><a href="#">Storages</a> </li>
+                <li class="nav-header" style="color: white; border-bottom-color: white; font-size: large; text-align: left"><a ng-click="storages = !storages">Storages</a> </li>
                 <li><a data-toggle="modal" data-target="#newStorage"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New Storage</a></li>
                 <li class="nav-divider"></li>
             </ul>
             <ul class="nav nav-sidebar">
-                <li class="nav-header" style="color: white; border-bottom-color: white; font-size: large; text-align: left"><a href="#">System</a> </li>
+                <li class="nav-header" style="color: white; border-bottom-color: white; font-size: large; text-align: left"><a>System</a> </li>
                 <li><a data-toggle="modal" data-target="#system">Cloud Load Information</a></li>
                 <li class="nav-divider"></li>
             </ul>
         </div>
         <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-            <h1 class="page-header">Jobs</h1>
-
-            <div class="container-fluid">
-                <div class="row col-md-12">
-                    <div> <!-- ng-app="myApp" ng-controller="jobsController" -->
-                        <table class="table table-striped">
-                            <thead>
-                            <tr>
-                                <th>Submitted</th>
-                                <th>Job Id</th>
-                                <th>User</th>
-                                <th>Type</th>
-                                <th>App Name</th>
-                                <th>Duration (s)</th>
-                                <th>Status</th>
-                                <th>Action</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr ng-repeat="x in dashCtrl.jobsList">
-                                <td>{{ x.date }}</td>
-                                <td>{{ x.id }}</td>
-                                <td>{{ x.user }}</td>
-                                <td>{{ x.type }}</td>
-                                <td>{{ x.app }}</td>
-                                <td>{{ x.time }}</td>
-                                <td>{{ x.status }}</td>
-                                <td><div class="btn-group" role="group" aria-label="...">
-                                    <a href="#" class="btn btn-info" role="button"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true" ></span></a>
-                                    <a href="#" class="btn btn-success" role="button"><span class="glyphicon glyphicon-repeat" aria-hidden="true" ></span></a>
-                                    <a href="#" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
-                                </div></td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <div ng-show="jobs">
+                <div ng-include="'views/jobsTable.html'"></div>
             </div>
-
+            <div ng-show="apps">
+                <div ng-include="'views/appsTable.html'"></div>
+            </div>
+            <div ng-show="storages">
+                <div ng-include="'views/storagesTable.html'"></div>
+            </div>
         </div>
     </div>
 </div>
