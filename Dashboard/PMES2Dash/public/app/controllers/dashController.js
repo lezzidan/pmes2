@@ -51,6 +51,35 @@ angular.module('pmes2')
             console.log('Hola que pasa');
         };
 
+        this.saveNewJobAndRun = function() {
+            $http({
+                method: 'POST',
+                url: 'dash/job',
+                data: this.newJob
+            }).then(
+                function(data) {
+                    $('#newJob').modal('hide');
+                    store.jobsList.push(store.newJob); //{id: 4, app: "cosa", time: 11, status: "running"});
+                    store.error = null;
+                },
+                function(error) {
+                    store.error = 'HA FALLADO: '+error.data.error;
+                }
+            );
+            $http({
+                method: 'POST',
+                url: 'api/createActivity',
+                data: this.newJob
+            }).then(
+                function(data) {
+                    console.log(data);
+                    store.error = null;
+                }, function(error) {
+                    store.error = 'Activity creation error'+error.data.error;
+                }
+            );
+        };
+
         this.saveNewStorage = function() {
             $http({
                 method: 'POST',
