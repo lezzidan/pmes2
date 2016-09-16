@@ -2,15 +2,15 @@
 <table class="table table-striped">
     <thead>
     <th>Storage</th>
+    <th>Path</th>
     <th>User</th>
-    <th>Owner</th>
     <th>Action</th>
     </thead>
     <tbody>
-    <tr ng-repeat="n in [1,2,3,4] track by $index">
-        <td>{{n}}</td>
-        <td>{{n}}</td>
-        <td>{{n}}</td>
+    <tr ng-repeat="x in dashCtrl.storagesList">
+        <td>{{x.name}}</td>
+        <td>{{x.path}}</td>
+        <td>{{x.user}}</td>
         <td><div class="btn-group" role="group" aria-label="...">
             <a href="#" class="btn btn-info" role="button"><span class="glyphicon glyphicon-edit" aria-hidden="true" ></span></a>
             <a href="#" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>

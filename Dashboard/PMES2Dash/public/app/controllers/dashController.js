@@ -7,11 +7,15 @@ angular.module('pmes2')
     .controller('dashController', function($http) {
         var store = this;
         this.userName = "test";
+
         this.newApp = {args:[], user:"test"};
         this.newJob = {};
         this.newStorage = {};
+
         this.jobsList = [];
         this.appsList = [];
+        this.storagesList = [];
+
         this.error = null;
 
         this.saveNewApp = function() {
@@ -22,18 +26,19 @@ angular.module('pmes2')
             }).then(
                 function(data) {
                     $('#newApp').modal('hide');
-                    //store.jobsList.push({id: 4, app: "cosa", time: 11, status: "running"});
                     store.appsList.push(store.newApp);
                     store.error = null;
                 },
                 function(error) {
-                    store.error = 'HA FALLADO: '+error.data.error;
+                    store.error = 'ERROR: '+error.data.error;
                 }
             );
-            console.log('Hola que pasa');
         };
 
         this.saveNewJob = function() {
+            this.newJob.appName = this.newJob.appVal.name;
+            this.newJob.args = this.newJob.appVal.args;
+            this.newJob.user = store.userName;
             $http({
                 method: 'POST',
                 url: 'dash/job',
@@ -41,17 +46,19 @@ angular.module('pmes2')
             }).then(
                 function(data) {
                     $('#newJob').modal('hide');
-                    store.jobsList.push(store.newJob); //{id: 4, app: "cosa", time: 11, status: "running"});
+                    store.jobsList.push(store.newJob);
                     store.error = null;
                 },
                 function(error) {
-                    store.error = 'HA FALLADO: '+error.data.error;
+                    store.error = 'Error: '+error.data.error;
                 }
             );
-            console.log('Hola que pasa');
         };
 
         this.saveNewJobAndRun = function() {
+            this.newJob.appName = this.newJob.appVal.name;
+            this.newJob.args = this.newJob.appVal.args;
+            this.newJob.user = store.userName;
             $http({
                 method: 'POST',
                 url: 'dash/job',
@@ -66,10 +73,12 @@ angular.module('pmes2')
                     store.error = 'HA FALLADO: '+error.data.error;
                 }
             );
+            store.newJob.jobName = 'test';
+            var jobToSend = {"jobName":store.newJob.jobName};
             $http({
                 method: 'POST',
                 url: 'api/createActivity',
-                data: this.newJob
+                data: jobToSend
             }).then(
                 function(data) {
                     console.log(data);
@@ -88,7 +97,7 @@ angular.module('pmes2')
             }).then(
                 function(data) {
                     $('#newStorage').modal('hide');
-                    //store.jobsList.push({id: 4, app: "cosa", time: 11, status: "running"});
+                    store.storagesList.push(store.newStorage);
                     store.error = null;
                 },
                 function(error) {
@@ -132,8 +141,20 @@ angular.module('pmes2')
                     });
         };
 
+        this.getStorageList = function() {
+            $http.get('dash/storages')
+                .then(
+                  function(data) {
+                      store.storagesList = data.data;
+                  }, function(error){
+                        console.log('OH NO, SOOMETHING HAS FAILED! AND NOBODY CARES');
+                    }
+                );
+        };
+
         //Init values
         this.getJobsList();
         this.getAppsList();
+        this.getStorageList();
 
     });

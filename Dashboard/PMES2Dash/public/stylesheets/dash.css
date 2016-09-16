@@ -73,7 +73,7 @@ body {
         padding: 20px;
         overflow-x: hidden;
         overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
-        background-color: #333333;
+        background-color: #002369;
         border-right: 1px solid #eee;
     }
 }
@@ -95,7 +95,7 @@ body {
  * Header
  */
 .masthead-nav {
-    background-color: #333333;
+    background-color: #002369;
 }
 .masthead-brand {
     margin-top: 10px;
@@ -208,3 +208,4 @@ table {
 }
 
 #newApp .modal-dialog  {width:75%;}
+#newJob .modal-dialog  {width:75%;}
