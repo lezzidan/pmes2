@@ -4,10 +4,6 @@ var Storage = require('./models/storage');
 
 module.exports = function(app, passport) {
 
-    /*app.get('/dash', function(req, res, next) {
-        res.render('dash', { title: 'PMES2 Dashboard', message: '' });
-    });*/
-
     /* Create new application */
     app.post('/dash/app', function(req, res, next) {
         console.log(req.body);
@@ -22,9 +18,9 @@ module.exports = function(app, passport) {
 
     /* Create new job */
     app.post('/dash/job', function(req, res, next) {
-        console.log("new job ----------------------");
+        console.log("---- new job ----");
         console.log(req.body);
-        if(!req.body.appName) {
+        if(!req.body.app.name) {
             res.status(404).send({ error: 'App name'});
         } else {
             var j = new Job(req.body);
@@ -36,7 +32,7 @@ module.exports = function(app, passport) {
 
     /* Create new storage */
     app.post('/dash/storage', function(req, res, next) {
-        console.log("new Storage ----------------------");
+        console.log("---- new Storage ----");
         console.log(req.body);
         if(!req.body.name) {
             res.status(404).send({ error: 'PATH'});
@@ -88,9 +84,13 @@ module.exports = function(app, passport) {
     /* Get list of applications */
     app.get('/dash/apps', function(req, res, next) {
         res.send([{
-            name: 'test',
+            name: 'HelloWorld',
+            image: 'Image1',
+            location: 'local',
+            path: '/home/Hello/',
+            executable: 'hello.py',
             args: [{
-                name: 'arg1',
+                name: 'name',
                 defaultV: 'test',
                 prefix: '',
                 file: false,

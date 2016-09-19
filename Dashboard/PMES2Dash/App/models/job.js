@@ -9,9 +9,17 @@ var mongoose = require('mongoose');
 var jobSchema = mongoose.Schema({
     //name : String,
     jobName : String,
-    appName: String,
+    app: {
+        name: String,
+        executable: String,
+        pathV: String
+    },
     description: String,
-    user: String,
+    user: {
+        name: String,
+        key: String,
+        pub: String
+    },
     args: [{name: String, value: String, defaultV: String, prefix: String, file: Boolean, optional: Boolean}],
     submitted: Date,
     finished: Date,

@@ -6,10 +6,15 @@
 angular.module('pmes2')
     .controller('dashController', function($http) {
         var store = this;
-        this.userName = "test";
+        this.user = {
+            name: "test",
+            key: "test.key",
+            pub: "test.pub"
+        };
 
         this.newApp = {args:[], user:"test"};
         this.newJob = {};
+        this.newJob.app = {};
         this.newStorage = {};
 
         this.jobsList = [];
@@ -37,6 +42,7 @@ angular.module('pmes2')
 
         this.saveNewJob = function() {
             this.newJob.appName = this.newJob.appVal.name;
+            this.newJob.imageName = this.newJob.appVal.image;
             this.newJob.args = this.newJob.appVal.args;
             this.newJob.user = store.userName;
             $http({
@@ -55,10 +61,15 @@ angular.module('pmes2')
             );
         };
 
+
         this.saveNewJobAndRun = function() {
-            this.newJob.appName = this.newJob.appVal.name;
+            this.newJob.app.name = this.newJob.appVal.name;
+            this.newJob.app.executable = this.newJob.appVal.executable;
+            this.newJob.app.pathV = this.newJob.appVal.path;
             this.newJob.args = this.newJob.appVal.args;
-            this.newJob.user = store.userName;
+
+            this.newJob.user = store.user;
+
             $http({
                 method: 'POST',
                 url: 'dash/job',
@@ -73,8 +84,49 @@ angular.module('pmes2')
                     store.error = 'HA FALLADO: '+error.data.error;
                 }
             );
-            store.newJob.jobName = 'test';
-            var jobToSend = {"jobName":store.newJob.jobName};
+            store.newJob.jobName = this.newJob.appVal.name;
+            // Creating Job to send to PMES
+            /*var arrArgs = [{key: "name", val: "Mundo"}];
+            var resultArgs = arrArgs.reduce(function(map, obj){
+                map[obj.key] = obj.val;
+                return map;
+            }, {});*/
+            var resultArgs = store.newJob.args.reduce(function(map, obj){
+                map[obj.name] = obj.value;
+                return map;
+            }, {});
+            var jobToSend = {
+                "jobName":store.newJob.jobName,
+                "wallTime": store.newJob.wallTime,
+                "minimumVMs": store.newJob.minimumVMs,
+                "maximumVMs": store.newJob.maximumVMs,
+                "limitVMs": store.newJob.maximumVMs,
+                "initialVMs": store.newJob.minimumVMs,
+                "memory": store.newJob.memory,
+                "cores": store.newJob.cores,
+                "inputPath": "/home/",
+                "outputPath": "/home/",
+                "numNodes": "1",
+                "user": {
+                    "username":store.newJob.user.name,
+                    "credentials": {
+                        "key": store.newJob.user.key,
+                        "pub": store.newJob.user.pub
+                    }
+                },
+                "img": {
+                    "imageName":store.newJob.imageName,
+                    "imageType": "small"
+                },
+                "app": {
+                    "name":store.newJob.app.name,
+                    "target":store.newJob.app.pathV,
+                    "source":store.newJob.app.executable,
+                    "args": resultArgs
+                }
+            };
+            console.log(jobToSend);
+
             $http({
                 method: 'POST',
                 url: 'api/createActivity',
