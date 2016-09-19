@@ -22,9 +22,28 @@
         <td>{{app.publicApp}}</td>
         <td>{{app.user}}</td>
         <td><div class="btn-group" role="group" aria-label="...">
-            <a href="#" class="btn btn-info" role="button"><span class="glyphicon glyphicon-edit" aria-hidden="true" ></span></a>
-            <a href="#" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
+            <a ng-click="dashCtrl.infoApp(app)" data-toggle="modal" data-target="#infoApp" class="btn btn-info" role="button"><span class="glyphicon glyphicon-edit" aria-hidden="true" ></span></a>
+            <a ng-click="dashCtrl.removeApp(app)" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
         </div></td>
     </tr>
     </tbody>
 </table>
+
+<div class="modal fade" id="infoApp" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">App</h4>
+            </div>
+            <div class="modal-body">
+                <div ng-include="'views/infoApp.html'"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" ng-init="editA=false" ng-click="editA = !editA" ng-show="!editA">Edit</button>
+                <button type="button" class="btn btn-success" ng-click="dashCtrl.saveNewApp()" ng-show="editA">Save</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -46,7 +46,7 @@ module.exports = function(app, passport) {
 
     /* Create new user */
     app.post('/dash/user', function(req, res, next){
-        console.log("New User ------------");
+        console.log("---- New User ----");
         console.log(req.body);
         if(!req.body.name || !req.body.credentials){
             res.status(404).send({error: 'name or credentials'});

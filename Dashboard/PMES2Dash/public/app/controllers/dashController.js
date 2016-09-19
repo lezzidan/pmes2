@@ -13,9 +13,13 @@ angular.module('pmes2')
         };
 
         this.newApp = {args:[], user:"test"};
+        this.infoApp = {};
+
         this.newJob = {};
         this.newJob.app = {};
+
         this.newStorage = {};
+        this.infoStorage = {};
 
         this.jobsList = [];
         this.appsList = [];
@@ -61,6 +65,35 @@ angular.module('pmes2')
             );
         };
 
+        this.runJob = function(job){
+            //TODO
+        };
+
+        this.stopJob = function(job){
+            //TODO
+        };
+
+        this.removeJob = function(job) {
+            var index = this.jobsList.indexOf(job);
+            if (index > -1){
+                this.jobsList.splice(index, 1);
+            }
+        };
+
+        this.removeStorage = function(storage) {
+            var index = store.storagesList.indexOf(storage);
+            if (index > -1){
+                store.storagesList.splice(index, 1);
+            }
+        };
+
+        this.removeApp = function(app) {
+            var index = store.appsList.indexOf(app);
+            if (index > -1){
+                store.appsList.splice(index, 1);
+            }
+        };
+
 
         this.saveNewJobAndRun = function() {
             this.newJob.app.name = this.newJob.appVal.name;
@@ -85,12 +118,6 @@ angular.module('pmes2')
                 }
             );
             store.newJob.jobName = this.newJob.appVal.name;
-            // Creating Job to send to PMES
-            /*var arrArgs = [{key: "name", val: "Mundo"}];
-            var resultArgs = arrArgs.reduce(function(map, obj){
-                map[obj.key] = obj.val;
-                return map;
-            }, {});*/
             var resultArgs = store.newJob.args.reduce(function(map, obj){
                 map[obj.name] = obj.value;
                 return map;
@@ -157,6 +184,16 @@ angular.module('pmes2')
                 }
             );
             console.log('Hola que pasa');
+        };
+
+        this.infoStorage = function(storage) {
+            var index = this.storagesList.indexOf(storage);
+            store.infoStorage = store.storagesList[index];
+        };
+
+        this.infoApp = function(app) {
+            var index = this.appsList.indexOf(app);
+            store.infoApp = store.appsList[index];
         };
 
         this.removeArg = function (index) {
