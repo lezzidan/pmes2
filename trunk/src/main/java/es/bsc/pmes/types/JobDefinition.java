@@ -17,12 +17,14 @@ public class JobDefinition {
     private Integer wallTime;
     private Integer numNodes;
     private Integer cores;
-    private Integer memory;
+    private Float memory;
+    private Float disk;
     private HashMap<String, String> compss_flags;
     private Integer initialVMs;
     private Integer minimumVMs;
     private Integer maximumVMs;
     private Integer limitVMs;
+
 
     public JobDefinition() {
         this.id = UUID.randomUUID().toString();
@@ -35,7 +37,8 @@ public class JobDefinition {
         this.wallTime = -1;
         this.numNodes = -1;
         this.cores = -1;
-        this.memory = -1;
+        this.memory = new Float(-1.0);
+        this.disk = new Float(-1.0);
         this.compss_flags = null;
         this.initialVMs = 0;
         this.minimumVMs = 0;
@@ -124,11 +127,11 @@ public class JobDefinition {
         this.cores = cores;
     }
 
-    public Integer getMemory() {
+    public Float getMemory() {
         return memory;
     }
 
-    public void setMemory(Integer memory) {
+    public void setMemory(Float memory) {
         this.memory = memory;
     }
 
@@ -171,5 +174,13 @@ public class JobDefinition {
 
     public void setLimitVMs(Integer limitVMs) {
         this.limitVMs = limitVMs;
+    }
+
+    public Float getDisk() {
+        return disk;
+    }
+
+    public void setDisk(Float disk) {
+        this.disk = disk;
     }
 }

@@ -9,6 +9,10 @@ public class User {
     private String username;
     private HashMap<String, String> credentials;
 
+    public User(){
+        this.username = "";
+        this.credentials = new HashMap<>();
+    }
     public User(String name){
         this.username = name;
         this.credentials = new HashMap<>();

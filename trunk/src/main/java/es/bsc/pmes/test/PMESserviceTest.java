@@ -37,7 +37,7 @@ public class PMESserviceTest {
         job.setWallTime(10);
         job.setNumNodes(1);
         job.setCores(16);
-        job.setMemory(1);
+        job.setMemory(new Float(1.0));
         job.setCompss_flags(null);
 
         jobDefinitions.add(job);
@@ -49,12 +49,12 @@ public class PMESserviceTest {
     }
 
     public static void testGenerateProjects() {
-        Job jobTest = new Job();
+        COMPSsJob jobTest = new COMPSsJob();
         jobTest.generateProjects();
     }
 
     public static void  testGenerateResources() {
-        Job jobTest = new Job();
+        COMPSsJob jobTest = new COMPSsJob();
         jobTest.generateResources();
     }
 

@@ -10,6 +10,11 @@ public class Image {
     private String imageName;
     private String imageType;
 
+    public Image(){
+        this.id = UUID.randomUUID().toString();
+        this.imageName = "";
+        this.imageType = "";
+    }
     public Image(String imageName, String imageType){
         this.id = UUID.randomUUID().toString();
         this.imageName = imageName;
@@ -29,4 +34,15 @@ public class Image {
         return imageType;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setImageName(String imageName) {
+        this.imageName = imageName;
+    }
+
+    public void setImageType(String imageType) {
+        this.imageType = imageType;
+    }
 }

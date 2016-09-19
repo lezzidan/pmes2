@@ -14,6 +14,13 @@ public class App {
     private String target;
     private String source;
 
+    public App(){
+        this.id = UUID.randomUUID().toString();
+        this.name = "";
+        this.args = new HashMap<>();
+        this.target = "/home/user/apps/";
+        this.source = "";
+    }
     public App(String name){
         this.id = UUID.randomUUID().toString();
         this.name = name;
@@ -52,5 +59,9 @@ public class App {
 
     public void setSource(String source) {
         this.source = source;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }
