@@ -4,8 +4,8 @@
     <th>Name</th>
     <th>Image</th>
     <th>Location</th>
-    <th>Path</th>
-    <th>Executable</th>
+    <th>Target</th>
+    <th>Source</th>
     <th>COMPSs</th>
     <th>Public</th>
     <th>User</th>
@@ -16,13 +16,13 @@
         <td>{{app.name}}</td>
         <td>{{app.image}}</td>
         <td>{{app.location}}</td>
-        <td>{{app.path}}</td>
-        <td>{{app.executable}}</td>
-        <td>{{app.compss}}</td>
-        <td>{{app.publicApp}}</td>
-        <td>{{app.user}}</td>
+        <td>{{app.target}}</td>
+        <td>{{app.source}}</td>
+        <td><input type="checkbox" disabled="disabled" ng-model="app.compss"></td>
+        <td><input type="checkbox" disabled="disabled" ng-model="app.publicApp"></td>
+        <td>{{app.user.username}}</td>
         <td><div class="btn-group" role="group" aria-label="...">
-            <a ng-click="dashCtrl.infoApp(app)" data-toggle="modal" data-target="#infoApp" class="btn btn-info" role="button"><span class="glyphicon glyphicon-edit" aria-hidden="true" ></span></a>
+            <a ng-click="dashCtrl.infoAppFun(app)" data-toggle="modal" data-target="#infoApp" class="btn btn-info" role="button"><span class="glyphicon glyphicon-edit" aria-hidden="true" ></span></a>
             <a ng-click="dashCtrl.removeApp(app)" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
         </div></td>
     </tr>
@@ -41,7 +41,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-success" ng-init="editA=false" ng-click="editA = !editA" ng-show="!editA">Edit</button>
-                <button type="button" class="btn btn-success" ng-click="dashCtrl.saveNewApp()" ng-show="editA">Save</button>
+                <button type="button" class="btn btn-success" ng-click="dashCtrl.updateApp(); editA = !editA" ng-show="editA">Save</button>
                 <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
             </div>
         </div>

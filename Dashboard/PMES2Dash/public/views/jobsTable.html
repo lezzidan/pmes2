@@ -1,7 +1,7 @@
 <h1 class="page-header">Jobs</h1>
 <div class="container-fluid">
     <div class="row col-md-12">
-        <div> <!-- ng-app="myApp" ng-controller="jobsController" -->
+        <div>
             <table class="table table-striped">
                 <thead>
                 <tr>
@@ -17,23 +17,42 @@
                 </thead>
                 <tbody>
                 <tr ng-repeat="x in dashCtrl.jobsList">
-                    <td>{{ x.date }}</td>
-                    <td>{{ x.id }}</td>
-                    <td>{{ x.user }}</td>
-                    <td>{{ x.type }}</td>
-                    <td>{{ x.app }}</td>
-                    <td>{{ x.time }}</td>
+                    <td>{{ x.submitted }}</td>
+                    <td>{{ x.jobName }}</td>
+                    <td>{{ x.user.username }}</td>
+                    <td>{{ x.app.compss }}</td>
+                    <td>{{ x.app.name }}</td>
+                    <td>{{ x.duration }}</td>
                     <td>{{ x.status }}</td>
                     <td><div class="btn-group" role="group" aria-label="...">
-                        <a href="#" class="btn btn-info" role="button"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true" ></span></a>
+                        <a ng-click="dashCtrl.infoJobFun(x)" data-toggle="modal" data-target="#infoJob" class="btn btn-info" role="button"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true" ></span></a>
                         <a ng-click="dashCtrl.runJob(x)" class="btn btn-success" role="button" ng-show="x.status == 'finished'"><span class="glyphicon glyphicon-repeat" aria-hidden="true" ></span></a>
-                        <a ng-click="dashCtrl.runJob(x)" class="btn btn-success" role="button" ng-show="x.status == 'created'"><span class="glyphicon glyphicon-run" aria-hidden="true"></span></a>
+                        <a ng-click="dashCtrl.runJob(x)" class="btn btn-success" role="button" ng-show="x.status == 'created'"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></a>
                         <a ng-click="dashCtrl.stopJob(x)" class="btn btn-warning" role="button" ng-show="x.status == 'running'"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></a>
                         <a ng-click="dashCtrl.removeJob(x)" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
                     </div></td>
                 </tr>
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="infoJob" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Job</h4>
+            </div>
+            <div class="modal-body">
+                <div ng-include="'views/infoJob.html'"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" ng-init="editS=false" ng-click="editJ = !editJ" ng-show="!editJ">Edit</button>
+                <button type="button" class="btn btn-success" ng-click="dashCtrl.updateJob(); editJ = !editJ" ng-show="editJ">Save</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </div>
         </div>
     </div>
 </div>

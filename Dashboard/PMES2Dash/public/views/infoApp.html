@@ -3,46 +3,46 @@
         <div class="col-sm-6 col-md-6 col-lg-6">
             <div class="form-group">
                 <label for="nameApp">Name</label>
-                <input type="text" class="form-control" id="nameApp" value="dashCtrl.infoApp.name" ng-disabled="!editA" ng-init="dashCtrl.newApp.nameApp=HelloWorld" ng-model="dashCtrl.newApp.name">
+                <input type="text" class="form-control" id="nameApp" value="dashCtrl.infoApp.name" ng-disabled="!editA" ng-model="dashCtrl.infoApp.name">
             </div>
             <div class="form-group">
                 <label for="imageName">Image</label>
-                <select id="imageName" class="form-control" value="dashCtrl.infoApp.image" ng-disabled="!editA" ng-model="dashCtrl.newApp.image">
+                <select id="imageName" class="form-control" value="dashCtrl.infoApp.image" ng-disabled="!editA" ng-model="dashCtrl.infoApp.image">
                     <option>Image1</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="location">Location</label>
-                <select id="location" class="form-control" value="dashCtrl.infoApp.location" ng-disabled="!editA" ng-model="dashCtrl.newApp.location">
+                <select id="location" class="form-control" value="dashCtrl.infoApp.location" ng-disabled="!editA" ng-model="dashCtrl.infoApp.location">
                     <option>local</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="path">Path</label>
-                <input type="text" class="form-control" id="path" value="dashCtrl.infoApp.path" ng-disabled="!editA" ng-model="dashCtrl.newApp.path">
+                <label for="target">Target</label>
+                <input type="text" class="form-control" id="target" value="dashCtrl.infoApp.target" ng-disabled="!editA" ng-model="dashCtrl.infoApp.target">
             </div>
             <div class="form-group">
-                <label for="executable">Executable</label>
-                <input type="text" class="form-control" id="executable" placeholder="hello.py" ng-model="dashCtrl.newApp.executable">
+                <label for="source">Source</label>
+                <input type="text" class="form-control" id="source" value="dashCtrl.infoApp.source" ng-disabled="!editA" ng-model="dashCtrl.infoApp.source">
             </div>
         </div>
         <div class="col-sm-6 col-md-6 col-lg-6">
             <div class="form-group">
                 <label for="description">Description</label>
-                <textarea class="form-control" rows="3" id="description" ng-model="dashCtrl.newApp.description"></textarea>
+                <textarea class="form-control" rows="3" id="description" value="dashCtrl.infoApp.description" ng-disabled="!editA" ng-model="dashCtrl.infoApp.description"></textarea>
             </div>
             <div class="row">
                 <div class="col-sm-6 col-md-6 col-lg-6">
                     <div class="form-group checkbox">
                         <label for="compss">
-                            <input type="checkbox" id="compss" ng-init="dashCtrl.newApp.compss=false" ng-model="dashCtrl.newApp.compss"> COMPSs
+                            <input type="checkbox" id="compss" value="dashCtrl.infoApp.compss" ng-disabled="!editA" ng-model="dashCtrl.infoApp.compss"> COMPSs
                         </label>
                     </div>
                 </div>
                 <div class="col-sm-6 col-md-6 col-lg-6">
                     <div class="form-group checkbox">
                         <label for="public">
-                            <input type="checkbox" id="public" ng-init="dashCtrl.newApp.publicApp=false" ng-model="dashCtrl.newApp.publicApp"> Public
+                            <input type="checkbox" id="public" value="dashCtrl.infoApp.publicApp" ng-disabled="!editA" ng-model="dashCtrl.infoApp.publicApp"> Public
                         </label>
                     </div>
                 </div>
@@ -62,19 +62,19 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr ng-repeat="arg in dashCtrl.newApp.args">
-                        <td>{{arg.name}}</td>
-                        <td>{{arg.defaultV}}</td>
-                        <td>{{arg.prefix}}</td>
-                        <td><input type="checkbox" disabled="disabled"  ng-model="arg.file"></td>
-                        <td><input type="checkbox" disabled="disabled"  ng-model="arg.optional"></td>
+                    <tr ng-repeat="arg in dashCtrl.infoApp.args">
+                        <td><input type="text" value="arg.name" ng-disabled="!editA" ng-model="arg.name" size="10"></td>
+                        <td><input type="text" value="arg.default" ng-disabled="!editA" ng-model="arg.default" size="10"></td>
+                        <td><input type="text" value="arg.prefix" ng-disabled="!editA" ng-model="arg.prefix" size="10"></td>
+                        <td><input type="checkbox" ng-disabled="!editA" value="arg.file" ng-model="arg.file"></td>
+                        <td><input type="checkbox" ng-disabled="!editA" value="arg.optional" ng-model="arg.optional"></td>
                         <td>
                             <div class="btn-group" role="group" aria-label="...">
-                                <a ng-click="dashCtrl.removeArg(arg)" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
+                                <a ng-click="dashCtrl.removeArg(arg)" ng-disabled="!editA" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
                             </div>
                         </td>
                     </tr>
-                    <tr>
+                    <tr ng-show="editA">
                         <td><label for="name"><input type="text" id="name" size="10" placeholder=" arg1" ng-model="arg.name"> </label></td>
                         <td><label for="default"><input type="text" id="default" size="10"  placeholder=" value1"  ng-model="arg.defaultV"></label></td>
                         <td><label for="prefix"><input type="text" id="prefix" size="10"  placeholder=" --flag"  ng-model="arg.prefix"></label></td>

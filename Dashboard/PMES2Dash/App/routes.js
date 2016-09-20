@@ -1,11 +1,13 @@
 var Application = require('./models/application');
 var Job = require('./models/job');
 var Storage = require('./models/storage');
+var User = require('./models/user');
 
 module.exports = function(app, passport) {
 
     /* Create new application */
     app.post('/dash/app', function(req, res, next) {
+        console.log("---- new app ----");
         console.log(req.body);
         if(!req.body.name || req.body.name.length < 5) {
             res.status(404).send({ error: 'NameApp too short'});
@@ -24,7 +26,8 @@ module.exports = function(app, passport) {
             res.status(404).send({ error: 'App name'});
         } else {
             var j = new Job(req.body);
-            j.jobName = j.appName + '_' + j._id;
+            console.log("JOB: "+j);
+            j.jobName = j.app.name + '_' + j._id;
             console.log(j);
             res.send('OK');
         }
@@ -40,6 +43,46 @@ module.exports = function(app, passport) {
             var storage = new Storage(req.body);
             storage.password = storage.encrypt(storage.password);
             console.log(storage);
+            res.send('OK');
+        }
+    });
+
+    app.put('/dash/storage', function(req, res, next){
+        console.log("---- updating Storage ----");
+        console.log(req.body);
+        if(!req.body.name) {
+            res.status(404).send({ error: 'PATH'});
+        } else {
+            /*var storage = new Storage(req.body);
+            storage.password = storage.encrypt(storage.password);
+            console.log(storage);*/
+            //todo
+            res.send('OK');
+        }
+    });
+    app.put('/dash/app', function(req, res, next){
+        console.log("---- updating App ----");
+        console.log(req.body);
+        if(!req.body.name) {
+            res.status(404).send({ error: 'PATH'});
+        } else {
+            /*var storage = new Storage(req.body);
+             storage.password = storage.encrypt(storage.password);
+             console.log(storage);*/
+            //todo
+            res.send('OK');
+        }
+    });
+    app.put('/dash/job', function(req, res, next){
+        console.log("---- updating Job ----");
+        console.log(req.body);
+        if(!req.body.app.name) {
+            res.status(404).send({ error: 'PATH'});
+        } else {
+            /*var storage = new Storage(req.body);
+             storage.password = storage.encrypt(storage.password);
+             console.log(storage);*/
+            //todo
             res.send('OK');
         }
     });
@@ -62,18 +105,24 @@ module.exports = function(app, passport) {
         res.send([
             {
                 id: 1,
+                user: 'scorella',
+                type: 'compss',
                 app: "date",
                 time: 10,
                 status: "finished"
             },
             {
                 id: 2,
+                user: 'scorella',
+                type: 'compss',
                 app: "date",
                 time: 10,
                 status: "finished"
             },
             {
                 id: 3,
+                user: 'scorella',
+                type: 'compss',
                 app: "date",
                 time: 10,
                 status: "running"
@@ -87,8 +136,8 @@ module.exports = function(app, passport) {
             name: 'HelloWorld',
             image: 'Image1',
             location: 'local',
-            path: '/home/Hello/',
-            executable: 'hello.py',
+            target: '/home/Hello/',
+            source: 'hello.py',
             args: [{
                 name: 'name',
                 defaultV: 'test',

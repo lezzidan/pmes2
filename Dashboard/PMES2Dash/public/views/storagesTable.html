@@ -13,7 +13,7 @@
         <td>{{x.user}}</td>
         <td><div class="btn-group" role="group" aria-label="...">
             <a ng-click="dashCtrl.infoStorage(x)" data-toggle="modal" data-target="#infoStorage" class="btn btn-info" role="button"><span class="glyphicon glyphicon-edit" aria-hidden="true" ></span></a>
-            <a ng-click="dashCtrl.removeStorage(x)" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
+            <a ng-click="dashCtrl.removeStorage(x)" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true"></span></a>
         </div></td>
     </tr>
     </tbody>
@@ -31,7 +31,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-success" ng-init="editS=false" ng-click="editS = !editS" ng-show="!editS">Edit</button>
-                <button type="button" class="btn btn-success" ng-click="dashCtrl.saveNewStorage()" ng-show="editS">Save</button>
+                <button type="button" class="btn btn-success" ng-click="dashCtrl.updateStorage(); editS = !editS" ng-show="editS">Save</button>
                 <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
             </div>
         </div>

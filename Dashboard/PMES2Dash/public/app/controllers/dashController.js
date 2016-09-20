@@ -7,9 +7,11 @@ angular.module('pmes2')
     .controller('dashController', function($http) {
         var store = this;
         this.user = {
-            name: "test",
-            key: "test.key",
-            pub: "test.pub"
+            username: "test",
+            credentials: {
+                key: "test.key",
+                pub: "test.pub"
+            }
         };
 
         this.newApp = {args:[], user:"test"};
@@ -17,6 +19,8 @@ angular.module('pmes2')
 
         this.newJob = {};
         this.newJob.app = {};
+        this.newJob.img = {};
+        this.infoJob = {};
 
         this.newStorage = {};
         this.infoStorage = {};
@@ -28,6 +32,7 @@ angular.module('pmes2')
         this.error = null;
 
         this.saveNewApp = function() {
+            this.newApp.user = store.user;
             $http({
                 method: 'POST',
                 url: 'dash/app',
@@ -45,10 +50,28 @@ angular.module('pmes2')
         };
 
         this.saveNewJob = function() {
-            this.newJob.appName = this.newJob.appVal.name;
-            this.newJob.imageName = this.newJob.appVal.image;
-            this.newJob.args = this.newJob.appVal.args;
-            this.newJob.user = store.userName;
+            this.newJob.app.name = this.newJob.appVal.name;
+            this.newJob.app.source = this.newJob.appVal.source;
+            this.newJob.app.target = this.newJob.appVal.target;
+            this.newJob.app.compss = ((this.newJob.appVal.compss) ? 'compss': 'single');
+            this.newJob.app.args = this.newJob.appVal.args;
+            this.newJob.status = 'created';
+            this.newJob.user = store.user;
+            this.newJob.img.imageName = this.newJob.appVal.image;
+            this.newJob.img.imageType = 'small';
+            this.newJob.submitted = new Date().toJSON().slice(0,10);
+            this.newJob.finished = new Date().toJSON().slice(0,10);
+            this.newJob.duration = 0;
+            this.newJob.errorMessage = "";
+            this.newJob.numNodes = "1";
+            this.newJob.initialVMs = this.newJob.minimumVMs;
+            this.newJob.limitVMs = this.newJob.maximumVMs;
+            this.newJob.log = "";
+            this.newJob.output = "";
+            this.newJob.error = "";
+            this.newJob.inputPath = "/home/";
+            this.newJob.outputPath = "/home/";
+
             $http({
                 method: 'POST',
                 url: 'dash/job',
@@ -60,13 +83,26 @@ angular.module('pmes2')
                     store.error = null;
                 },
                 function(error) {
-                    store.error = 'Error: '+error.data.error;
+                    store.error = 'HA FALLADO: '+error.data.error;
                 }
             );
+            store.newJob.jobName = this.newJob.appVal.name;
         };
 
         this.runJob = function(job){
-            //TODO
+            var jobToSend = this.formatJob(job);
+            $http({
+                method: 'POST',
+                url: 'api/createActivity',
+                data: jobToSend
+            }).then(
+                function(data) {
+                    console.log("DATA: "+data);
+                    store.error = null;
+                }, function(error) {
+                    store.error = 'Activity creation error'+error.data.error;
+                }
+            );
         };
 
         this.stopJob = function(job){
@@ -94,78 +130,39 @@ angular.module('pmes2')
             }
         };
 
-
-        this.saveNewJobAndRun = function() {
-            this.newJob.app.name = this.newJob.appVal.name;
-            this.newJob.app.executable = this.newJob.appVal.executable;
-            this.newJob.app.pathV = this.newJob.appVal.path;
-            this.newJob.args = this.newJob.appVal.args;
-
-            this.newJob.user = store.user;
-
-            $http({
-                method: 'POST',
-                url: 'dash/job',
-                data: this.newJob
-            }).then(
-                function(data) {
-                    $('#newJob').modal('hide');
-                    store.jobsList.push(store.newJob); //{id: 4, app: "cosa", time: 11, status: "running"});
-                    store.error = null;
-                },
-                function(error) {
-                    store.error = 'HA FALLADO: '+error.data.error;
-                }
-            );
-            store.newJob.jobName = this.newJob.appVal.name;
-            var resultArgs = store.newJob.args.reduce(function(map, obj){
+        this.formatJob = function(job) {
+            var resultArgs = job.app.args.reduce(function(map, obj){
                 map[obj.name] = obj.value;
                 return map;
             }, {});
             var jobToSend = {
-                "jobName":store.newJob.jobName,
-                "wallTime": store.newJob.wallTime,
-                "minimumVMs": store.newJob.minimumVMs,
-                "maximumVMs": store.newJob.maximumVMs,
-                "limitVMs": store.newJob.maximumVMs,
-                "initialVMs": store.newJob.minimumVMs,
-                "memory": store.newJob.memory,
-                "cores": store.newJob.cores,
-                "inputPath": "/home/",
-                "outputPath": "/home/",
-                "numNodes": "1",
-                "user": {
-                    "username":store.newJob.user.name,
-                    "credentials": {
-                        "key": store.newJob.user.key,
-                        "pub": store.newJob.user.pub
-                    }
-                },
-                "img": {
-                    "imageName":store.newJob.imageName,
-                    "imageType": "small"
-                },
+                "jobName":job.jobName,
+                "wallTime": job.wallTime,
+                "minimumVMs": job.minimumVMs,
+                "maximumVMs": job.maximumVMs,
+                "limitVMs": job.maximumVMs,
+                "initialVMs": job.minimumVMs,
+                "memory": job.memory,
+                "cores": job.cores,
+                "inputPath": job.inputPath,
+                "outputPath": job.outputPath,
+                "numNodes": job.numNodes,
+                "user": job.user,
+                "img": job.img,
                 "app": {
-                    "name":store.newJob.app.name,
-                    "target":store.newJob.app.pathV,
-                    "source":store.newJob.app.executable,
+                    "name":job.app.name,
+                    "target":job.app.target,
+                    "source":job.app.source,
                     "args": resultArgs
                 }
             };
-            console.log(jobToSend);
+            return jobToSend;
+        };
 
-            $http({
-                method: 'POST',
-                url: 'api/createActivity',
-                data: jobToSend
-            }).then(
-                function(data) {
-                    console.log(data);
-                    store.error = null;
-                }, function(error) {
-                    store.error = 'Activity creation error'+error.data.error;
-                }
-            );
+
+        this.saveNewJobAndRun = function() {
+            store.saveNewJob();
+            this.runJob(store.newJob);
         };
 
         this.saveNewStorage = function() {
@@ -183,17 +180,72 @@ angular.module('pmes2')
                     store.error = 'HA FALLADO: '+error.data.error;
                 }
             );
-            console.log('Hola que pasa');
+        };
+
+        this.updateStorage = function(){
+            $http({
+                method: 'PUT',
+                url: 'dash/storage',
+                data: this.infoStorage
+            }).then(
+                function(data) {
+                    store.storagesList[store.index]= store.infoStorage;
+                    store.error = null;
+                },
+                function(error) {
+                    store.error = 'HA FALLADO: '+error.data.error;
+                }
+            );
+        };
+
+        this.updateApp = function(){
+            $http({
+                method: 'PUT',
+                url: 'dash/app',
+                data: this.infoApp
+            }).then(
+                function(data) {
+                    store.appsList[store.index]= store.infoApp;
+                    store.error = null;
+                },
+                function(error) {
+                    store.error = 'HA FALLADO: '+error.data.error;
+                }
+            );
+        };
+        this.updateJob = function(){
+            $http({
+                method: 'PUT',
+                url: 'dash/app',
+                data: this.infoJob
+            }).then(
+                function(data) {
+                    store.jobsList[store.index]= store.infoJob;
+                    store.error = null;
+                },
+                function(error) {
+                    store.error = 'HA FALLADO: '+error.data.error;
+                }
+            );
         };
 
         this.infoStorage = function(storage) {
             var index = this.storagesList.indexOf(storage);
+            console.log(index);
             store.infoStorage = store.storagesList[index];
+            store.index = index;
         };
 
-        this.infoApp = function(app) {
+        this.infoAppFun = function(app) {
             var index = this.appsList.indexOf(app);
             store.infoApp = store.appsList[index];
+            store.index = index;
+        };
+
+        this.infoJobFun = function(job) {
+            var index = this.jobsList.indexOf(job);
+            store.infoJob = store.jobsList[index];
+            store.index = index;
         };
 
         this.removeArg = function (index) {
