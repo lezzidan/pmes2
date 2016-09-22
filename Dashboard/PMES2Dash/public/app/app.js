@@ -11,7 +11,9 @@ angular.module('pmes2', ['ui.router'])
         $stateProvider
             .state('login', {
                 url: '/login',
-                templateUrl: 'views/login.html'
+                templateUrl: 'views/login.html',
+                controller: 'authController',
+                controllerAs: 'authCtrl'
             })
             .state('dash', {
                 url: '/dash',

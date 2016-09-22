@@ -110,6 +110,19 @@ angular.module('pmes2')
         };
 
         this.removeJob = function(job) {
+            $http({
+                method: 'DELETE',
+                url: 'dash/job',
+                data: job,
+                headers: {"Content-Type": "application/json;charset=utf-8"}
+            }).then(
+                function(data) {
+                    console.log("JOB Deleted: "+data);
+                    store.error = null;
+                }, function(error) {
+                    store.error = 'Job deletion error '+error.data.error;
+                }
+            );
             var index = this.jobsList.indexOf(job);
             if (index > -1){
                 this.jobsList.splice(index, 1);
@@ -117,6 +130,19 @@ angular.module('pmes2')
         };
 
         this.removeStorage = function(storage) {
+            $http({
+                method: 'DELETE',
+                url: 'dash/storage',
+                data: storage,
+                headers: {"Content-Type": "application/json;charset=utf-8"}
+            }).then(
+                function(data) {
+                    console.log("Storage Deleted: "+data);
+                    store.error = null;
+                }, function(error) {
+                    store.error = 'storage deletion error '+error.data.error;
+                }
+            );
             var index = store.storagesList.indexOf(storage);
             if (index > -1){
                 store.storagesList.splice(index, 1);
@@ -124,6 +150,19 @@ angular.module('pmes2')
         };
 
         this.removeApp = function(app) {
+            $http({
+                method: 'DELETE',
+                url: 'dash/app',
+                data: app,
+                headers: {"Content-Type": "application/json;charset=utf-8"}
+            }).then(
+                function(data) {
+                    console.log("App Deleted: "+data);
+                    store.error = null;
+                }, function(error) {
+                    store.error = 'app deletion error '+error.data.error;
+                }
+            );
             var index = store.appsList.indexOf(app);
             if (index > -1){
                 store.appsList.splice(index, 1);

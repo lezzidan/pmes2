@@ -47,6 +47,7 @@ module.exports = function(app, passport) {
         }
     });
 
+    /* update storage */
     app.put('/dash/storage', function(req, res, next){
         console.log("---- updating Storage ----");
         console.log(req.body);
@@ -60,6 +61,8 @@ module.exports = function(app, passport) {
             res.send('OK');
         }
     });
+
+    /* update app */
     app.put('/dash/app', function(req, res, next){
         console.log("---- updating App ----");
         console.log(req.body);
@@ -73,6 +76,8 @@ module.exports = function(app, passport) {
             res.send('OK');
         }
     });
+
+    /* update job */
     app.put('/dash/job', function(req, res, next){
         console.log("---- updating Job ----");
         console.log(req.body);
@@ -85,6 +90,30 @@ module.exports = function(app, passport) {
             //todo
             res.send('OK');
         }
+    });
+
+    /* delete job */
+    app.delete('/dash/job', function(req, res, next){
+        console.log("---- deleting Job ----");
+        console.log(req.body);
+        //todo
+        res.send('OK');
+    });
+
+    /* delete app */
+    app.delete('/dash/app', function(req, res, next){
+        console.log("---- deleting App ----");
+        console.log(req.body);
+        //todo
+        res.send('OK');
+    });
+
+    /* delete storage */
+    app.delete('/dash/storage', function(req, res, next){
+        console.log("---- deleting Storage ----");
+        console.log(req.body);
+        //todo
+        res.send('OK');
     });
 
     /* Create new user */
@@ -154,6 +183,33 @@ module.exports = function(app, passport) {
         res.send([]);
     });
 
+    // =====================================
+    // AUTH       ==========================
+    // =====================================
+    /*app.post('/auth/login', function(req, res, next){
+       console.log(req.body);
+    });*/
+
+    app.post('/auth/login',
+        passport.authenticate('local-login', {
+            failureRedirect: '/login' }),
+        function(req, res) {
+            console.log(req.user);
+            res.send(req.user);
+        });
+
+    app.post('/auth/signup',
+        passport.authenticate('local-signup', {
+            failureRedirect: '/login' }),
+        function(req, res) {
+            console.log(req.user);
+            res.send(req.user);
+            //res.redirect('/dash');
+        });
+
+    app.get('/logout', function(req, res){
+        req.logout();
+    });
 
     // =====================================
     // API - PMES ==========================
@@ -162,13 +218,11 @@ module.exports = function(app, passport) {
         console.log("creating activity");
         console.log(req.body);
         var listOfJobs = [req.body];
-        //var listOfJobs = [{"jobName":"test"}];
         var request = require('request');
         var options = {
-            uri: 'http://localhost:8081/trunk_war_exploded/pmes/createActivity',
+            uri: 'http://localhost:8080/trunk_war_exploded/pmes/createActivity',
             method: 'POST',
             json: listOfJobs
-            //json: [{"jobName":"test"},{"jobName":"test2"}]
         };
         request.post(options, function(error, response, body){
             if (!error && response.statusCode == 200){
@@ -179,7 +233,5 @@ module.exports = function(app, passport) {
                 res.status(404).send({ error: error});
             }
         });
-
     });
-
 };

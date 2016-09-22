@@ -7,12 +7,14 @@ var bodyParser = require('body-parser');
 
 var mongoose = require('mongoose');
 var passport = require('passport');
+var session  = require('express-session');
 
 var app = express();
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
+//app.set('view engine', 'ejs');
+app.set('view engine', 'html');
 
 // uncomment after placing your favicon in /public
 app.use(favicon(path.join(__dirname, 'public/images', 'BSC.svg')));
@@ -25,6 +27,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 // DB configuration ============================================================
 //var configDB = require('./Config/database.js');
 //mongoose.connect(configDB.url);
+
+// PASSPORT ====================================================================
+require('./Config/passport')(passport); // pass passport for configuration
+
+// required for passport =======================================================
+app.use(session({secret: 'pmes2'}));
+app.use(passport.initialize());
+app.use(passport.session());
 
 // routes ======================================================================
 require('./App/routes.js')(app, passport); // load our routes and pass in our app and fully configured passport

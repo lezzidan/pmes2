@@ -10,7 +10,21 @@ var userSchema = mongoose.Schema({
         key: String,
         pem: String
     },
-    password: String
+    login : {
+        local: {
+            id: String,
+            email: String,
+            password: String
+        },
+        google: {
+            id: String,
+            email: String,
+            token: String,
+            name: String
+        }
+    },
+    group: String
+    //password: String
 });
 
 // methods ======================
@@ -21,7 +35,7 @@ userSchema.methods.generateHash = function(password) {
 
 // checking if password is valid
 userSchema.methods.validPassword = function(password) {
- return bcrypt.compareSync(password, this.local.password);
+ return bcrypt.compareSync(password, this.login.local.password);
 };
 
 module.exports = mongoose.model('User', userSchema);

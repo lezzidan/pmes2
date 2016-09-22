@@ -4,7 +4,7 @@
         <nav class="nav masthead-nav navbar-fixed-top">
             <div class="container-fluid">
                 <div class="navbar-header">
-                    <h3 class="masthead-brand"> PMES2 </h3>
+                    <h3 class="masthead-brand"> {{authCtrl.title}} </h3>
                 </div>
                 <div id="navbar" class="navbar-collapse collapse">
                     <ul class="nav masthead-nav navbar-right">
@@ -25,15 +25,15 @@
                     <form action="/login" method="post">
                         <div class="form-group">
                             <label>Email</label>
-                            <input type="text" class="form-control" name="email">
+                            <input type="text" class="form-control" name="email" ng-model="authCtrl.user.email">
                         </div>
                         <div class="form-group">
                             <label>Password</label>
-                            <input type="password" class="form-control" name="password">
+                            <input type="password" class="form-control" name="password" ng-model="authCtrl.user.password">
                         </div>
                         <p class="lead">
                             <a href="#" class="btn btn-lg btn-default" ui-sref="dash"><span class="fa fa-user"></span> Local Login</a>
-                            <!-- <a href="/signup" class="btn btn-default"><span class="fa fa-user"></span> Local Signup</a> -->
+                            <a ng-click="authCtrl.login()" class="btn btn-default"><span class="fa fa-user"></span> Local</a>
                             <a href="#/auth/google" class="btn btn-lg btn-danger"><span class="fa fa-google-plus"></span> Google</a>
                         </p>
                     </form>
