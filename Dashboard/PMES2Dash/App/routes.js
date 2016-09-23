@@ -2,7 +2,19 @@ var Application = require('./models/application');
 var Job = require('./models/job');
 var Storage = require('./models/storage');
 var User = require('./models/user');
+var exec = require('child_process').exec;
 
+var images = [];
+
+function execute(command, callback){
+    exec(command, function(error, stdout, stderr){ callback(stdout); });
+};
+
+var getImages= function(callback){
+    execute("ls -lh", function(data){
+        callback(data);
+    });
+};
 module.exports = function(app, passport) {
 
     /* Create new application */
@@ -131,6 +143,7 @@ module.exports = function(app, passport) {
 
     /* Get list of jobs */
     app.get('/dash/jobs', function(req, res, next) {
+        console.log("jobs");
         res.send([
             {
                 id: 1,
@@ -209,6 +222,29 @@ module.exports = function(app, passport) {
 
     app.get('/logout', function(req, res){
         req.logout();
+    });
+
+
+    app.post('/dash/images', function(req, res){
+        console.log(req.body);
+        var listOfImages = [];
+        var execSync = require('child_process').execSync;
+        var endpoint = " --endpoint https://rocci-server.bsc.es:11443";
+        var auth = " --auth x509";
+        var caPath = " --ca-path /etc/grid-security/certificates/";
+        var userCred = " --user-cred "+req.body.credentials.pem;
+        var userPass = " --password "+req.body.credentials.key;
+        var action = " --action list --resource os_tpl";
+        var command = "occi "+endpoint+auth+caPath+userCred+userPass+action;
+        var ex = execSync(command);
+        var err = ex.stderr.toString();
+        if (err){
+            console.log(err);
+            listOfImages = []
+        } else {
+            listOfImages = ex.toString().split("\n");
+        }
+        res.send(listOfImages);
     });
 
     // =====================================

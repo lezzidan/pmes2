@@ -7,7 +7,7 @@
             </div>
             <div class="form-group">
                 <label for="imageName">Image</label>
-                <select id="imageName" class="form-control" ng-model="dashCtrl.newApp.image">
+                <select id="imageName" class="form-control" ng-options="image for image in dashCtrl.imagesList" ng-model="dashCtrl.newApp.image">
                     <option>Image1</option>
                 </select>
             </div>

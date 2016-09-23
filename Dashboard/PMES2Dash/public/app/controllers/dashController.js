@@ -6,11 +6,11 @@
 angular.module('pmes2')
     .controller('dashController', function($http) {
         var store = this;
-        this.user = {
-            username: "test",
+        store.user = {
+            username: "scorella",
             credentials: {
-                key: "test.key",
-                pub: "test.pub"
+                key: "~/certs/scorella_test.key",
+                pub: "~/certs/scorella_test.pub"
             }
         };
 
@@ -28,6 +28,7 @@ angular.module('pmes2')
         this.jobsList = [];
         this.appsList = [];
         this.storagesList = [];
+        this.imagesList = [];
 
         this.error = null;
 
@@ -299,10 +300,28 @@ angular.module('pmes2')
             this.newApp.args.push(newArg);
         };
 
+        this.getImagesList = function(){
+            $http({
+                method: 'POST',
+                url: 'dash/images',
+                data: this.user
+            }).then(
+                function(data) {
+                    console.log(data.data);
+                    store.imagesList = data.data;
+                    store.error = null;
+                },
+                function(error) {
+                    store.error = 'HA FALLADO: '+error.data.error;
+                }
+            );
+        };
+
         this.getJobsList = function() {
             $http.get('dash/jobs')
                 .then(
                     function(data) {
+                        console.log(data);
                         store.jobsList = data.data;
                     },
                     function(error) {
@@ -333,8 +352,11 @@ angular.module('pmes2')
         };
 
         //Init values
+        console.log("ENTRA!");
+        console.log(this.user);
         this.getJobsList();
         this.getAppsList();
         this.getStorageList();
+        this.getImagesList();
 
     });

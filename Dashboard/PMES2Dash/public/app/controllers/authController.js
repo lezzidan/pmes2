@@ -4,8 +4,8 @@
 'use strict';
 
 angular.module('pmes2')
-    .controller('authController', function($http, $location) {
-        var store = this;
+    .controller('authController', ['$state', '$http', function($state, $http) {
+        var storeAuth = this;
         this.title = "PMES2";
         this.user = {};
         this.user.email = "";
@@ -20,12 +20,13 @@ angular.module('pmes2')
             }).then(
                 function(data) {
                     console.log(data);
-                    $location.path('/dash');
-                    store.error = null;
+                    $state.go('dash', {}, { reload: true});
+                    //$location.path('/dash');
+                    storeAuth.error = null;
                 },
                 function(error) {
-                    store.error = 'ERROR: '+error.data.error;
+                    storeAuth.error = 'ERROR: '+error.data.error;
                 }
             );
         };
-    });
+    }]);

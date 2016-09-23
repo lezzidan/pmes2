@@ -7,7 +7,6 @@ angular.module('pmes2', ['ui.router'])
     .config(function($urlRouterProvider, $stateProvider) {
         $urlRouterProvider
             .otherwise('login');
-
         $stateProvider
             .state('login', {
                 url: '/login',
