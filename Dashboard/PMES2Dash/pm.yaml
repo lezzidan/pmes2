@@ -1,0 +1,11 @@
+apps:
+ - script      : ./bin/www
+   cwd         : /home/pmes/pmes/PMES2Dash/
+   error_file  : /home/pmes/pmes/logs/error_dash.log
+   out_file    : /home/pmes/pmes/logs/out_dash.log
+   name        : pmes2
+   watch       : false
+   autorestart : true
+   env         :
+     NODE_PORT : 3000
+     NODE_ENV  : development
