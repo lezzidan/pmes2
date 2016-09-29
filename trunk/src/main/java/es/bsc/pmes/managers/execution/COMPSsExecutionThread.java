@@ -27,30 +27,6 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
 
     public void run() {
         executeJob();
-        /*String resourceAddress = job.getResource(0).getIp(); //get master IP
-        System.out.println(resourceAddress);
-
-        String user = job.getUser().getUsername();
-        String address = user+"@"+resourceAddress;
-
-        String cmd = address + " " + job.getCmd();
-        System.out.println(cmd);
-
-        //Wait until vm is ready at login stage
-        try {
-            Thread.sleep(60000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        //Run job - Execute
-        job.setStatus("RUNNING");
-        System.out.println("Executing...");
-        Integer exitValue = executeCommand(cmd);
-
-        //stageOut
-
-        //Destroy Resource*/
     }
 
     public void cancel() throws Exception {
@@ -60,15 +36,19 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
     public void executeJob(){
         // Create Resource
         String Id = createResource();
+        logger.trace("Resource created with Id: "+ Id);
 
         //StageIn
+        logger.trace("Stage in");
         stageIn();
+
 
         //Configure execution
         String resourceAddress = job.getResource(0).getIp(); //get master IP
         String user = job.getUser().getUsername();
         String address = user+"@"+resourceAddress;
-        String cmd = address + " " + job.getCmd();
+        String cmd = address + " \"/bin/bash -lc " + job.getCmd() + "\"";
+        logger.trace("cmd: "+cmd);
 
         //Wait until vm is ready at login stage
         try {
@@ -78,12 +58,41 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
         }
 
         //Run job
+        logger.trace("runnning");
         Integer exitValue = executeCommand(cmd);
+        logger.trace("exit code"+ exitValue);
+
+        //TEST
+        //Wait until vm is ready at login stage
+        try {
+            Thread.sleep(60000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //Run job
+        logger.trace("runnning");
+        exitValue = executeCommand(cmd);
+        logger.trace("exit code"+ exitValue);
+
+        //Wait until vm is ready at login stage
+        try {
+            Thread.sleep(60000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        //Run job
+        logger.trace("runnning");
+        exitValue = executeCommand(cmd);
+        logger.trace("exit code"+ exitValue);
 
         //StageOut
+        logger.trace("Stage out");
         stageOut();
 
         //Destroy Resource
+        logger.trace("Destroy resource");
         destroyResource(Id);
     }
 
@@ -95,11 +104,11 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
         HardwareDescription hd = new HardwareDescription();
         hd.setMemorySize(job.getJobDef().getMemory());
         hd.setTotalComputingUnits(job.getJobDef().getCores()*job.getJobDef().getNumNodes());
+        hd.setImageType(job.getJobDef().getImg().getImageType());
+        hd.setImageName(job.getJobDef().getImg().getImageName());
 
         // Configure software
         SoftwareDescription sd = new SoftwareDescription();
-        sd.setImageType(job.getJobDef().getImg().getImageType());
-        sd.setImageName(job.getJobDef().getImg().getImageName());
 
         // Configure properties
         HashMap<String, String> prop = this.im.configureResource(job.getJobDef());
@@ -131,26 +140,48 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
     public Integer executeCommand(String cmd){
         Runtime runtime = Runtime.getRuntime();
         try {
-            Process process = runtime.exec("ssh "+cmd);
-            Integer exitValue = process.waitFor();
+            Process test = runtime.exec("whoami");
+            BufferedReader te = new BufferedReader(new
+                    InputStreamReader(test.getInputStream()));
+            // Output log
+            String teout = "";
+            String linet = null;
+            while ((linet = te.readLine()) != null) {
+                teout += linet;
+            }
+            te.close();
+            logger.trace("whoami: " + teout);
+            test.waitFor();
+
+            Process process = runtime.exec("ssh " + cmd);
+            //Integer exitValue = process.waitFor();
+
+            BufferedReader in = new BufferedReader(new
+                    InputStreamReader(process.getInputStream()));
+
+            BufferedReader err= new BufferedReader(new
+                    InputStreamReader(process.getErrorStream()));
 
             // Output log
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(process.getInputStream()) );
-            String line;
+            String outStr = "";
+            String line = null;
             while ((line = in.readLine()) != null) {
-                System.out.println(line);
+                outStr += line;
             }
             in.close();
+            logger.trace("out: " + outStr);
 
             //Error log
-            BufferedReader err = new BufferedReader(
-                    new InputStreamReader(process.getErrorStream()) );
+            line = null;
+            String errStr = "";
             while ((line = err.readLine()) != null) {
-                System.out.println(line);
+                errStr += line;
             }
             err.close();
+            logger.trace("err: " + errStr);
 
+            process.waitFor();
+            Integer exitValue = process.exitValue();
             return exitValue;
             
         } catch (IOException e) {

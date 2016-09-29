@@ -66,13 +66,15 @@ public class InfrastructureManager {
             try {
                 rocciClient = new ROCCI(prop);
                 VirtualResource vr = (VirtualResource) rocciClient.create(hd, sd, prop);
-                vr = rocciClient.waitUntilCreation(vr);
+                logger.trace("compute id: " + vr.getId());
+
+                vr = rocciClient.waitUntilCreation(vr.getId());
                 logger.trace("VM id: " + vr.getId());
                 logger.trace("VM ip: " + vr.getIp());
                 // Update System Status
                 //TODO know host
                 Host h = systemStatus.getCluster().get(0); //test purposes
-                systemStatus.update(h, vr.getHd().getTotalComputingUnits(), vr.getHd().getMemorySize());
+                //systemStatus.update(h, vr.getHd().getTotalComputingUnits(), vr.getHd().getMemorySize());
                 // TODO: Usar VirtualResource
                 Resource newResource = new Resource(vr.getIp(), prop, vr);
                 activeResources.put((String) vr.getId(), newResource);
@@ -80,7 +82,7 @@ public class InfrastructureManager {
 
             } catch (ConnectorException e) {
                 logger.error("Error creating resource");
-                //e.printStackTrace();
+                e.printStackTrace();
                 return "-1";
             }
         }
@@ -107,7 +109,7 @@ public class InfrastructureManager {
         properties.put("jobname", jobDef.getJobName());
 
         //TODO: context data file
-        properties.put("context", "user_data=\"file://$PWD/tmpfedcloud.login\"");
+        properties.put("context", "user_data=\\\"file:///home/pmes/pmes/config/tmpfedcloud.login\\\"");
 
         return properties;
     }
@@ -120,14 +122,14 @@ public class InfrastructureManager {
         // Update System Status
         //TODO know host
         Host h = systemStatus.getCluster().get(0); //test purposes
-        systemStatus.update(h, -vr.getHd().getTotalComputingUnits(), -vr.getHd().getMemorySize());
+        //systemStatus.update(h, -vr.getHd().getTotalComputingUnits(), -vr.getHd().getMemorySize());
 
     }
 
     public void configureResources() throws ParserConfigurationException {
         // TODO: change path
-        File fXML = new File("/home/bscuser/subversion/projects/pmes2/trunk/src/main/resources/config.xml"); //TODO path
-        //File fXML = new File("/home/user/pmesConfig/config.xml"); //TODO path
+        //File fXML = new File("/home/bscuser/subversion/projects/pmes2/trunk/src/main/resources/config.xml"); //TODO path
+        File fXML = new File("/home/pmes/pmes/config/config.xml"); //TODO path
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document doc = null;

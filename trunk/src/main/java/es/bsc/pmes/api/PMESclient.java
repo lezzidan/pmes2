@@ -80,7 +80,6 @@ public class PMESclient {
     @Consumes("application/json")
     @Produces("application/json")
     public ArrayList<String> createActivity(ArrayList<JobDefinition> jobDefinitions){
-        System.out.println("Arriving: "+ jobDefinitions);
         ArrayList<String> jobIds = this.pmesService.createActivity(jobDefinitions);
         logger.trace("Jobs created: "+jobIds.toString());
         return jobIds;

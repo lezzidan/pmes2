@@ -11,6 +11,21 @@
     <packaging>jar</packaging>
     <!--<packaging>war</packaging> -->
 
+    <scm>
+        <connection>scm:svn:https://compss.bsc.es/svn/projects/pmes2/trunk/</connection>
+        <developerConnection>scm:svn:https://compss.bsc.es/svn/projects/pmes2/trunk/</developerConnection>
+        <url>https://compss.bsc.es/svn/projects/pmes2/trunk</url>
+    </scm>
+
+    <distributionManagement>
+        <repository>
+            <id>grid-repo</id>
+            <name>BSC Grid computing and Clusters group</name>
+            <url>http://compss.bsc.es/artifactory/grid-devel-repo</url>
+        </repository>
+    </distributionManagement>
+
+
     <!-- PROJECT INFORMATION -->
     <name>PMES</name>
     <description>PMES service</description>
@@ -29,14 +44,14 @@
 
     <!-- PROPERTIES -->
     <properties>
-        <build.version></build.version>
+        <build.version/>
 
         <junit.version>4.12</junit.version>
         <log4j.version>2.6.1</log4j.version>
 
         <!-- Maven Plugins -->
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <maven-compiler-plugin.version>3.5.1</maven-compiler-plugin.version>
         <maven-shade-plugin.version>2.4.3</maven-shade-plugin.version>
         <buildnumber-maven-plugin.version>1.4</buildnumber-maven-plugin.version>
@@ -48,6 +63,42 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
+    <!-- REPOSITORIES -->
+    <repositories>
+        <repository>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>http://repo1.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
+            <id>grid-repo</id>
+            <name>BSC Grid computing and Clusters group</name>
+            <url>http://compss.bsc.es/artifactory/grid-devel-repo</url>
+        </repository>
+        <repository>
+            <id>mvn-repo</id>
+            <name>Maven Repo</name>
+            <url>https://mvnrepository.com/artifact/org.apache.mesos/mesos</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <releases>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+            <id>central</id>
+            <name>Central Repository</name>
+            <url>http://repo1.maven.apache.org/maven</url>
+        </pluginRepository>
+    </pluginRepositories>
+
     <!-- DEPENCENCIES -->
     <dependencies>
         <dependency>
@@ -56,18 +107,18 @@
             <version>1.7.1</version>
         </dependency>
         <dependency>
-            <groupId>es.bsc</groupId>
-            <artifactId>conn.rocci</artifactId>
+            <groupId>es.bsc.conn</groupId>
+            <artifactId>connectors-rocci</artifactId>
             <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>/home/bscuser/subversion/projects/conn/trunk/rocci/target/compss-connectors-rocci.jar</systemPath>
+            <!--<scope>system</scope>-->
+            <!--<systemPath>/home/bscuser/subversion/projects/conn/trunk/rocci/target/compss-connectors-rocci.jar</systemPath>-->
         </dependency>
         <dependency>
-            <groupId>es.bsc</groupId>
-            <artifactId>conn.commons</artifactId>
+            <groupId>es.bsc.conn</groupId>
+            <artifactId>connectors-commons</artifactId>
             <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>/home/bscuser/subversion/projects/conn/trunk/commons/target/compss-connectors-commons.jar</systemPath>
+            <!--<scope>system</scope>-->
+            <!--<systemPath>/home/bscuser/subversion/projects/conn/trunk/commons/target/compss-connectors-commons.jar</systemPath>-->
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -84,17 +135,6 @@
             <artifactId>jersey-bundle</artifactId>
             <version>1.19.1</version>
         </dependency>
-
-        <!--<dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-server</artifactId>
-            <version>1.12</version>
-        </dependency>
-        <dependency>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>jersey-core</artifactId>
-            <version>1.12</version>
-        </dependency>-->
     </dependencies>
 
     <!-- BUILD-->

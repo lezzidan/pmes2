@@ -8,5 +8,5 @@
             <MAX_MEM>99195808</MAX_MEM>
         </host>
     </hosts>
-    <logPath>/home/bscuser/pmes/logs</logPath>
+    <logPath>/home/pmes/pmes/logs</logPath>
 </pmes>
