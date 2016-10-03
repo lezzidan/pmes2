@@ -43,8 +43,9 @@ public class PMESservice {
             newJob.setJobDef(jobDef);
 
             // Test purposes
-            newJob.setCmd("runcompss -h");
-            //newJob.setCmd("ls -lh");
+            //newJob.setCmd("/opt/COMPSs/Runtime/scripts/user/runcompss -h"); //TODO path runcompss
+            newJob.setCmd("/home/pmes/testSimple/./launch.sh"); //testSimple
+            //newJob.setCmd("/home/pmes/testCOMPSs/./launch.sh"); //testCOMPss
 
             jobIds.add(newJob.getId());
             logger.trace("New Job created with id "+newJob.getId());

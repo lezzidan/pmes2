@@ -47,8 +47,8 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
         String resourceAddress = job.getResource(0).getIp(); //get master IP
         String user = job.getUser().getUsername();
         String address = user+"@"+resourceAddress;
-        String cmd = address + " \"/bin/bash -lc " + job.getCmd() + "\"";
-        logger.trace("cmd: "+cmd);
+        String cmd = job.getCmd();
+        logger.trace("cmd: ssh "+address+" "+cmd);
 
         //Wait until vm is ready at login stage
         try {
@@ -59,32 +59,8 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
 
         //Run job
         logger.trace("runnning");
-        Integer exitValue = executeCommand(cmd);
-        logger.trace("exit code"+ exitValue);
-
-        //TEST
-        //Wait until vm is ready at login stage
-        try {
-            Thread.sleep(60000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        //Run job
-        logger.trace("runnning");
-        exitValue = executeCommand(cmd);
-        logger.trace("exit code"+ exitValue);
-
-        //Wait until vm is ready at login stage
-        try {
-            Thread.sleep(60000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        //Run job
-        logger.trace("runnning");
-        exitValue = executeCommand(cmd);
+        //Integer exitValue = executeCommand(new String[]{"ssh", address, "/opt/COMPSs/Runtime/scripts/user/runcompss", "-h"});
+        Integer exitValue = executeCommand(new String[]{"ssh", address, job.getCmd()}); //TODO add parameters
         logger.trace("exit code"+ exitValue);
 
         //StageOut
@@ -93,7 +69,7 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
 
         //Destroy Resource
         logger.trace("Destroy resource");
-        destroyResource(Id);
+        //destroyResource(Id);
     }
 
     public String createResource(){
@@ -137,24 +113,10 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
         this.im.destroyResource(Id);
     }
 
-    public Integer executeCommand(String cmd){
+    public Integer executeCommand(String[] cmd){
         Runtime runtime = Runtime.getRuntime();
         try {
-            Process test = runtime.exec("whoami");
-            BufferedReader te = new BufferedReader(new
-                    InputStreamReader(test.getInputStream()));
-            // Output log
-            String teout = "";
-            String linet = null;
-            while ((linet = te.readLine()) != null) {
-                teout += linet;
-            }
-            te.close();
-            logger.trace("whoami: " + teout);
-            test.waitFor();
-
-            Process process = runtime.exec("ssh " + cmd);
-            //Integer exitValue = process.waitFor();
+            Process process = runtime.exec(cmd);
 
             BufferedReader in = new BufferedReader(new
                     InputStreamReader(process.getInputStream()));

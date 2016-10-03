@@ -109,7 +109,7 @@ public class InfrastructureManager {
         properties.put("jobname", jobDef.getJobName());
 
         //TODO: context data file
-        properties.put("context", "user_data=\\\"file:///home/pmes/pmes/config/tmpfedcloud.login\\\"");
+        properties.put("context", "user_data=\"file:///home/pmes/pmes/config/tmpfedcloud.login\"");
 
         return properties;
     }
