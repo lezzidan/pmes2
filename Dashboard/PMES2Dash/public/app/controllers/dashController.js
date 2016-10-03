@@ -9,13 +9,15 @@ angular.module('pmes2')
         store.user = {
             username: "scorella",
             credentials: {
-                key: "~/certs/scorella_test.key",
-                pub: "~/certs/scorella_test.pub"
+                key: "/home/pmes/certs/scorella_test.key",
+                pem: "/home/pmes/certs/scorella_test.pem"
             }
         };
 
         this.newApp = {args:[], user:"test"};
         this.infoApp = {};
+
+        this.arg = {};
 
         this.newJob = {};
         this.newJob.app = {};
@@ -31,6 +33,35 @@ angular.module('pmes2')
         this.imagesList = [];
 
         this.error = null;
+        this.logFile ="";
+        this.readFile = "";
+        this.logFiles = ["log", "out"];
+        this.logData ="";
+
+        this.getLog = function(){
+            if(store.logFile == "log"){
+                store.readFile = {file:"/home/bscuser/subversion/projects/pmes2/Dashboard/PMES2Dash/log.txt"};
+            } else {
+                store.readFile = {file:"/home/bscuser/subversion/projects/pmes2/Dashboard/PMES2Dash/out.txt"};
+            }
+            $http({
+                method: 'POST',
+                url: 'dash/log',
+                data: this.readFile
+            }).then(
+                function(data) {
+                    store.logData = data.data;
+                    store.error = null;
+                    document.getElementById("logData").value = store.logData;
+                },
+                function(error) {
+                    store.logData = "Error";
+                    store.error = 'HA FALLADO: '+error.data.error;
+                    document.getElementById("logData").value = store.logData;
+                }
+            );
+
+        };
 
         this.saveNewApp = function() {
             this.newApp.user = store.user;
@@ -43,6 +74,7 @@ angular.module('pmes2')
                     $('#newApp').modal('hide');
                     store.appsList.push(store.newApp);
                     store.error = null;
+                    store.newApp = null;
                 },
                 function(error) {
                     store.error = 'ERROR: '+error.data.error;
@@ -82,12 +114,14 @@ angular.module('pmes2')
                     $('#newJob').modal('hide');
                     store.jobsList.push(store.newJob);
                     store.error = null;
+                    store.newJob = null;
                 },
                 function(error) {
                     store.error = 'HA FALLADO: '+error.data.error;
+                    store.newJob = null;
                 }
             );
-            store.newJob.jobName = this.newJob.appVal.name;
+            //store.newJob.jobName = this.newJob.appVal.name;
         };
 
         this.runJob = function(job){
@@ -215,6 +249,7 @@ angular.module('pmes2')
                     $('#newStorage').modal('hide');
                     store.storagesList.push(store.newStorage);
                     store.error = null;
+                    store.newStorage = null;
                 },
                 function(error) {
                     store.error = 'HA FALLADO: '+error.data.error;
@@ -282,6 +317,13 @@ angular.module('pmes2')
             store.index = index;
         };
 
+        this.editJobFun = function(job) {
+            console.log(job);
+            var index = this.jobsList.indexOf(job);
+            store.infoJob = store.jobsList[index];
+            store.index = index;
+        };
+
         this.infoJobFun = function(job) {
             var index = this.jobsList.indexOf(job);
             store.infoJob = store.jobsList[index];
@@ -298,6 +340,7 @@ angular.module('pmes2')
         this.addArg = function (arg) {
             var newArg = {name:arg.name, defaultV:arg.defaultV, prefix:arg.prefix, file:arg.file, optional:arg.optional}
             this.newApp.args.push(newArg);
+            store.arg = null;
         };
 
         this.getImagesList = function(){
@@ -352,8 +395,6 @@ angular.module('pmes2')
         };
 
         //Init values
-        console.log("ENTRA!");
-        console.log(this.user);
         this.getJobsList();
         this.getAppsList();
         this.getStorageList();

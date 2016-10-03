@@ -1,0 +1,69 @@
+<form>
+    <div class="row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+            <p>INFO INFO</p>
+            <div class="form-group">
+                <label for="appVal">Application</label>
+                <select id="appVal" class="form-control" value="dashCtrl.infoJob.appVal.name" ng-disabled="!editJ" ng-options="option.name for option in dashCtrl.appsList" ng-model="dashCtrl.infoJob.appVal">
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Arguments</label>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="arg in dashCtrl.infoJob.appVal.args">
+                        <td><label>{{arg.name}}</label></td>
+                        <td><label for="value"><input type="text" id="value" size="10" value="{{arg.value}}" ng-disabled="!editJ" ng-model="arg.value"></label></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea class="form-control" rows="3" id="description" value="dashCtrl.infoJob.description" ng-disabled="!editJ" ng-model="dashCtrl.infoJob.description"></textarea>
+            </div>
+            <div class="row">
+                <div class="col-sm-6 col-md-6 col-lg-6">
+                    <div class="form-group">
+                        <label for="time">Wall Clock Time (min)</label>
+                        <input type="number" class="form-control" id="time" value="dashCtrl.infoJob.wallTime" ng-disabled="!editJ" step="5" ng-model="dashCtrl.infoJob.wallTime">
+                    </div>
+                    <div class="form-group">
+                        <label for="memory">Memory (GB)</label>
+                        <input type="number" class="form-control" id="memory" value="dashCtrl.infoJob.memory" ng-disabled="!editJ" ng-model="dashCtrl.infoJob.memory">
+                    </div>
+                    <div class="form-group">
+                        <label for="minvm">Min VMs</label>
+                        <input type="number" class="form-control" id="minvm" value="dashCtrl.infoJob.minimumVMs" ng-disabled="!editJ" ng-model="dashCtrl.infoJob.minimumVMs">
+
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-6 col-lg-6">
+                    <div class="form-group">
+                        <label for="core">Cores</label>
+                        <input type="number" class="form-control" id="core" value="dashCtrl.infoJob.cores" ng-disabled="!editJ" ng-model="dashCtrl.infoJob.cores">
+                    </div>
+                    <div class="form-group">
+                        <label for="disk">Disk Size (GB)</label>
+                        <input type="number" class="form-control" id="disk" value="dashCtrl.infoJob.disk" ng-disabled="!editJ" ng-model="dashCtrl.infoJob.disk">
+                    </div>
+                    <div class="form-group">
+                        <label for="maxvm">Max VMs</label>
+                        <input type="number" class="form-control" id="maxvm" value="dashCtrl.infoJob.maximumVMs" ng-disabled="!editJ" ng-disabled="!editJ" ng-model="dashCtrl.infoJob.maximumVMs">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        {{ dashCtrl.infoJob }}
+    </div>
+</form>

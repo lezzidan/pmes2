@@ -8,7 +8,6 @@
             <div class="form-group">
                 <label for="imageName">Image</label>
                 <select id="imageName" class="form-control" ng-options="image for image in dashCtrl.imagesList" ng-model="dashCtrl.newApp.image">
-                    <option>Image1</option>
                 </select>
             </div>
             <div class="form-group">
@@ -75,14 +74,14 @@
                         </td>
                     </tr>
                     <tr>
-                        <td><label for="name"><input type="text" id="name" size="10" placeholder=" arg1" ng-model="arg.name"> </label></td>
-                        <td><label for="default"><input type="text" id="default" size="10"  placeholder=" value1"  ng-model="arg.defaultV"></label></td>
-                        <td><label for="prefix"><input type="text" id="prefix" size="10"  placeholder=" --flag"  ng-model="arg.prefix"></label></td>
-                        <td><label for="file"><input type="checkbox" id="file" ng-init="arg.file=false" ng-model="arg.file"></label></td>
-                        <td><label for="optional"><input type="checkbox" id="optional" ng-init="arg.optional=false" ng-model="arg.optional"></label></td>
+                        <td><label for="name"><input type="text" id="name" size="10" placeholder=" arg1" ng-model="dashCtrl.arg.name"> </label></td>
+                        <td><label for="default"><input type="text" id="default" size="10"  placeholder=" value1"  ng-model="dashCtrl.arg.defaultV"></label></td>
+                        <td><label for="prefix"><input type="text" id="prefix" size="10"  placeholder=" --flag"  ng-model="dashCtrl.arg.prefix"></label></td>
+                        <td><label for="file"><input type="checkbox" id="file" ng-init="store.arg.file=false" ng-model="dashCtrl.arg.file"></label></td>
+                        <td><label for="optional"><input type="checkbox" id="optional" ng-init="store.arg.optional=false" ng-model="dashCtrl.arg.optional"></label></td>
                         <td>
                             <div class="btn-group" role="group" aria-label="...">
-                                <a ng-click="dashCtrl.addArg(arg)" class="btn btn-success" role="button"><span class="glyphicon glyphicon-plus" aria-hidden="true" ></span></a>
+                                <a ng-click="dashCtrl.addArg(dashCtrl.arg)" class="btn btn-success" role="button"><span class="glyphicon glyphicon-plus" aria-hidden="true" ></span></a>
                             </div>
                         </td>
                     </tr>

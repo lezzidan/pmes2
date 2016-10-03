@@ -2,21 +2,9 @@ var Application = require('./models/application');
 var Job = require('./models/job');
 var Storage = require('./models/storage');
 var User = require('./models/user');
-var exec = require('child_process').exec;
+var fs = require('fs');
 
-var images = [];
-
-function execute(command, callback){
-    exec(command, function(error, stdout, stderr){ callback(stdout); });
-};
-
-var getImages= function(callback){
-    execute("ls -lh", function(data){
-        callback(data);
-    });
-};
 module.exports = function(app, passport) {
-
     /* Create new application */
     app.post('/dash/app', function(req, res, next) {
         console.log("---- new app ----");
@@ -66,9 +54,10 @@ module.exports = function(app, passport) {
         if(!req.body.name) {
             res.status(404).send({ error: 'PATH'});
         } else {
-            /*var storage = new Storage(req.body);
+            var storage = new Storage(req.body);
             storage.password = storage.encrypt(storage.password);
-            console.log(storage);*/
+            console.log(storage);
+            storage.save();
             //todo
             res.send('OK');
         }
@@ -143,66 +132,58 @@ module.exports = function(app, passport) {
 
     /* Get list of jobs */
     app.get('/dash/jobs', function(req, res, next) {
-        console.log("jobs");
+        //TODO
         res.send([
-            {
-                id: 1,
-                user: 'scorella',
-                type: 'compss',
-                app: "date",
-                time: 10,
-                status: "finished"
-            },
-            {
-                id: 2,
-                user: 'scorella',
-                type: 'compss',
-                app: "date",
-                time: 10,
-                status: "finished"
-            },
-            {
-                id: 3,
-                user: 'scorella',
-                type: 'compss',
-                app: "date",
-                time: 10,
-                status: "running"
-            }
         ]);
     });
 
     /* Get list of applications */
     app.get('/dash/apps', function(req, res, next) {
-        res.send([{
-            name: 'HelloWorld',
-            image: 'Image1',
-            location: 'local',
-            target: '/home/Hello/',
-            source: 'hello.py',
-            args: [{
-                name: 'name',
-                defaultV: 'test',
-                prefix: '',
-                file: false,
-                optional: false
-            }]
-        }
-        ]);
+        //TODO
+        res.send([]);
     });
 
     /* Get list of storages */
     app.get('/dash/storages', function(req, res, next) {
-        res.send([]);
+        //TODO
+        //test
+        var s = new Storage({
+            name: "Storage1",
+            path: "local",
+            user: "scorella",
+            pass: "test"
+        });
+        s.save(function(err, storage){
+            if(err) console.log(err);
+            console.log(storage);
+        });
+        Storage.find(function(err, storages){
+            if(err){
+                console.log(err);
+            } else {
+                console.log("list storages: "+storages);
+                console.log("len storages: "+storages.length);
+                res.send(storages);
+            }
+        });
+        //res.send([]);
+    });
+
+    app.post('/dash/log', function(req, res, next){
+        var path = req.body;
+        console.log(path);
+
+        fs.readFile(path.file, 'utf8', function(err, data){
+           if(err){
+               console.log(err);
+           }
+            res.send(data);
+        });
     });
 
     // =====================================
     // AUTH       ==========================
     // =====================================
-    /*app.post('/auth/login', function(req, res, next){
-       console.log(req.body);
-    });*/
-
     app.post('/auth/login',
         passport.authenticate('local-login', {
             failureRedirect: '/login' }),
@@ -226,8 +207,6 @@ module.exports = function(app, passport) {
 
 
     app.post('/dash/images', function(req, res){
-        console.log(req.body);
-        var listOfImages = [];
         var execSync = require('child_process').execSync;
         var endpoint = " --endpoint https://rocci-server.bsc.es:11443";
         var auth = " --auth x509";
@@ -236,15 +215,22 @@ module.exports = function(app, passport) {
         var userPass = " --password "+req.body.credentials.key;
         var action = " --action list --resource os_tpl";
         var command = "occi "+endpoint+auth+caPath+userCred+userPass+action;
-        var ex = execSync(command);
-        var err = ex.stderr.toString();
-        if (err){
-            console.log(err);
-            listOfImages = []
-        } else {
-            listOfImages = ex.toString().split("\n");
+        try {
+            var ex = execSync(command);
+            var listOfImages = ex.toString().split("\n");
+            var listImagesToSend = [];
+            for (var i=0; i < listOfImages.length; i++){
+                var str = listOfImages[i];
+                var ind = str.search("#");
+                var im = str.substr(ind+1);
+                listImagesToSend.push(im);
+            }
+
+            res.send(listImagesToSend);
+        } catch(err) {
+            console.log("Error getting list of images "+err);
+            res.send(["test"]);
         }
-        res.send(listOfImages);
     });
 
     // =====================================

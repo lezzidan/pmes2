@@ -30,9 +30,5 @@ storageSchema.methods.decrypt = function(pass){
     dec += decipher.final('utf8');
     return dec;
 };
-// checking if password is valid
-/*storageSchema.methods.validPassword = function(password) {
-    return bcrypt.compareSync(password, this.local.password);
-};*/
 
 module.exports = mongoose.model('Storage', storageSchema);

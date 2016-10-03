@@ -26,6 +26,7 @@
                     <td>{{ x.status }}</td>
                     <td><div class="btn-group" role="group" aria-label="...">
                         <a ng-click="dashCtrl.infoJobFun(x)" data-toggle="modal" data-target="#infoJob" class="btn btn-info" role="button"><span class="glyphicon glyphicon-zoom-in" aria-hidden="true" ></span></a>
+                        <a ng-click="dashCtrl.editJobFun(x)" data-toggle="modal" data-target="#editJob" class="btn btn-primary" role="button"><span class="glyphicon glyphicon-edit" aria-hidden="true" ></span></a>
                         <a ng-click="dashCtrl.runJob(x)" class="btn btn-success" role="button" ng-show="x.status == 'finished'"><span class="glyphicon glyphicon-repeat" aria-hidden="true" ></span></a>
                         <a ng-click="dashCtrl.runJob(x)" class="btn btn-success" role="button" ng-show="x.status == 'created'"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></a>
                         <a ng-click="dashCtrl.stopJob(x)" class="btn btn-warning" role="button" ng-show="x.status == 'running'"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></a>
@@ -47,6 +48,22 @@
             </div>
             <div class="modal-body">
                 <div ng-include="'views/infoJob.html'"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="editJob" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Job</h4>
+            </div>
+            <div class="modal-body">
+                <div ng-include="'views/editJob.html'"></div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-success" ng-init="editS=false" ng-click="editJ = !editJ" ng-show="!editJ">Edit</button>
