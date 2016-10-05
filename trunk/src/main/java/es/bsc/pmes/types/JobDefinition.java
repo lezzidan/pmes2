@@ -183,4 +183,6 @@ public class JobDefinition {
     public void setDisk(Float disk) {
         this.disk = disk;
     }
+
+
 }

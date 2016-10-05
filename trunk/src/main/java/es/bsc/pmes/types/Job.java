@@ -25,7 +25,8 @@ public class Job {
     private User user;
     private ArrayList<String> dataIn;
     private ArrayList<String> dataOut;
-    private String cmd;
+    //private String cmd;
+    private String[] cmd;
     private JobDefinition jobDef;
 
     private static final Logger logger = LogManager.getLogger(Job.class.getName());
@@ -37,7 +38,7 @@ public class Job {
         this.user = null;
         this.dataIn = null;
         this.dataOut = null;
-        this.cmd = "";
+        this.cmd = new String[]{};
         this.jobDef = null;
     }
 
@@ -87,11 +88,11 @@ public class Job {
         this.dataOut = dataOut;
     }
 
-    public String getCmd() {
+    public String[] getCmd() {
         return cmd;
     }
 
-    public void setCmd(String cmd) {
+    public void setCmd(String[] cmd) {
         this.cmd = cmd;
     }
 

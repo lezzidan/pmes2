@@ -11,7 +11,10 @@ import org.apache.logging.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by scorella on 8/23/16.
@@ -47,8 +50,22 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
         String resourceAddress = job.getResource(0).getIp(); //get master IP
         String user = job.getUser().getUsername();
         String address = user+"@"+resourceAddress;
-        String cmd = job.getCmd();
-        logger.trace("cmd: ssh "+address+" "+cmd);
+        String source = job.getJobDef().getApp().getSource();
+        String target = job.getJobDef().getApp().getTarget();
+        HashMap<String, String> args = job.getJobDef().getApp().getArgs();
+
+        // Create command to execute
+        ArrayList<String> cmd = new ArrayList<>();
+        cmd.add("ssh");
+        cmd.add(address);
+        cmd.add(target+"/./"+source);
+        for (Object o : args.entrySet()) {
+            Map.Entry pair = (Map.Entry) o;
+            cmd.add((String) pair.getValue());
+        }
+        String[] command = new String[cmd.size()];
+        job.setCmd(cmd.toArray(command));
+        logger.trace(Arrays.toString(command));
 
         //Wait until vm is ready at login stage
         try {
@@ -59,8 +76,7 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
 
         //Run job
         logger.trace("runnning");
-        //Integer exitValue = executeCommand(new String[]{"ssh", address, "/opt/COMPSs/Runtime/scripts/user/runcompss", "-h"});
-        Integer exitValue = executeCommand(new String[]{"ssh", address, job.getCmd()}); //TODO add parameters
+        Integer exitValue = executeCommand(command);
         logger.trace("exit code"+ exitValue);
 
         //StageOut
@@ -69,7 +85,7 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
 
         //Destroy Resource
         logger.trace("Destroy resource");
-        //destroyResource(Id);
+        destroyResource(Id);
     }
 
     public String createResource(){

@@ -4,7 +4,7 @@ import es.bsc.pmes.managers.InfrastructureManager;
 import es.bsc.pmes.managers.JobManager;
 import es.bsc.pmes.types.*;
 
-import java.util.ArrayList;
+import java.util.*;
 
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
@@ -42,11 +42,6 @@ public class PMESservice {
             newJob.setUser(jobDef.getUser());
             newJob.setJobDef(jobDef);
 
-            // Test purposes
-            //newJob.setCmd("/opt/COMPSs/Runtime/scripts/user/runcompss -h"); //TODO path runcompss
-            newJob.setCmd("/home/pmes/testSimple/./launch.sh"); //testSimple
-            //newJob.setCmd("/home/pmes/testCOMPSs/./launch.sh"); //testCOMPss
-
             jobIds.add(newJob.getId());
             logger.trace("New Job created with id "+newJob.getId());
 
@@ -56,7 +51,7 @@ public class PMESservice {
     }
 
     public ArrayList<String> terminateActivity(ArrayList<String> jobIds) {
-        // TODO: createActivity
+        // TODO: terminateActivity
         return null;
     }
 
