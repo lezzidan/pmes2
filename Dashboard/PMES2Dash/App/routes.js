@@ -8,12 +8,14 @@ module.exports = function(app, passport) {
     /* Create new application */
     app.post('/dash/app', function(req, res, next) {
         console.log("---- new app ----");
-        console.log(req.body);
         if(!req.body.name || req.body.name.length < 5) {
             res.status(404).send({ error: 'NameApp too short'});
         } else {
-            var a = new Application(req.body);
-            console.log(a);
+            var newApp = new Application(req.body);
+            newApp.save(function(err, app){
+                if(err) console.log(err);
+                console.log(app);
+            });
             res.send('OK');
         }
     });
@@ -21,14 +23,15 @@ module.exports = function(app, passport) {
     /* Create new job */
     app.post('/dash/job', function(req, res, next) {
         console.log("---- new job ----");
-        console.log(req.body);
         if(!req.body.app.name) {
             res.status(404).send({ error: 'App name'});
         } else {
-            var j = new Job(req.body);
-            console.log("JOB: "+j);
-            j.jobName = j.app.name + '_' + j._id;
-            console.log(j);
+            var newJob = new Job(req.body);
+            newJob.jobName = newJob.app.name + '_' + newJob._id;
+            newJob.save(function(err, job){
+               if(err) console.log(err);
+                console.log(job);
+            });
             res.send('OK');
         }
     });
@@ -40,9 +43,13 @@ module.exports = function(app, passport) {
         if(!req.body.name) {
             res.status(404).send({ error: 'PATH'});
         } else {
-            var storage = new Storage(req.body);
-            storage.password = storage.encrypt(storage.password);
-            console.log(storage);
+            var newStorage = new Storage(req.body);
+            newStorage.password = newStorage.encrypt(newStorage.password);
+            newStorage.save(function(err, storage){
+                if(err) console.log(err);
+                console.log(storage);
+            });
+            console.log(newStorage);
             res.send('OK');
         }
     });
@@ -54,11 +61,15 @@ module.exports = function(app, passport) {
         if(!req.body.name) {
             res.status(404).send({ error: 'PATH'});
         } else {
-            var storage = new Storage(req.body);
-            storage.password = storage.encrypt(storage.password);
-            console.log(storage);
-            storage.save();
-            //todo
+            Storage.findOne({name: req.body.name}, function(err, st){
+                if(err){
+                    console.log(err);
+                }
+                st.path = req.body.path;
+                st.user = req.body.user;
+                st.password = st.encrypt(req.body.password);
+                st.save();
+            });
             res.send('OK');
         }
     });
@@ -70,10 +81,20 @@ module.exports = function(app, passport) {
         if(!req.body.name) {
             res.status(404).send({ error: 'PATH'});
         } else {
-            /*var storage = new Storage(req.body);
-             storage.password = storage.encrypt(storage.password);
-             console.log(storage);*/
-            //todo
+            Application.findOne({name: req.body.name}, function(err, ap){
+                if(err){
+                    console.log(err);
+                }
+                ap.image = req.body.image;
+                ap.location = req.body.location;
+                ap.target = req.body.target;
+                ap.source = req.body.source;
+                ap.description = req.body.description;
+                ap.compss = req.body.compss;
+                ap.publicApp = req.body.publicApp;
+                ap.args = req.body.args;
+                ap.save();
+            });
             res.send('OK');
         }
     });
@@ -85,10 +106,15 @@ module.exports = function(app, passport) {
         if(!req.body.app.name) {
             res.status(404).send({ error: 'PATH'});
         } else {
-            /*var storage = new Storage(req.body);
-             storage.password = storage.encrypt(storage.password);
-             console.log(storage);*/
-            //todo
+            Job.findOne({name: req.body.jobName}, function(err, jb){
+                if(err){
+                    console.log(err);
+                }
+                jb.status = req.body.status;
+                jb.finished = req.body.finished;
+                jb.duration = req.body.duration;
+                jb.save();
+            });
             res.send('OK');
         }
     });
@@ -97,24 +123,50 @@ module.exports = function(app, passport) {
     app.delete('/dash/job', function(req, res, next){
         console.log("---- deleting Job ----");
         console.log(req.body);
-        //todo
-        res.send('OK');
+        Job.findOneAndRemove({name: req.body.jobName}, function(err){
+            if (err) {
+                console.log("Job not found");
+            }
+            console.log("deleted");
+            res.send('OK');
+        });
     });
 
     /* delete app */
     app.delete('/dash/app', function(req, res, next){
         console.log("---- deleting App ----");
         console.log(req.body);
-        //todo
-        res.send('OK');
+        Application.findOneAndRemove({name: req.body.name}, function(err){
+            if (err) {
+                console.log("App not found");
+            }
+            console.log("deleted");
+            res.send('OK');
+        });
     });
 
     /* delete storage */
     app.delete('/dash/storage', function(req, res, next){
         console.log("---- deleting Storage ----");
-        console.log(req.body);
-        //todo
-        res.send('OK');
+        Storage.findOneAndRemove(req.body, function(err){
+            if (err) {
+                console.log("storage not found");
+            }
+            console.log("deleted");
+            res.send('OK');
+        });
+    });
+
+    /* delete user */
+    app.delete('/dash/user', function(req, res, next){
+        console.log("---- deleting Storage ----");
+        Storage.findOneAndRemove(req.body.username, function(err){
+            if (err) {
+                console.log("user not found");
+            }
+            console.log("deleted");
+            res.send('OK');
+        });
     });
 
     /* Create new user */
@@ -124,49 +176,52 @@ module.exports = function(app, passport) {
         if(!req.body.name || !req.body.credentials){
             res.status(404).send({error: 'name or credentials'});
         } else {
-            var user = new User(req.body);
-            console.log(user);
+            var newUser = new User(req.body);
+            newUser.save(function(err, user){
+                if(err) console.log(err);
+                console.log(user);
+            });
+            console.log(newUser);
             res.send('OK');
         }
     });
 
     /* Get list of jobs */
     app.get('/dash/jobs', function(req, res, next) {
-        //TODO
-        res.send([
-        ]);
+        Job.find(function(err, jobs){
+            if(err){
+                console.log(err);
+                res.send([]);
+            } else {
+                res.send(jobs);
+            }
+        });
     });
 
     /* Get list of applications */
     app.get('/dash/apps', function(req, res, next) {
-        //TODO
-        res.send([]);
+        Application.find(function(err, apps){
+            if(err){
+                console.log(err);
+                res.send([]);
+            } else {
+                res.send(apps);
+            }
+        });
     });
 
     /* Get list of storages */
     app.get('/dash/storages', function(req, res, next) {
-        //TODO
-        //test
-        var s = new Storage({
-            name: "Storage1",
-            path: "local",
-            user: "scorella",
-            pass: "test"
-        });
-        s.save(function(err, storage){
-            if(err) console.log(err);
-            console.log(storage);
-        });
         Storage.find(function(err, storages){
             if(err){
                 console.log(err);
+                res.send([]);
             } else {
                 console.log("list storages: "+storages);
                 console.log("len storages: "+storages.length);
                 res.send(storages);
             }
         });
-        //res.send([]);
     });
 
     app.post('/dash/log', function(req, res, next){

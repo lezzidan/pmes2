@@ -7,12 +7,18 @@ var appSchema = mongoose.Schema({
     name : String,
     image: String,
     location: String,
-    path: String,
-    executable: String,
+    target: String,
+    source: String,
     description: String,
     compss: Boolean,
     publicApp: Boolean,
-    user: String,
+    user: {
+        username: String,
+        credentials: {
+            key: String,
+            pem: String
+        }
+    },
     args: [{name: String, defaultV: String, prefix: String, file: Boolean, optional: Boolean}]
 
 });

@@ -35,14 +35,16 @@ angular.module('pmes2')
         this.error = null;
         this.logFile ="";
         this.readFile = "";
-        this.logFiles = ["log", "out"];
+        this.logFiles = ["log", "out", "err"];
         this.logData ="";
 
         this.getLog = function(){
             if(store.logFile == "log"){
-                store.readFile = {file:"/home/bscuser/subversion/projects/pmes2/Dashboard/PMES2Dash/log.txt"};
+                store.readFile = {file:"/home/pmes/pmes/logs/log.txt"};
+            } else if(store.logFile == "err"){
+                store.readFile = {file:"/home/pmes/pmes/logs/err.txt"};
             } else {
-                store.readFile = {file:"/home/bscuser/subversion/projects/pmes2/Dashboard/PMES2Dash/out.txt"};
+                store.readFile = {file:"/home/pmes/pmes/logs/out.txt"};
             }
             $http({
                 method: 'POST',
@@ -121,7 +123,7 @@ angular.module('pmes2')
                     store.newJob = null;
                 }
             );
-            //store.newJob.jobName = this.newJob.appVal.name;
+            store.newJob.jobName = this.newJob.appVal.name;
         };
 
         this.runJob = function(job){
@@ -384,9 +386,11 @@ angular.module('pmes2')
         };
 
         this.getStorageList = function() {
+            console.log("getStorages!");
             $http.get('dash/storages')
                 .then(
                   function(data) {
+                      console.log("DATA: "+data.data);
                       store.storagesList = data.data;
                   }, function(error){
                         console.log('OH NO, SOOMETHING HAS FAILED! AND NOBODY CARES');
@@ -399,5 +403,4 @@ angular.module('pmes2')
         this.getAppsList();
         this.getStorageList();
         this.getImagesList();
-
     });

@@ -25,8 +25,8 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // DB configuration ============================================================
-//var configDB = require('./Config/database.js');
-//mongoose.connect(configDB.url);
+var configDB = require('./Config/database.js');
+mongoose.connect(configDB.url);
 
 // PASSPORT ====================================================================
 require('./Config/passport')(passport); // pass passport for configuration
