@@ -11,6 +11,9 @@ module.exports = function(app, passport) {
         if(!req.body.name || req.body.name.length < 5) {
             res.status(404).send({ error: 'NameApp too short'});
         } else {
+            //var auxApp = Object.create(req.body);
+            //auxApp.user = req.user._id;
+            //var newApp = new Application(auxApp);
             var newApp = new Application(req.body);
             newApp.save(function(err, app){
                 if(err) console.log(err);
@@ -23,16 +26,17 @@ module.exports = function(app, passport) {
     /* Create new job */
     app.post('/dash/job', function(req, res, next) {
         console.log("---- new job ----");
-        if(!req.body.app.name) {
+        console.log(req.body);
+        if(!req.body.app) {
             res.status(404).send({ error: 'App name'});
         } else {
             var newJob = new Job(req.body);
-            newJob.jobName = newJob.app.name + '_' + newJob._id;
+            newJob.jobName = newJob.jobName + '_' + newJob._id;
             newJob.save(function(err, job){
                if(err) console.log(err);
                 console.log(job);
             });
-            res.send('OK');
+            res.send(newJob.jobName);
         }
     });
 
@@ -173,17 +177,30 @@ module.exports = function(app, passport) {
     app.post('/dash/user', function(req, res, next){
         console.log("---- New User ----");
         console.log(req.body);
-        if(!req.body.name || !req.body.credentials){
+        if(!req.body.username || !req.body.credentials){
             res.status(404).send({error: 'name or credentials'});
         } else {
             var newUser = new User(req.body);
             newUser.save(function(err, user){
                 if(err) console.log(err);
-                console.log(user);
+                console.log("user created"+user);
             });
             console.log(newUser);
-            res.send('OK');
+            res.send(newUser._id);
         }
+    });
+
+    /* Get list of jobs */
+    app.get('/dash/user', function(req, res, next) {
+        User.find({username:'scorella'},function(err, user){
+            if(err){
+                console.log(err);
+                res.send([]);
+            } else {
+                console.log(user);
+                res.send(user);
+            }
+        });
     });
 
     /* Get list of jobs */

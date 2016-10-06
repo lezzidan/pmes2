@@ -11,6 +11,13 @@ angular.module('pmes2')
         this.user.email = "";
         this.user.password = "";
         this.error = "";
+        storeAuth.userS = {
+            username: "scorella",
+            credentials: {
+                key: "/home/pmes/certs/scorella_test.key",
+                pem: "/home/pmes/certs/scorella_test.pem"
+            }
+        };
 
         this.login = function() {
             $http({
@@ -29,4 +36,23 @@ angular.module('pmes2')
                 }
             );
         };
+
+        this.saveNewUser = function() {
+            $http({
+                method: 'POST',
+                url: 'dash/user',
+                data: this.userS
+            }).then(
+                function(data) {
+                    storeAuth.error = null;
+                    storeAuth.userS._id = data.data;
+                },
+                function(error) {
+                    storeAuth.error = 'ERROR: '+error.data.error;
+                }
+            );
+        };
+
+        //Init calls
+        //this.saveNewUser();
     }]);

@@ -12,7 +12,7 @@
             </div>
             <div class="form-group">
                 <label for="location">Location</label>
-                <select id="location" class="form-control" ng-model="dashCtrl.newApp.location">
+                <select id="location" class="form-control" ng-options="storage.name for storage in dashCtrl.storagesList" ng-model="dashCtrl.newApp.location">
                     <option>local</option>
                 </select>
             </div>

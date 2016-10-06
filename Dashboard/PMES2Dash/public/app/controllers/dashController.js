@@ -13,6 +13,9 @@ angular.module('pmes2')
                 pem: "/home/pmes/certs/scorella_test.pem"
             }
         };
+        store.userS = {
+            _id: "57f601522aa80824dc4f094e"
+        };
 
         this.newApp = {args:[], user:"test"};
         this.infoApp = {};
@@ -66,7 +69,9 @@ angular.module('pmes2')
         };
 
         this.saveNewApp = function() {
-            this.newApp.user = store.user;
+            this.newApp.user = store.userS._id;
+            this.newApp.location = store.newApp.location._id;
+            //this.newApp.user = store.user;
             $http({
                 method: 'POST',
                 url: 'dash/app',
@@ -85,13 +90,17 @@ angular.module('pmes2')
         };
 
         this.saveNewJob = function() {
-            this.newJob.app.name = this.newJob.appVal.name;
-            this.newJob.app.source = this.newJob.appVal.source;
-            this.newJob.app.target = this.newJob.appVal.target;
-            this.newJob.app.compss = ((this.newJob.appVal.compss) ? 'compss': 'single');
-            this.newJob.app.args = this.newJob.appVal.args;
+            console.log(this.newJob);
+            this.newJob.app = this.newJob.appVal;
+            this.newJob.jobName = this.newJob.appVal.name;
+            //this.newJob.app.name = this.newJob.appVal.name;
+            //this.newJob.app.source = this.newJob.appVal.source;
+            //his.newJob.app.target = this.newJob.appVal.target;
+            //this.newJob.app.compss = ((this.newJob.appVal.compss) ? 'compss': 'single');
+            //this.newJob.app.args = this.newJob.appVal.args;
             this.newJob.status = 'created';
-            this.newJob.user = store.user;
+            //this.newJob.user = store.user;
+            this.newJob.user = store.userS._id;
             this.newJob.img.imageName = this.newJob.appVal.image;
             this.newJob.img.imageType = 'small';
             this.newJob.submitted = new Date().toJSON().slice(0,10);
@@ -114,6 +123,7 @@ angular.module('pmes2')
             }).then(
                 function(data) {
                     $('#newJob').modal('hide');
+                    store.newJob.jobName = data.data;
                     store.jobsList.push(store.newJob);
                     store.error = null;
                     store.newJob = null;
@@ -123,8 +133,10 @@ angular.module('pmes2')
                     store.newJob = null;
                 }
             );
-            store.newJob.jobName = this.newJob.appVal.name;
+            //store.newJob.jobName = this.newJob.appVal.name;
         };
+
+
 
         this.runJob = function(job){
             var jobToSend = this.formatJob(job);
@@ -345,6 +357,22 @@ angular.module('pmes2')
             store.arg = null;
         };
 
+        this.getUser = function(){
+            $http({
+                method: 'GET',
+                url: 'dash/user',
+            }).then(
+                function(data) {
+                    console.log("user "+data.data);
+                    store.user = data.data;
+                    store.error = null;
+                },
+                function(error) {
+                    store.error = 'HA FALLADO: '+error.data.error;
+                }
+            );
+        };
+
         this.getImagesList = function(){
             $http({
                 method: 'POST',
@@ -403,4 +431,5 @@ angular.module('pmes2')
         this.getAppsList();
         this.getStorageList();
         this.getImagesList();
+        this.getUser();
     });

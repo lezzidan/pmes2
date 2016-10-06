@@ -1,22 +1,26 @@
 var mongoose = require('mongoose');
+var User = require('./user');
+var Application = require('./application');
 
 var jobSchema = mongoose.Schema({
     jobName : String,
-    app: {
+    /*app: {
         name: String,
         source: String,
         target: String,
         compss: String,
         args: [{name: String, value: String, defaultV: String, prefix: String, file: Boolean, optional: Boolean}]
-    },
+    },*/
+    app: {type:mongoose.Schema.Types.ObjectId, ref: 'Application'},
     description: String,
-    user: {
+    /*user: {
         username: String,
         credentials: {
             key: String,
             pub: String
         }
-    },
+    },*/
+    user: {type:mongoose.Schema.Types.ObjectId, ref: 'User'},
     img: {
         imageName: String,
         imageType: String
