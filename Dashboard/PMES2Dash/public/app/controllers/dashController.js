@@ -235,7 +235,11 @@ angular.module('pmes2')
                 "inputPath": job.inputPath,
                 "outputPath": job.outputPath,
                 "numNodes": job.numNodes,
-                "user": job.user,
+                //"user": job.user,
+                "user": {
+                    "username": store.user.username,
+                    "credentials": store.user.credentials
+                },
                 "img": job.img,
                 "app": {
                     "name":job.app.name,

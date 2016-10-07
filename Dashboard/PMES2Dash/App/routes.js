@@ -3,6 +3,44 @@ var Job = require('./models/job');
 var Storage = require('./models/storage');
 var User = require('./models/user');
 var fs = require('fs');
+var async = require('async');
+
+var formatJob = function (job) {
+    console.log("Format Job "+job);
+    var resultArgs = job.app.args.reduce(function(map, obj){
+        map[obj.name] = obj.value;
+        return map;
+    }, {});
+    User.findOne({_id: job.user}, function(err, usr){
+        if(err){
+            console.log(err);
+        }
+        console.log("USER: "+usr);
+        var jobToSend = {
+            "jobName":job.jobName,
+            "wallTime": job.wallTime,
+            "minimumVMs": job.minimumVMs,
+            "maximumVMs": job.maximumVMs,
+            "limitVMs": job.maximumVMs,
+            "initialVMs": job.minimumVMs,
+            "memory": job.memory,
+            "cores": job.cores,
+            "inputPath": job.inputPath,
+            "outputPath": job.outputPath,
+            "numNodes": job.numNodes,
+            "user": usr,
+            "img": job.img,
+            "app": {
+                "name":job.app.name,
+                "target":job.app.target,
+                "source":job.app.source,
+                "args": resultArgs
+            }
+        };
+        console.log("jobToSend: "+jobToSend);
+        return jobToSend;
+    });
+};
 
 module.exports = function(app, passport) {
     /* Create new application */
@@ -34,7 +72,7 @@ module.exports = function(app, passport) {
             newJob.jobName = newJob.jobName + '_' + newJob._id;
             newJob.save(function(err, job){
                if(err) console.log(err);
-                console.log(job);
+                console.log("new job created");
             });
             res.send(newJob.jobName);
         }
@@ -127,7 +165,7 @@ module.exports = function(app, passport) {
     app.delete('/dash/job', function(req, res, next){
         console.log("---- deleting Job ----");
         console.log(req.body);
-        Job.findOneAndRemove({name: req.body.jobName}, function(err){
+        Job.findOneAndRemove({jobName: req.body.jobName}, function(err){
             if (err) {
                 console.log("Job not found");
             }
@@ -312,13 +350,14 @@ module.exports = function(app, passport) {
         console.log("creating activity");
         console.log(req.body);
         var listOfJobs = [req.body];
+        //var listOfJobs = [jobToSend];
         var request = require('request');
         var options = {
             uri: 'http://localhost:8080/trunk_war_exploded/pmes/createActivity',
             method: 'POST',
             json: listOfJobs
         };
-        request.post(options, function(error, response, body){
+        /*request.post(options, function(error, response, body){
             if (!error && response.statusCode == 200){
                 console.log(body);
                 res.send('ok');
@@ -326,6 +365,7 @@ module.exports = function(app, passport) {
                 console.log(error);
                 res.status(404).send({ error: error});
             }
-        });
+        });*/
     });
+
 };
