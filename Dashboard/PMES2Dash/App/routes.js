@@ -70,11 +70,23 @@ module.exports = function(app, passport) {
         } else {
             var newJob = new Job(req.body);
             newJob.jobName = newJob.jobName + '_' + newJob._id;
-            newJob.save(function(err, job){
+            // Find app id
+            Application.findOne({name: req.body.appVal.name}, function(err, app){
+                if(err){
+                    console.log(err);
+                }
+                newJob.app = app._id;
+                newJob.save(function(err, job){
+                    if(err) console.log(err);
+                    console.log("new job created");
+                });
+                res.send(newJob.jobName);
+            });
+            /*newJob.save(function(err, job){
                if(err) console.log(err);
                 console.log("new job created");
             });
-            res.send(newJob.jobName);
+            res.send(newJob.jobName);*/
         }
     });
 
@@ -357,7 +369,7 @@ module.exports = function(app, passport) {
             method: 'POST',
             json: listOfJobs
         };
-        /*request.post(options, function(error, response, body){
+        request.post(options, function(error, response, body){
             if (!error && response.statusCode == 200){
                 console.log(body);
                 res.send('ok');
@@ -365,7 +377,7 @@ module.exports = function(app, passport) {
                 console.log(error);
                 res.status(404).send({ error: error});
             }
-        });*/
+        });
     });
 
 };
