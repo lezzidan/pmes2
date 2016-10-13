@@ -361,6 +361,7 @@ module.exports = function(app, passport) {
     app.post('/api/createActivity', function(req, res){
         console.log("creating activity");
         console.log(req.body);
+        console.log(req.body.user);
         var listOfJobs = [req.body];
         //var listOfJobs = [jobToSend];
         var request = require('request');

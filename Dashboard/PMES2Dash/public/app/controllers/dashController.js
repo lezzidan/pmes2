@@ -235,7 +235,6 @@ angular.module('pmes2')
                 "inputPath": job.inputPath,
                 "outputPath": job.outputPath,
                 "numNodes": job.numNodes,
-                //"user": job.user,
                 "user": {
                     "username": store.user.username,
                     "credentials": store.user.credentials
@@ -254,6 +253,7 @@ angular.module('pmes2')
 
         this.saveNewJobAndRun = function() {
             store.saveNewJob();
+            console.log(store.newJob);
             this.runJob(store.newJob);
         };
 
@@ -368,7 +368,7 @@ angular.module('pmes2')
             }).then(
                 function(data) {
                     console.log("user "+data.data);
-                    store.user = data.data;
+                    store.user = data.data[0];
                     store.error = null;
                 },
                 function(error) {
