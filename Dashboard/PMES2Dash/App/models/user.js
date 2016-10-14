@@ -23,8 +23,8 @@ var userSchema = mongoose.Schema({
             name: String
         }
     },
-    group: String
-    //password: String
+    group: [String],
+    authorized: Boolean
 });
 
 // methods ======================

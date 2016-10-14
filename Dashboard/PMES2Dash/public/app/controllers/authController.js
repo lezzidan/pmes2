@@ -7,6 +7,7 @@ angular.module('pmes2')
     .controller('authController', ['$state', '$http', function($state, $http) {
         var storeAuth = this;
         this.title = "PMES2";
+        this.newUser = {};
         this.user = {};
         this.user.email = "";
         this.user.password = "";
@@ -28,20 +29,36 @@ angular.module('pmes2')
                 function(data) {
                     console.log(data);
                     $state.go('dash', {}, { reload: true});
-                    //$location.path('/dash');
                     storeAuth.error = null;
                 },
                 function(error) {
+                    alert("User not authorized");
                     storeAuth.error = 'ERROR: '+error.data.error;
                 }
             );
         };
 
         this.saveNewUser = function() {
+            console.log(storeAuth.newUser);
             $http({
                 method: 'POST',
+                url: 'auth/signup',
+                data: storeAuth.newUser
+            }).then(
+                function(data) {
+                    $('#signup').modal('hide');
+                    storeAuth.error = null;
+                    //storeAuth.userS._id = data.data;
+                    //storeAuth.user = data.data;
+                },
+                function(error) {
+                    storeAuth.error = 'ERROR: '+error.data.error;
+                }
+            );
+            /*$http({
+                method: 'POST',
                 url: 'dash/user',
-                data: this.userS
+                data: storeAuth.newUser
             }).then(
                 function(data) {
                     storeAuth.error = null;
@@ -50,7 +67,7 @@ angular.module('pmes2')
                 function(error) {
                     storeAuth.error = 'ERROR: '+error.data.error;
                 }
-            );
+            );*/
         };
 
         //Init calls

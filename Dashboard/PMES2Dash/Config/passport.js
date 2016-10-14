@@ -45,9 +45,15 @@ module.exports = function(passport) {
                     if (user) {
                         return done(null, false, req.flash('signupMessage', 'the email is already taken'));
                     } else {
+                        console.log("Creating new user");
                         var newUser = new User();
+                        newUser.username = email.split("@")[0];
+                        newUser.group = ["test"];
+                        newUser.credentials.key = "";
+                        newUser.credentials.pem = "";
                         newUser.login.local.email = email;
                         newUser.login.local.password = newUser.generateHash(password);
+                        newUser.authorized = false;
 
                         newUser.save(function (err) {
                             if (err)
@@ -66,24 +72,22 @@ module.exports = function(passport) {
         passReqToCallback: true
     },
     function(req, email, password, done){
-        var newUser = new User();
-        newUser.login.local.email = email;
-        newUser.login.local.password = newUser.generateHash(password);
-        return done(null, newUser);
-        /*User.findOne({'login.local.email': email}, function(err, user){
+        User.findOne({'login.local.email': email}, function(err, user){
             if (err)
                 return done(err);
             if (!user) {
                 return done(null, false);
             }
             if (user) {
-                if (!user.validPassword(password)) {
+                if (!user.validPassword(password) || !user.authorized) {
+                    console.log("Password not valid or user not authorized");
                     return done(null, false);
                 }
+                console.log("valid password and user authorized");
                 return done(null, user);
             }
             return done(null, user);
-        });*/
+        });
     }));
 
 };

@@ -136,6 +136,21 @@
     </div>
 </div>
 
+<div class="modal fade" id="users" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Users</h4>
+            </div>
+            <div class="modal-body">
+                <div ng-include="'views/usersTable.html'"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 
 <div class="container-fluid">
     <div class="row">
@@ -159,6 +174,11 @@
             <ul class="nav nav-sidebar">
                 <li class="nav-header" style="color: white; border-bottom-color: white; font-size: large; text-align: left"><a>System</a> </li>
                 <li><a data-toggle="modal" data-target="#system">Cloud Load Information</a></li>
+                <li class="nav-divider"></li>
+            </ul>
+            <ul class="nav nav-sidebar">
+                <li class="nav-header" style="color: white; border-bottom-color: white; font-size: large; text-align: left"><a>Users</a> </li>
+                <li><a data-toggle="modal" data-target="#users">Manage users</a></li>
                 <li class="nav-divider"></li>
             </ul>
         </div>

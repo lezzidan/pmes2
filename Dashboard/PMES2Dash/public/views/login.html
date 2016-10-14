@@ -37,7 +37,7 @@
                             <a href="#/auth/google" class="btn btn-lg btn-danger"><span class="fa fa-google-plus"></span> Google</a>
                         </p>
                     </form>
-                    <p>Need an account? <a href="#">Signup</a></p>
+                    <p>Need an account? <a data-toggle="modal" data-target="#signup">Signup</a></p>
                 </div>
                 <div class="col-md-4">
                 </div>
@@ -59,6 +59,24 @@
                 </div>
 
 
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="signup" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Signup</h4>
+            </div>
+            <div class="modal-body">
+                <div ng-include="'views/signup.html'"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" ng-click="authCtrl.saveNewUser()">Save</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>

@@ -4,8 +4,9 @@
 'use strict';
 
 angular.module('pmes2')
-    .controller('dashController', function($http) {
+    .controller('dashController', ['$state', '$http', function($state, $http) {
         var store = this;
+        //TODO: clean user variables
         store.user = {
             username: "scorella",
             credentials: {
@@ -34,6 +35,7 @@ angular.module('pmes2')
         this.appsList = [];
         this.storagesList = [];
         this.imagesList = [];
+        this.usersList = [];
 
         this.error = null;
         this.logFile ="";
@@ -71,7 +73,6 @@ angular.module('pmes2')
         this.saveNewApp = function() {
             this.newApp.user = store.userS._id;
             this.newApp.location = store.newApp.location._id;
-            //this.newApp.user = store.user;
             $http({
                 method: 'POST',
                 url: 'dash/app',
@@ -93,13 +94,7 @@ angular.module('pmes2')
             console.log(this.newJob);
             this.newJob.app = this.newJob.appVal;
             this.newJob.jobName = this.newJob.appVal.name;
-            //this.newJob.app.name = this.newJob.appVal.name;
-            //this.newJob.app.source = this.newJob.appVal.source;
-            //his.newJob.app.target = this.newJob.appVal.target;
-            //this.newJob.app.compss = ((this.newJob.appVal.compss) ? 'compss': 'single');
-            //this.newJob.app.args = this.newJob.appVal.args;
             this.newJob.status = 'created';
-            //this.newJob.user = store.user;
             this.newJob.user = store.userS._id;
             this.newJob.img.imageName = this.newJob.appVal.image;
             this.newJob.img.imageType = 'small';
@@ -129,11 +124,11 @@ angular.module('pmes2')
                     store.newJob = null;
                 },
                 function(error) {
-                    store.error = 'HA FALLADO: '+error.data.error;
+                    store.error = 'Error: '+error.data.error;
                     store.newJob = null;
                 }
             );
-            //store.newJob.jobName = this.newJob.appVal.name;
+
         };
 
 
@@ -146,7 +141,6 @@ angular.module('pmes2')
                 data: jobToSend
             }).then(
                 function(data) {
-                    console.log("DATA: "+data);
                     store.error = null;
                 }, function(error) {
                     store.error = 'Activity creation error'+error.data.error;
@@ -166,7 +160,6 @@ angular.module('pmes2')
                 headers: {"Content-Type": "application/json;charset=utf-8"}
             }).then(
                 function(data) {
-                    console.log("JOB Deleted: "+data);
                     store.error = null;
                 }, function(error) {
                     store.error = 'Job deletion error '+error.data.error;
@@ -186,7 +179,6 @@ angular.module('pmes2')
                 headers: {"Content-Type": "application/json;charset=utf-8"}
             }).then(
                 function(data) {
-                    console.log("Storage Deleted: "+data);
                     store.error = null;
                 }, function(error) {
                     store.error = 'storage deletion error '+error.data.error;
@@ -206,7 +198,6 @@ angular.module('pmes2')
                 headers: {"Content-Type": "application/json;charset=utf-8"}
             }).then(
                 function(data) {
-                    console.log("App Deleted: "+data);
                     store.error = null;
                 }, function(error) {
                     store.error = 'app deletion error '+error.data.error;
@@ -215,6 +206,25 @@ angular.module('pmes2')
             var index = store.appsList.indexOf(app);
             if (index > -1){
                 store.appsList.splice(index, 1);
+            }
+        };
+
+        this.removeUser = function(user) {
+            $http({
+                method: 'DELETE',
+                url: 'dash/user',
+                data: user,
+                headers: {"Content-Type": "application/json;charset=utf-8"}
+            }).then(
+                function(data) {
+                    store.error = null;
+                }, function(error) {
+                    store.error = 'user deletion error '+error.data.error;
+                }
+            );
+            var index = store.usersList.indexOf(user);
+            if (index > -1){
+                store.usersList.splice(index, 1);
             }
         };
 
@@ -253,7 +263,6 @@ angular.module('pmes2')
 
         this.saveNewJobAndRun = function() {
             store.saveNewJob();
-            console.log(store.newJob);
             this.runJob(store.newJob);
         };
 
@@ -270,7 +279,7 @@ angular.module('pmes2')
                     store.newStorage = null;
                 },
                 function(error) {
-                    store.error = 'HA FALLADO: '+error.data.error;
+                    store.error = 'Error: '+error.data.error;
                 }
             );
         };
@@ -286,7 +295,7 @@ angular.module('pmes2')
                     store.error = null;
                 },
                 function(error) {
-                    store.error = 'HA FALLADO: '+error.data.error;
+                    store.error = 'Error: '+error.data.error;
                 }
             );
         };
@@ -302,7 +311,7 @@ angular.module('pmes2')
                     store.error = null;
                 },
                 function(error) {
-                    store.error = 'HA FALLADO: '+error.data.error;
+                    store.error = 'Error: '+error.data.error;
                 }
             );
         };
@@ -317,14 +326,32 @@ angular.module('pmes2')
                     store.error = null;
                 },
                 function(error) {
-                    store.error = 'HA FALLADO: '+error.data.error;
+                    store.error = 'Error: '+error.data.error;
+                }
+            );
+        };
+
+        this.updateUser = function(user){
+            $http({
+                method: 'PUT',
+                url: 'dash/user',
+                data: user
+            }).then(
+                function(data) {
+                    var index = store.usersList.indexOf(user);
+                    if (index > -1){
+                        store.usersList[store.index]= user;
+                    }
+                    store.error = null;
+                },
+                function(error) {
+                    store.error = 'Error: '+error.data.error;
                 }
             );
         };
 
         this.infoStorage = function(storage) {
             var index = this.storagesList.indexOf(storage);
-            console.log(index);
             store.infoStorage = store.storagesList[index];
             store.index = index;
         };
@@ -336,7 +363,6 @@ angular.module('pmes2')
         };
 
         this.editJobFun = function(job) {
-            console.log(job);
             var index = this.jobsList.indexOf(job);
             store.infoJob = store.jobsList[index];
             store.index = index;
@@ -349,9 +375,9 @@ angular.module('pmes2')
         };
 
         this.removeArg = function (index) {
-            var index = this.newApp.args.indexOf(index);
-            if (index > -1){
-                this.newApp.args.splice(index, 1);
+            var idx = this.newApp.args.indexOf(index);
+            if (idx > -1){
+                this.newApp.args.splice(idx, 1);
             }
         };
 
@@ -364,15 +390,16 @@ angular.module('pmes2')
         this.getUser = function(){
             $http({
                 method: 'GET',
-                url: 'dash/user',
+                url: 'dash/user'
             }).then(
                 function(data) {
-                    console.log("user "+data.data);
                     store.user = data.data[0];
+                    store.userS._id = data.data[0]._id;
                     store.error = null;
                 },
                 function(error) {
-                    store.error = 'HA FALLADO: '+error.data.error;
+                    console.log('OH NO, SOOMETHING HAS FAILED! AND NOBODY CARES');
+                    store.error = 'Error: '+error.data.error;
                 }
             );
         };
@@ -384,14 +411,26 @@ angular.module('pmes2')
                 data: this.user
             }).then(
                 function(data) {
-                    console.log(data.data);
                     store.imagesList = data.data;
                     store.error = null;
                 },
                 function(error) {
-                    store.error = 'HA FALLADO: '+error.data.error;
+                    console.log('OH NO, SOOMETHING HAS FAILED! AND NOBODY CARES');
+                    store.error = 'Error: '+error.data.error;
                 }
             );
+        };
+        this.logout = function(){
+            $http.get('auth/logout')
+                .then(
+                    function(data) {
+                        console.log(data);
+                        $state.go('login', {}, { reload: true});
+                    },
+                    function(error) {
+                        console.log('OH NO, SOOMETHING HAS FAILED! AND NOBODY CARES');
+                        store.error = 'Error: '+error.data.error;
+                    });
         };
 
         this.getJobsList = function() {
@@ -403,6 +442,7 @@ angular.module('pmes2')
                     },
                     function(error) {
                         console.log('OH NO, SOOMETHING HAS FAILED! AND NOBODY CARES');
+                        store.error = 'Error: '+error.data.error;
                     });
         };
 
@@ -414,18 +454,30 @@ angular.module('pmes2')
                     },
                     function(error) {
                         console.log('OH NO, SOOMETHING HAS FAILED! AND NOBODY CARES');
+                        store.error = 'Error: '+error.data.error;
                     });
         };
 
         this.getStorageList = function() {
-            console.log("getStorages!");
             $http.get('dash/storages')
                 .then(
                   function(data) {
-                      console.log("DATA: "+data.data);
                       store.storagesList = data.data;
                   }, function(error){
                         console.log('OH NO, SOOMETHING HAS FAILED! AND NOBODY CARES');
+                        store.error = 'Error: '+error.data.error;
+                    }
+                );
+        };
+
+        this.getUsersList = function() {
+            $http.get('dash/users')
+                .then(
+                    function(data) {
+                        store.usersList = data.data;
+                    }, function(error){
+                        console.log('OH NO, SOOMETHING HAS FAILED! AND NOBODY CARES');
+                        store.error = 'Error: '+error.data.error;
                     }
                 );
         };
@@ -435,5 +487,6 @@ angular.module('pmes2')
         this.getAppsList();
         this.getStorageList();
         this.getImagesList();
+        this.getUsersList();
         this.getUser();
-    });
+    }]);

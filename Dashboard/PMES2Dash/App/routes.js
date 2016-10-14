@@ -173,6 +173,26 @@ module.exports = function(app, passport) {
         }
     });
 
+    /* update User */
+    app.put('/dash/user', function(req, res, next){
+        console.log("---- updating user ----");
+        console.log(req.body);
+        if(!req.body.username) {
+            res.status(404).send({ error: 'username'});
+        } else {
+            User.findOne({username: req.body.username}, function(err, usr){
+                if(err){
+                    console.log(err);
+                }
+                usr.authorized = req.body.authorized;
+                usr.credentials.key = req.body.credentials.key;
+                usr.credentials.pem = req.body.credentials.pem;
+                usr.save();
+            });
+            res.send('OK');
+        }
+    });
+
     /* delete job */
     app.delete('/dash/job', function(req, res, next){
         console.log("---- deleting Job ----");
@@ -213,10 +233,12 @@ module.exports = function(app, passport) {
 
     /* delete user */
     app.delete('/dash/user', function(req, res, next){
-        console.log("---- deleting Storage ----");
-        Storage.findOneAndRemove(req.body.username, function(err){
+        console.log("---- deleting User ----");
+        User.findOneAndRemove({username: req.body.username}, function(err){
+            console.log(req.body.username);
             if (err) {
                 console.log("user not found");
+                console.log(err);
             }
             console.log("deleted");
             res.send('OK');
@@ -240,7 +262,7 @@ module.exports = function(app, passport) {
         }
     });
 
-    /* Get list of jobs */
+    /* Get user */
     app.get('/dash/user', function(req, res, next) {
         User.find({username:'scorella'},function(err, user){
             if(err){
@@ -249,6 +271,18 @@ module.exports = function(app, passport) {
             } else {
                 console.log(user);
                 res.send(user);
+            }
+        });
+    });
+
+    /* Get list of users */
+    app.get('/dash/users', function(req, res, next) {
+        User.find(function(err, users){
+            if(err){
+                console.log(err);
+                res.send([]);
+            } else {
+                res.send(users);
             }
         });
     });
@@ -307,24 +341,24 @@ module.exports = function(app, passport) {
     // AUTH       ==========================
     // =====================================
     app.post('/auth/login',
-        passport.authenticate('local-login', {
-            failureRedirect: '/login' }),
+        passport.authenticate('local-login'),
         function(req, res) {
+            console.log(req);
             console.log(req.user);
             res.send(req.user);
         });
 
     app.post('/auth/signup',
-        passport.authenticate('local-signup', {
-            failureRedirect: '/login' }),
+        passport.authenticate('local-signup'),
         function(req, res) {
             console.log(req.user);
             res.send(req.user);
             //res.redirect('/dash');
         });
 
-    app.get('/logout', function(req, res){
+    app.get('/auth/logout', function(req, res){
         req.logout();
+        res.send(200);
     });
 
 
