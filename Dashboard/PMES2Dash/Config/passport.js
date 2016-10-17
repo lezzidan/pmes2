@@ -90,4 +90,51 @@ module.exports = function(passport) {
         });
     }));
 
+    /*google*/
+    passport.use('google', new GoogleStrategy({
+            clientID        : configAuth.googleAuth.clientID,
+            clientSecret    : configAuth.googleAuth.clientSecret,
+            callbackURL     : configAuth.googleAuth.callbackURL
+        },
+        function(token, refreshToken, profile, done) {
+            console.log("Entra!");
+            // make the code asynchronous
+            // User.findOne won't fire until we have all our data back from Google
+            process.nextTick(function() {
+
+                // try to find the user based on their google id
+                console.log("Entra!");
+                User.findOne({ 'login.google.id' : profile.id }, function(err, user) {
+                    if (err)
+                        return done(err);
+
+                    if (user) {
+
+                        // if a user is found, log them in
+                        return done(null, user);
+                    } else {
+                        // if the user isnt in our database, create a new user
+                        var newUser          = new User();
+
+                        // set all of the relevant information
+                        newUser.login.google.id    = profile.id;
+                        newUser.login.google.token = token;
+                        newUser.login.google.name  = profile.displayName;
+                        newUser.login.google.email = profile.emails[0].value; // pull the first email
+                        newUser.username =  "scorella";
+                        newUser.group = ["test"];
+                        newUser.credentials.key = "";
+                        newUser.credentials.pem = "";
+                        newUser.authorized = false;
+                        // save the user
+                        newUser.save(function(err) {
+                            if (err)
+                                throw err;
+                            return done(null, newUser);
+                        });
+                    }
+                });
+            });
+
+        }));
 };

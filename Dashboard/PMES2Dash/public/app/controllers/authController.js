@@ -38,6 +38,36 @@ angular.module('pmes2')
             );
         };
 
+        /*this.loginGoogle = function() {
+            $http({
+                method: 'GET',
+                url: 'auth/google',
+                dataType: 'jsonp'
+            }).then(
+                function(data) {
+                    $state.go('dash', {}, { reload: true});
+                    storeAuth.error = null;
+                },
+                function(error) {
+                    alert("User not authorized");
+                    storeAuth.error = 'ERROR: '+error.data.error;
+                }
+            );
+        };*/
+        this.loginGoogle = function() {
+            $http({
+                method: 'GET',
+                url: 'auth/google',
+                dataType: 'jsonp'
+            }).success(function(data, status){
+                console.log(status);
+                console.log("SUCCESS");
+                $state.go('dash', {}, { reload: true});
+            }).error(function (data) {
+                storeAuth.error = 'ERROR: '+error.data.error;
+            })
+        };
+
         this.saveNewUser = function() {
             console.log(storeAuth.newUser);
             $http({
@@ -69,7 +99,6 @@ angular.module('pmes2')
                 }
             );*/
         };
-
         //Init calls
         //this.saveNewUser();
     }]);

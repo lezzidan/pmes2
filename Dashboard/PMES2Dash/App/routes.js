@@ -356,6 +356,19 @@ module.exports = function(app, passport) {
             //res.redirect('/dash');
         });
 
+    app.get('/auth/google', passport.authenticate('google', { scope : ['profile', 'email'] }), function (req,res) {
+        console.log("estoy en google");
+    });
+
+
+    // the callback after google has authenticated the user
+    app.get('/auth/google/callback',
+        passport.authenticate('google'), function(req, res) {
+            //res.send(req.user);
+            console.log("estoy en callback");
+            res.send(req.user);
+        });
+
     app.get('/auth/logout', function(req, res){
         req.logout();
         res.send(200);
@@ -397,7 +410,6 @@ module.exports = function(app, passport) {
         console.log(req.body);
         console.log(req.body.user);
         var listOfJobs = [req.body];
-        //var listOfJobs = [jobToSend];
         var request = require('request');
         var options = {
             uri: 'http://localhost:8080/trunk_war_exploded/pmes/createActivity',

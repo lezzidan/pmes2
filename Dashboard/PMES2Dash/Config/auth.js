@@ -2,9 +2,12 @@
 // expose our config directly to our application using module.exports
 module.exports = {
     'googleAuth' : {
-        'clientID'      : '664048954502-uioicpgi0dahu2589fm3c83ebrrl3sse.apps.googleusercontent.com',
-        'clientSecret'  : 'Mo40oT7bdMu-SRledQGdomKi',
+        'clientID'      : '546873064953-d9a8ejighk6vp7bsfjns89dugo371uqo.apps.googleusercontent.com',
+        'clientSecret'  : '1FOIuW-Cu5IjGoT9gD81_o-B',
         'callbackURL'   : 'http://localhost:3000/auth/google/callback'
     }
 
 };
+
+
+//https://console.cloud.google.com/apis/credentials?project=pmes2-146414
