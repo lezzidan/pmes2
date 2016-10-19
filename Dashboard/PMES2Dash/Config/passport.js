@@ -107,12 +107,7 @@ module.exports = function(passport) {
                 User.findOne({ 'login.google.id' : profile.id }, function(err, user) {
                     if (err)
                         return done(err);
-
-                    if (user) {
-
-                        // if a user is found, log them in
-                        return done(null, user);
-                    } else {
+                    if (!user){
                         // if the user isnt in our database, create a new user
                         var newUser          = new User();
 
@@ -130,8 +125,15 @@ module.exports = function(passport) {
                         newUser.save(function(err) {
                             if (err)
                                 throw err;
-                            return done(null, newUser);
+                            return done(null, false, {message: 'User created but not authorized yet'});
                         });
+                    }
+                     else {
+                        if (!user.authorized) {
+                            // if a user is found, log them in
+                            return done(null, false, {message: 'Not Authorized yet'});
+                        }
+                        return done(null, user);
                     }
                 });
             });

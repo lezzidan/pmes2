@@ -5,6 +5,15 @@
 
 angular.module('pmes2', ['ui.router'])
     .config(function($urlRouterProvider, $stateProvider) {
+        var authenticate = function($q, $http, $state) {
+            $http.get('/user')
+                .then(function(data){
+                return $q.when();
+            }, function (data) {
+                    $state.go('login');
+                });
+        };
+
         $urlRouterProvider
             .otherwise('login');
         $stateProvider

@@ -44,7 +44,7 @@ var formatJob = function (job) {
 
 module.exports = function(app, passport) {
     /* Create new application */
-    app.post('/dash/app', function(req, res, next) {
+    app.post('/dash/app', isLoggedIn, function(req, res, next) {
         console.log("---- new app ----");
         if(!req.body.name || req.body.name.length < 5) {
             res.status(404).send({ error: 'NameApp too short'});
@@ -62,7 +62,7 @@ module.exports = function(app, passport) {
     });
 
     /* Create new job */
-    app.post('/dash/job', function(req, res, next) {
+    app.post('/dash/job', isLoggedIn, function(req, res, next) {
         console.log("---- new job ----");
         console.log(req.body);
         if(!req.body.app) {
@@ -91,7 +91,7 @@ module.exports = function(app, passport) {
     });
 
     /* Create new storage */
-    app.post('/dash/storage', function(req, res, next) {
+    app.post('/dash/storage', isLoggedIn, function(req, res, next) {
         console.log("---- new Storage ----");
         console.log(req.body);
         if(!req.body.name) {
@@ -109,7 +109,7 @@ module.exports = function(app, passport) {
     });
 
     /* update storage */
-    app.put('/dash/storage', function(req, res, next){
+    app.put('/dash/storage', isLoggedIn, function(req, res, next){
         console.log("---- updating Storage ----");
         console.log(req.body);
         if(!req.body.name) {
@@ -129,7 +129,7 @@ module.exports = function(app, passport) {
     });
 
     /* update app */
-    app.put('/dash/app', function(req, res, next){
+    app.put('/dash/app', isLoggedIn, function(req, res, next){
         console.log("---- updating App ----");
         console.log(req.body);
         if(!req.body.name) {
@@ -154,7 +154,7 @@ module.exports = function(app, passport) {
     });
 
     /* update job */
-    app.put('/dash/job', function(req, res, next){
+    app.put('/dash/job', isLoggedIn, function(req, res, next){
         console.log("---- updating Job ----");
         console.log(req.body);
         if(!req.body.app.name) {
@@ -174,7 +174,7 @@ module.exports = function(app, passport) {
     });
 
     /* update User */
-    app.put('/dash/user', function(req, res, next){
+    app.put('/dash/user', isLoggedIn, function(req, res, next){
         console.log("---- updating user ----");
         console.log(req.body);
         if(!req.body.username) {
@@ -194,7 +194,7 @@ module.exports = function(app, passport) {
     });
 
     /* delete job */
-    app.delete('/dash/job', function(req, res, next){
+    app.delete('/dash/job', isLoggedIn, function(req, res, next){
         console.log("---- deleting Job ----");
         console.log(req.body);
         Job.findOneAndRemove({jobName: req.body.jobName}, function(err){
@@ -207,7 +207,7 @@ module.exports = function(app, passport) {
     });
 
     /* delete app */
-    app.delete('/dash/app', function(req, res, next){
+    app.delete('/dash/app', isLoggedIn, function(req, res, next){
         console.log("---- deleting App ----");
         console.log(req.body);
         Application.findOneAndRemove({name: req.body.name}, function(err){
@@ -220,7 +220,7 @@ module.exports = function(app, passport) {
     });
 
     /* delete storage */
-    app.delete('/dash/storage', function(req, res, next){
+    app.delete('/dash/storage', isLoggedIn, function(req, res, next){
         console.log("---- deleting Storage ----");
         Storage.findOneAndRemove(req.body, function(err){
             if (err) {
@@ -232,7 +232,7 @@ module.exports = function(app, passport) {
     });
 
     /* delete user */
-    app.delete('/dash/user', function(req, res, next){
+    app.delete('/dash/user', isLoggedIn, function(req, res, next){
         console.log("---- deleting User ----");
         User.findOneAndRemove({username: req.body.username}, function(err){
             console.log(req.body.username);
@@ -246,7 +246,7 @@ module.exports = function(app, passport) {
     });
 
     /* Create new user */
-    app.post('/dash/user', function(req, res, next){
+    app.post('/dash/user', isLoggedIn, function(req, res, next){
         console.log("---- New User ----");
         console.log(req.body);
         if(!req.body.username || !req.body.credentials){
@@ -263,7 +263,8 @@ module.exports = function(app, passport) {
     });
 
     /* Get user */
-    app.get('/dash/user', function(req, res, next) {
+    app.get('/dash/user', isLoggedIn, function(req, res, next) {
+        console.log("REQ user"+req.user);
         User.find({username:'scorella'},function(err, user){
             if(err){
                 console.log(err);
@@ -273,10 +274,15 @@ module.exports = function(app, passport) {
                 res.send(user);
             }
         });
+
+    });
+
+    app.get('/user', isLoggedIn, function(req, res) {
+        res.send(req.user);
     });
 
     /* Get list of users */
-    app.get('/dash/users', function(req, res, next) {
+    app.get('/dash/users', isLoggedIn, function(req, res, next) {
         User.find(function(err, users){
             if(err){
                 console.log(err);
@@ -288,7 +294,7 @@ module.exports = function(app, passport) {
     });
 
     /* Get list of jobs */
-    app.get('/dash/jobs', function(req, res, next) {
+    app.get('/dash/jobs', isLoggedIn, function(req, res, next) {
         Job.find(function(err, jobs){
             if(err){
                 console.log(err);
@@ -300,7 +306,7 @@ module.exports = function(app, passport) {
     });
 
     /* Get list of applications */
-    app.get('/dash/apps', function(req, res, next) {
+    app.get('/dash/apps', isLoggedIn, function(req, res, next) {
         Application.find(function(err, apps){
             if(err){
                 console.log(err);
@@ -312,7 +318,7 @@ module.exports = function(app, passport) {
     });
 
     /* Get list of storages */
-    app.get('/dash/storages', function(req, res, next) {
+    app.get('/dash/storages', isLoggedIn, function(req, res, next) {
         Storage.find(function(err, storages){
             if(err){
                 console.log(err);
@@ -325,7 +331,7 @@ module.exports = function(app, passport) {
         });
     });
 
-    app.post('/dash/log', function(req, res, next){
+    app.post('/dash/log', isLoggedIn, function(req, res, next){
         var path = req.body;
         console.log(path);
 
@@ -363,19 +369,18 @@ module.exports = function(app, passport) {
 
     // the callback after google has authenticated the user
     app.get('/auth/google/callback',
-        passport.authenticate('google'), function(req, res) {
-            //res.send(req.user);
-            console.log("estoy en callback");
-            res.send(req.user);
-        });
+        passport.authenticate('google', {
+            successRedirect:'/#/dash',
+            failureRedirect:'/#/login'
+        }));
 
-    app.get('/auth/logout', function(req, res){
+    app.get('/auth/logout', isLoggedIn, function(req, res){
         req.logout();
         res.send(200);
     });
 
 
-    app.post('/dash/images', function(req, res){
+    app.post('/dash/images', isLoggedIn, function(req, res){
         var execSync = require('child_process').execSync;
         var endpoint = " --endpoint https://rocci-server.bsc.es:11443";
         var auth = " --auth x509";
@@ -405,7 +410,7 @@ module.exports = function(app, passport) {
     // =====================================
     // API - PMES ==========================
     // =====================================
-    app.post('/api/createActivity', function(req, res){
+    app.post('/api/createActivity', isLoggedIn, function(req, res){
         console.log("creating activity");
         console.log(req.body);
         console.log(req.body.user);
@@ -428,3 +433,14 @@ module.exports = function(app, passport) {
     });
 
 };
+
+// route middleware to make sure a user is logged in
+function isLoggedIn(req, res, next) {
+
+    // if user is authenticated in the session, carry on
+    if (req.isAuthenticated())
+        return next();
+
+    // if they aren't redirect them to the home page
+    res.redirect('/');
+}
