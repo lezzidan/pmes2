@@ -57,7 +57,13 @@ public class PMESservice {
 
     public ArrayList<JobStatus> getActivityStatus(ArrayList<String> jobids){
         // TODO: getActivityStatus
-        return null;
+        ArrayList<JobStatus> status = new ArrayList<JobStatus>(jobids.size());
+        for (String id:jobids) {
+            logger.trace("Asking status for job: "+id);
+            Job job = this.jm.getJobs().get(id);
+            status.add(JobStatus.valueOf(job.getStatus()));
+        }
+        return status;
     }
 
     public ArrayList<JobReport> getActivityReport(ArrayList<String> jobids){

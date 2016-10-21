@@ -42,6 +42,7 @@ public class SchedulerThread extends Thread{
             if (!pendingJobs.isEmpty()){
                 System.out.println(pendingJobs.size());
                 Job nextJob = this.nextJob();
+                nextJob.setStatus("RUNNING");
                 this.executeJob(nextJob);
             }
         }
@@ -62,6 +63,7 @@ public class SchedulerThread extends Thread{
         System.out.println("waiting");
         try {
             executor.join();
+            job.setStatus("FINISHED");
             System.out.println("Execution Finished");
         } catch (Exception e){
             job.setStatus("CANCELLED");

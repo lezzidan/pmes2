@@ -45,7 +45,6 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
         logger.trace("Stage in");
         stageIn();
 
-
         //Configure execution
         String resourceAddress = job.getResource(0).getIp(); //get master IP
         String user = job.getUser().getUsername();
@@ -78,6 +77,9 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
         logger.trace("runnning");
         Integer exitValue = executeCommand(command);
         logger.trace("exit code"+ exitValue);
+        if (exitValue > 0){
+            job.setStatus("FAILED");
+        }
 
         //StageOut
         logger.trace("Stage out");
@@ -125,7 +127,7 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
 
     public void destroyResource(String Id){
         logger.trace("Deleting Resource");
-        job.setStatus("FINISHED");
+        //job.setStatus("FINISHED");
         this.im.destroyResource(Id);
     }
 
