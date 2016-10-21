@@ -432,6 +432,28 @@ module.exports = function(app, passport) {
         });
     });
 
+    app.post('/api/getActivityStatus', isLoggedIn, function(req, res){
+        console.log("asking for status");
+        console.log(req.body);
+        var listOfIds = [req.body];
+        var request = require('request');
+        var options = {
+            uri: 'http://localhost:8080/trunk_war_exploded/pmes/getActivityStatus',
+            method: 'POST',
+            json: listOfIds
+        };
+        request.post(options, function(error, response, body){
+            if (!error && response.statusCode == 200){
+                console.log(body);
+                //TODO: actualizar estado jobs.
+                res.send('ok');
+            } else {
+                console.log(error);
+                res.status(404).send({ error: error});
+            }
+        });
+    });
+
 };
 
 // route middleware to make sure a user is logged in

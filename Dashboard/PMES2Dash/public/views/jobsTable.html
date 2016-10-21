@@ -5,6 +5,7 @@
             <table class="table table-striped">
                 <thead>
                 <tr>
+                    <th><a ng-click="dashCtrl.refreshJobs()" class="btn btn-info" role="button"><span class="glyphicon glyphicon-refresh" aria-hidden="true"></span></a></th>
                     <th>Submitted</th>
                     <th>Job Id</th>
                     <th>User</th>
@@ -17,6 +18,7 @@
                 </thead>
                 <tbody>
                 <tr ng-repeat="x in dashCtrl.jobsList">
+                    <td><input type="checkbox" ng-model=""></td>
                     <td>{{ x.submitted }}</td>
                     <td>{{ x.jobName }}</td>
                     <td>{{ x.user.username }}</td>

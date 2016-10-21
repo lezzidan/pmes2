@@ -171,6 +171,21 @@ angular.module('pmes2')
             }
         };
 
+        this.refreshJobs = function () {
+            $http({
+                method: 'POST',
+                url: 'api/getActivityStatus',
+                data: this.jobsList[0].jobName
+            }).then(
+                function(data) {
+                    console.log(data);
+                    store.error = null;
+                }, function(error) {
+                    store.error = 'Get Activity status error'+error.data.error;
+                }
+            );
+        };
+
         this.removeStorage = function(storage) {
             $http({
                 method: 'DELETE',
