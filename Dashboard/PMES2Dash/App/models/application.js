@@ -5,7 +5,10 @@ var mongoose = require('mongoose');
 var User = require('./user');
 
 var appSchema = mongoose.Schema({
-    name : String,
+    username : {
+        type: String,
+        unique: true
+    },
     image: String,
     location: {type:mongoose.Schema.Types.ObjectId, ref: 'Storage'},
     target: String,

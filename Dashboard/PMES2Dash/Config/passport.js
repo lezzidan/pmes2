@@ -97,13 +97,11 @@ module.exports = function(passport) {
             callbackURL     : configAuth.googleAuth.callbackURL
         },
         function(token, refreshToken, profile, done) {
-            console.log("Entra!");
             // make the code asynchronous
             // User.findOne won't fire until we have all our data back from Google
             process.nextTick(function() {
 
                 // try to find the user based on their google id
-                console.log("Entra!");
                 User.findOne({ 'login.google.id' : profile.id }, function(err, user) {
                     if (err)
                         return done(err);
@@ -116,7 +114,7 @@ module.exports = function(passport) {
                         newUser.login.google.token = token;
                         newUser.login.google.name  = profile.displayName;
                         newUser.login.google.email = profile.emails[0].value; // pull the first email
-                        newUser.username =  "scorella";
+                        newUser.username = profile.emails[0].value.split("@")[0];
                         newUser.group = ["test"];
                         newUser.credentials.key = "";
                         newUser.credentials.pem = "";

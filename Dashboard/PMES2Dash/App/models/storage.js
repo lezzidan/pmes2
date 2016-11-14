@@ -5,7 +5,10 @@ var crypto = require('crypto'),
     password = 'd6F3Efeq';
 
 var storageSchema = mongoose.Schema({
-    name : String,
+    name : {
+        type: String,
+        unique: true
+    },
     path: String,
     user: String,
     password: String

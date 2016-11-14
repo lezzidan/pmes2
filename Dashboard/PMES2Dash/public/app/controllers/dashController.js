@@ -43,6 +43,9 @@ angular.module('pmes2')
         this.logFiles = ["log", "out", "err"];
         this.logData ="";
 
+        //TODO: remove groups list from variables
+        this.groups = [];
+        this.Groups = ["test", "all"];
         this.getLog = function(){
             if(store.logFile == "log"){
                 store.readFile = {file:"/home/pmes/pmes/logs/log.txt"};
@@ -91,7 +94,6 @@ angular.module('pmes2')
         };
 
         this.saveNewJob = function() {
-            console.log(this.newJob);
             this.newJob.app = this.newJob.appVal;
             this.newJob.jobName = this.newJob.appVal.name;
             this.newJob.status = 'created';
@@ -130,8 +132,6 @@ angular.module('pmes2')
             );
 
         };
-
-
 
         this.runJob = function(job){
             var jobToSend = this.formatJob(job);
@@ -439,7 +439,6 @@ angular.module('pmes2')
             $http.get('auth/logout')
                 .then(
                     function(data) {
-                        console.log(data);
                         $state.go('login', {}, { reload: true});
                     },
                     function(error) {
@@ -452,7 +451,6 @@ angular.module('pmes2')
             $http.get('dash/jobs')
                 .then(
                     function(data) {
-                        console.log(data);
                         store.jobsList = data.data;
                     },
                     function(error) {

@@ -22,7 +22,7 @@
                 <div class="col-md-4">
                     <h1 class="cover-heading">Login</h1>
                     <!-- LOGIN FORM -->
-                    <form action="/login" method="post">
+                    <!--<form action="/login" method="post">
                         <div class="form-group">
                             <label>Email</label>
                             <input type="text" class="form-control" name="email" ng-model="authCtrl.user.email">
@@ -32,12 +32,15 @@
                             <input type="password" class="form-control" name="password" ng-model="authCtrl.user.password">
                         </div>
                         <p class="lead">
-                            <a href="#" class="btn btn-lg btn-default" ui-sref="dash"><span class="fa fa-user"></span> Local Login</a>
+
+                            <a data-toggle="modal" data-target="#localLogin" class="btn btn-default"><span class="fa fa-user"></span> Local</a>
                             <a ng-click="authCtrl.login()" class="btn btn-default"><span class="fa fa-user"></span> Local</a>
                             <a target="_self" href="/auth/google" class="btn btn-lg btn-danger"><span class="fa fa-google-plus"></span> Google</a>
                         </p>
-                    </form>
-                    <p>Need an account? <a data-toggle="modal" data-target="#signup">Signup</a></p>
+                    </form>-->
+                    <a data-toggle="modal" data-target="#localLogin" class="btn btn-lg btn-default"><span class="fa fa-user"></span> Local</a>
+                    <a target="_self" href="/auth/google" class="btn btn-lg btn-danger"><span class="fa fa-google-plus"></span> Google</a>
+                    <p>Need an account? <a data-toggle="modal" data-target="#signup">Local Signup</a> or <a target="_self" href="/auth/google">Google Signup</a></p>
                 </div>
                 <div class="col-md-4">
                 </div>
@@ -76,6 +79,33 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-success" ng-click="authCtrl.saveNewUser()">Save</button>
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="localLogin" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Signup</h4>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="text" class="form-control" name="email" ng-model="authCtrl.user.email">
+                    </div>
+                    <div class="form-group">
+                        <label>Password</label>
+                        <input type="password" class="form-control" name="password" ng-model="authCtrl.user.password">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" ng-click="authCtrl.login()">Login</button>
                 <button type="button" class="btn btn-danger" data-dismiss="modal">Cancel</button>
             </div>
         </div>

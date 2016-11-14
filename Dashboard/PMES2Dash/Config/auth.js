@@ -1,5 +1,6 @@
 
 // expose our config directly to our application using module.exports
+// config google console https://console.cloud.google.com/apis/credentials?project=pmes2-146414
 module.exports = {
     'googleAuth' : {
         'clientID'      : '546873064953-d9a8ejighk6vp7bsfjns89dugo371uqo.apps.googleusercontent.com',
@@ -10,4 +11,3 @@ module.exports = {
 };
 
 
-//https://console.cloud.google.com/apis/credentials?project=pmes2-146414
