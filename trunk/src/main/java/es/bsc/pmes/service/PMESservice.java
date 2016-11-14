@@ -52,6 +52,12 @@ public class PMESservice {
 
     public ArrayList<String> terminateActivity(ArrayList<String> jobIds) {
         // TODO: terminateActivity
+        ArrayList<String> messages = new ArrayList<>(jobIds.size());
+        for (String id:jobIds) {
+            logger.trace("Setting status cancelled for job: "+id);
+            Job job = this.jm.getJobs().get(id);
+            job.setStatus("cancelled");
+        }
         return null;
     }
 
