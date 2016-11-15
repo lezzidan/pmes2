@@ -408,10 +408,11 @@ module.exports = function(app, passport) {
         });
     });
 
-    app.post('/api/getActivityStatus', isLoggedIn, function(req, res){
+    app.post('/api/getActivityStatus', function(req, res){
         console.log("asking for status");
         console.log(req.body);
         var listOfIds = [req.body];
+        console.log(listOfIds);
         var request = require('request');
         var options = {
             uri: 'http://localhost:8080/trunk_war_exploded/pmes/getActivityStatus',
@@ -420,7 +421,9 @@ module.exports = function(app, passport) {
         };
         request.post(options, function(error, response, body){
             if (!error && response.statusCode == 200){
+                console.log("DATA");
                 console.log(body);
+                console.log(response);
                 //TODO: actualizar estado jobs.
                 res.send('ok');
             } else {

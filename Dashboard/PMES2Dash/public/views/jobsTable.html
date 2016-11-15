@@ -18,7 +18,7 @@
                 </thead>
                 <tbody>
                 <tr ng-repeat="x in dashCtrl.jobsList">
-                    <td><input type="checkbox" ng-model=""></td>
+                    <td><input type="checkbox" ng-model="dashCtrl.selectedJob"></td>
                     <td>{{ x.submitted }}</td>
                     <td>{{ x.jobName }}</td>
                     <td>{{ x.user.username }}</td>

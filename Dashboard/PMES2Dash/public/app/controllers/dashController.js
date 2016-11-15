@@ -43,6 +43,8 @@ angular.module('pmes2')
         this.logFiles = ["log", "out", "err"];
         this.logData ="";
 
+        this.selectedJob = [];
+
         //TODO: remove groups list from variables
         this.groups = [];
         this.Groups = ["test", "all"];
@@ -181,7 +183,7 @@ angular.module('pmes2')
                     console.log(data);
                     store.error = null;
                 }, function(error) {
-                    store.error = 'Get Activity status error'+error.data.error;
+                    store.error = 'Get Activity status error '+error.data.error;
                 }
             );
         };
