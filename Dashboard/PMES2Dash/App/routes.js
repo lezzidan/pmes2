@@ -410,8 +410,7 @@ module.exports = function(app, passport) {
 
     app.post('/api/getActivityStatus', function(req, res){
         console.log("asking for status");
-        console.log(req.body);
-        var listOfIds = [req.body];
+        var listOfIds = req.body;
         console.log(listOfIds);
         var request = require('request');
         var options = {
@@ -421,11 +420,17 @@ module.exports = function(app, passport) {
         };
         request.post(options, function(error, response, body){
             if (!error && response.statusCode == 200){
-                console.log("DATA");
-                console.log(body);
-                console.log(response);
                 //TODO: actualizar estado jobs.
-                res.send('ok');
+                for (i = 0; i < listOfIds.length(); i++){
+                    Job.findOne({_id: ObjectId(listOfIds[i])}, function(err, jb){
+                        if(err){
+                            console.log(err);
+                        }
+                        jb.status = body[i];
+                        jb.save();
+                    });
+                }
+                res.send(body);
             } else {
                 console.log(error);
                 res.status(404).send({ error: error});

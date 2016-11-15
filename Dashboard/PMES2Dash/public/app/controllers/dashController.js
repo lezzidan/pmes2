@@ -43,7 +43,8 @@ angular.module('pmes2')
         this.logFiles = ["log", "out", "err"];
         this.logData ="";
 
-        this.selectedJob = [];
+        this.selectedJob = {};
+        this.selectedJobs = [];
 
         //TODO: remove groups list from variables
         this.groups = [];
@@ -174,16 +175,16 @@ angular.module('pmes2')
         };
 
         this.refreshJobs = function () {
-            var jobIds = [this.jobsList[0].jobName];
+            var jobIds = this.selectedJobs;
+            console.log(jobIds);
             $http({
                 method: 'POST',
                 url: 'api/getActivityStatus',
                 data: jobIds
             }).then(
                 function(data) {
-                    console.log("data ctrl");
-                    console.log(data);
                     store.error = null;
+                    store.getJobsList();
                 }, function(error) {
                     store.error = 'Get Activity status error '+error.data.error;
                 }
@@ -404,6 +405,19 @@ angular.module('pmes2')
             var newArg = {name:arg.name, defaultV:arg.defaultV, prefix:arg.prefix, file:arg.file, optional:arg.optional}
             this.newApp.args.push(newArg);
             store.arg = null;
+        };
+
+        this.collectChecked = function(job) {
+            if (job.isChecked){
+                var newJobId = job._id;
+                this.selectedJobs.push(newJobId);
+            } else {
+                var idx = this.selectedJobs.indexOf(job._id);
+                if (idx > -1){
+                    this.selectedJobs.splice(idx,1);
+                }
+            }
+
         };
 
         this.getUser = function(){
