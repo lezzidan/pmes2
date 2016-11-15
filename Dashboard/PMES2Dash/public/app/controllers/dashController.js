@@ -174,12 +174,14 @@ angular.module('pmes2')
         };
 
         this.refreshJobs = function () {
+            var jobIds = [this.jobsList[0].jobName];
             $http({
                 method: 'POST',
                 url: 'api/getActivityStatus',
-                data: this.jobsList[0].jobName
+                data: jobIds
             }).then(
                 function(data) {
+                    console.log("data ctrl");
                     console.log(data);
                     store.error = null;
                 }, function(error) {
