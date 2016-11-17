@@ -432,7 +432,7 @@ module.exports = function(app, passport) {
         request.post(options, function(error, response, body){
             if (!error && response.statusCode == 200){
                 //TODO: actualizar estado jobs.
-                for (i = 0; i < listOfIds.length(); i++){
+                for (i = 0; i < listOfIds.length; i++){
                     //Job.findOne({_id: listOfIds[i]}, function(err, jb){
                     Job.findOne({pmesID: listOfIds[i]}, function(err, jb){
                         if(err){
