@@ -403,10 +403,12 @@ module.exports = function(app, passport) {
                 for (var i=0; i < body.length; i++){
                     var indx = listOfJobs[i];
                     var aux = body[i];
-                    Job.findOne({_id: indx._id}, function(err, jb){
+                    console.log(indx._id);
+                    Job.findOne({jobName: indx.jobName}, function(err, jb){
                         if(err){
                             console.log(err);
                         }
+                        console.log(jb);
                         jb.pmesID = aux;
                         jb.save();
                     });

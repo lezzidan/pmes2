@@ -145,6 +145,7 @@ angular.module('pmes2')
             }).then(
                 function(data) {
                     store.error = null;
+                    store.getJobsList();
                 }, function(error) {
                     store.error = 'Activity creation error'+error.data.error;
                 }
@@ -283,7 +284,9 @@ angular.module('pmes2')
 
         this.saveNewJobAndRun = function() {
             store.saveNewJob();
-            this.runJob(store.newJob);
+            this.runJob(store.jobsList[store.jobsList.length-1]);
+
+            //this.runJob(store.newJob);
         };
 
         this.saveNewStorage = function() {
