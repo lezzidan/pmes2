@@ -409,10 +409,12 @@ angular.module('pmes2')
 
         this.collectChecked = function(job) {
             if (job.isChecked){
-                var newJobId = job._id;
+                //var newJobId = job._id;
+                var newJobId = job.pmesID;
                 this.selectedJobs.push(newJobId);
             } else {
-                var idx = this.selectedJobs.indexOf(job._id);
+                //var idx = this.selectedJobs.indexOf(job._id);
+                var idx = this.selectedJobs.indexOf(job.pmesID);
                 if (idx > -1){
                     this.selectedJobs.splice(idx,1);
                 }

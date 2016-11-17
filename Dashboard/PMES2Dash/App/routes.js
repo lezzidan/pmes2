@@ -400,6 +400,17 @@ module.exports = function(app, passport) {
         request.post(options, function(error, response, body){
             if (!error && response.statusCode == 200){
                 console.log(body);
+                for (var i=0; i < body.length; i++){
+                    var indx = listOfJobs[i];
+                    var aux = body[i];
+                    Job.findOne({_id: indx._id}, function(err, jb){
+                        if(err){
+                            console.log(err);
+                        }
+                        jb.pmesID = aux;
+                        jb.save();
+                    });
+                }
                 res.send('ok');
             } else {
                 console.log(error);
@@ -422,7 +433,8 @@ module.exports = function(app, passport) {
             if (!error && response.statusCode == 200){
                 //TODO: actualizar estado jobs.
                 for (i = 0; i < listOfIds.length(); i++){
-                    Job.findOne({_id: ObjectId(listOfIds[i])}, function(err, jb){
+                    //Job.findOne({_id: listOfIds[i]}, function(err, jb){
+                    Job.findOne({pmesID: listOfIds[i]}, function(err, jb){
                         if(err){
                             console.log(err);
                         }

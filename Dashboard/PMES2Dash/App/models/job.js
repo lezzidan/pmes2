@@ -4,6 +4,7 @@ var Application = require('./application');
 
 var jobSchema = mongoose.Schema({
     jobName : String,
+    pmesID : String,
     app: {type:mongoose.Schema.Types.ObjectId, ref: 'Application'},
     description: String,
     user: {type:mongoose.Schema.Types.ObjectId, ref: 'User'},
