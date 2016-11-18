@@ -281,12 +281,52 @@ angular.module('pmes2')
             return jobToSend;
         };
 
-
         this.saveNewJobAndRun = function() {
+            this.newJob.app = this.newJob.appVal;
+            this.newJob.jobName = this.newJob.appVal.name;
+            this.newJob.status = 'created';
+            this.newJob.user = store.userS._id;
+            this.newJob.img.imageName = this.newJob.appVal.image;
+            this.newJob.img.imageType = 'small';
+            this.newJob.submitted = new Date().toJSON().slice(0,10);
+            this.newJob.finished = new Date().toJSON().slice(0,10);
+            this.newJob.duration = 0;
+            this.newJob.errorMessage = "";
+            this.newJob.numNodes = "1";
+            this.newJob.initialVMs = this.newJob.minimumVMs;
+            this.newJob.limitVMs = this.newJob.maximumVMs;
+            this.newJob.log = "";
+            this.newJob.output = "";
+            this.newJob.error = "";
+            this.newJob.inputPath = "/home/";
+            this.newJob.outputPath = "/home/";
+
+            $http({
+                method: 'POST',
+                url: 'dash/job',
+                data: this.newJob
+            }).then(
+                function(data) {
+                    $('#newJob').modal('hide');
+                    store.newJob.jobName = data.data;
+                    store.jobsList.push(store.newJob);
+                    store.runJob(store.newJob);
+                    store.error = null;
+                    store.newJob = null;
+                },
+                function(error) {
+                    store.error = 'Error: '+error.data.error;
+                    store.newJob = null;
+                }
+            );
+
+        };
+
+        /*this.saveNewJobAndRun = function() {
             store.saveNewJob();
             //store.newJob.jobName = store.jobsList[store.jobsList.length-1].jobName;
-            this.runJob(store.newJob);
-        };
+            store.runJob(store.newJob);
+        };*/
 
         this.saveNewStorage = function() {
             $http({
