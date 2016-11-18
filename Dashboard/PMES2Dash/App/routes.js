@@ -440,7 +440,7 @@ module.exports = function(app, passport) {
                         if(err){
                             console.log(err);
                         }
-                        jb.status = body[i];
+                        jb.status = body[i]; //TODO: la api no devuelve una lista
                         jb.save();
                     });
                 }

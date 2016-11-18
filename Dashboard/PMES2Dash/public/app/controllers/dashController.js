@@ -177,7 +177,6 @@ angular.module('pmes2')
 
         this.refreshJobs = function () {
             var jobIds = this.selectedJobs;
-            console.log(jobIds);
             $http({
                 method: 'POST',
                 url: 'api/getActivityStatus',
@@ -185,6 +184,7 @@ angular.module('pmes2')
             }).then(
                 function(data) {
                     store.error = null;
+                    store.selectedJobs = [];
                     store.getJobsList();
                 }, function(error) {
                     store.error = 'Get Activity status error '+error.data.error;
@@ -284,9 +284,8 @@ angular.module('pmes2')
 
         this.saveNewJobAndRun = function() {
             store.saveNewJob();
-            this.runJob(store.jobsList[store.jobsList.length-1]);
-
-            //this.runJob(store.newJob);
+            //store.newJob.jobName = store.jobsList[store.jobsList.length-1].jobName;
+            this.runJob(store.newJob);
         };
 
         this.saveNewStorage = function() {
