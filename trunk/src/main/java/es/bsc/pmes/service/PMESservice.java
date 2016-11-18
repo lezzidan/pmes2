@@ -62,13 +62,21 @@ public class PMESservice {
     }
 
     public ArrayList<JobStatus> getActivityStatus(ArrayList<String> jobids){
-        // TODO: getActivityStatus
         ArrayList<JobStatus> status = new ArrayList<JobStatus>(jobids.size());
         for (String id:jobids) {
             logger.trace("Asking status for job: "+id);
             Job job = this.jm.getJobs().get(id);
-            status.add(JobStatus.valueOf(job.getStatus()));
+            if (job != null) {
+                logger.trace("Job Found");
+                logger.trace(job.getStatus());
+                status.add(JobStatus.valueOf(job.getStatus()));
+            }
+            else {
+                logger.trace("Job not found");
+                status.add(JobStatus.valueOf("ALL"));
+            }
         }
+        logger.trace("Sending list status "+status.toString());
         return status;
     }
 
