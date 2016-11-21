@@ -46,6 +46,8 @@ angular.module('pmes2')
         this.selectedJob = {};
         this.selectedJobs = [];
 
+        this.systemStatusData = {};
+
         //TODO: remove groups list from variables
         this.groups = [];
         this.Groups = ["test", "all"];
@@ -557,6 +559,18 @@ angular.module('pmes2')
                 );
         };
 
+        this.getSystemStatus = function () {
+            $http.get('api/getSystemStatus')
+                .then(
+                    function(data) {
+                        store.systemStatusData = data.data;
+                    }, function(error){
+                        console.log('OH NO, SOOMETHING HAS FAILED! AND NOBODY CARES');
+                        store.error = 'Error: '+error.data.error;
+                    }
+                );
+        };
+
         //Init values
         this.getJobsList();
         this.getAppsList();
@@ -564,4 +578,6 @@ angular.module('pmes2')
         this.getImagesList();
         this.getUsersList();
         this.getUser();
+        this.getSystemStatus();
+
     }]);

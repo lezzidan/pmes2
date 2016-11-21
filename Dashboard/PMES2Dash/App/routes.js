@@ -452,6 +452,24 @@ module.exports = function(app, passport) {
         });
     });
 
+    app.get('/api/getSystemStatus', function(req, res){
+        console.log("asking for system status");
+        var request = require('request');
+        var options = {
+            uri: 'http://localhost:8080/trunk_war_exploded/pmes/getSystemStatus',
+            method: 'GET'
+        };
+        request.get(options, function(error, response, body){
+            if (!error && response.statusCode == 200){
+                console.log(body);
+                res.send(body);
+            } else {
+                console.log(error);
+                res.status(404).send({ error: error});
+            }
+        });
+    });
+
 };
 
 // route middleware to make sure a user is logged in
