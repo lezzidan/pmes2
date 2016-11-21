@@ -47,6 +47,7 @@ angular.module('pmes2')
         this.selectedJobs = [];
 
         this.systemStatusData = {};
+        this.systemStatusDataDash = {};
 
         //TODO: remove groups list from variables
         this.groups = [];
@@ -564,6 +565,25 @@ angular.module('pmes2')
                 .then(
                     function(data) {
                         store.systemStatusData = data.data;
+                        var totalCPU = 0;
+                        var usedCPU = 0;
+                        var totalMemory = 0;
+                        var usedMemory = 0;
+                        for (i = 0; i < store.systemStatusData.length; i++){
+                            var aux = store.systemStatusData[i];
+                            usedCPU += aux.usedCores;
+                            usedMemory += aux.usedMemory;
+                            totalCPU += aux.totalCores;
+                            totalMemory += aux.totalMemory;
+                        }
+                        store.systemStatusDataDash = {
+                            totalCores: aux.totalCores,
+                            totalMemory: aux.totalMemory,
+                            usedCores: aux.usedCores,
+                            usedMemory: aux.usedMemory,
+                            memoryUsage: aux.usedMemory / aux.totalMemory,
+                            coreUsage: aux.usedCores / aux.totalCores
+                        }
                     }, function(error){
                         console.log('OH NO, SOOMETHING HAS FAILED! AND NOBODY CARES');
                         store.error = 'Error: '+error.data.error;
