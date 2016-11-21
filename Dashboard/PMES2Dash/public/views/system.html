@@ -6,8 +6,8 @@
             </div>
             <div class="panel-body">
                 <div class="progress">
-                    <div class="progress-bar" role="progressbar" aria-valuenow="dashCtrl.systemStatusDataDash.coreUsage" aria-valuemin="0" aria-valuemax="100" style="width: 33%;">
-                        {{dashCtrl.systemStatusDataDash.coreUsage}}%
+                    <div class="progress-bar" role="progressbar" aria-valuenow="dashCtrl.systemStatusDataDash.coreUsage" aria-valuemin="0" aria-valuemax="100" ng-style="{width: (dashCtrl.systemStatusDataDash.coreUsage+'%')}">
+                        {{dashCtrl.systemStatusDataDash.coreUsage}}
                     </div>
                 </div>
             </div>
@@ -37,8 +37,8 @@
             </div>
             <div class="panel-body">
                 <div class="progress">
-                    <div class="progress-bar" role="progressbar" aria-valuenow="dashCtrl.systemStatusDataDash.memoryUsage" aria-valuemin="0" aria-valuemax="100" style="width: 10%;">
-                        {{dashCtrl.systemStatusDataDash.memoryUsage}}%
+                    <div class="progress-bar" role="progressbar" aria-valuenow="dashCtrl.systemStatusDataDash.memoryUsage" aria-valuemin="0" aria-valuemax="100" ng-style="{width: (dashCtrl.systemStatusDataDash.memoryUsage+'%')}">
+                        {{dashCtrl.systemStatusDataDash.memoryUsage}}
                     </div>
                 </div>
             </div>

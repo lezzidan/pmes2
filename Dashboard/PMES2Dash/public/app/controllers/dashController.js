@@ -569,20 +569,20 @@ angular.module('pmes2')
                         var usedCPU = 0;
                         var totalMemory = 0;
                         var usedMemory = 0;
-                        for (i = 0; i < store.systemStatusData.length; i++){
-                            var aux = store.systemStatusData[i];
+                        for (var i = 0; i < store.systemStatusData.cluster.length; i++){
+                            var aux = store.systemStatusData.cluster[i];
                             usedCPU += aux.usedCores;
                             usedMemory += aux.usedMemory;
                             totalCPU += aux.totalCores;
                             totalMemory += aux.totalMemory;
                         }
                         store.systemStatusDataDash = {
-                            totalCores: aux.totalCores,
-                            totalMemory: aux.totalMemory,
-                            usedCores: aux.usedCores,
-                            usedMemory: aux.usedMemory,
-                            memoryUsage: aux.usedMemory / aux.totalMemory,
-                            coreUsage: aux.usedCores / aux.totalCores
+                            totalCores: totalCPU,
+                            totalMemory: totalMemory,
+                            usedCores: usedCPU,
+                            usedMemory: usedMemory,
+                            memoryUsage: usedMemory / totalMemory * 100,
+                            coreUsage: usedCPU / totalCPU * 100
                         }
                     }, function(error){
                         console.log('OH NO, SOOMETHING HAS FAILED! AND NOBODY CARES');
