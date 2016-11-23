@@ -41,6 +41,7 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
         String Id = createResource();
         logger.trace("Resource created with Id: "+ Id);
 
+
         //StageIn
         logger.trace("Stage in");
         stageIn();
@@ -103,6 +104,7 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
 
         // Configure software
         SoftwareDescription sd = new SoftwareDescription();
+
 
         // Configure properties
         HashMap<String, String> prop = this.im.configureResource(job.getJobDef());

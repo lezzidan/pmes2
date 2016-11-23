@@ -12,9 +12,9 @@
     <!--<packaging>war</packaging> -->
 
     <scm>
-        <connection>scm:svn:https://compss.bsc.es/svn/projects/pmes2/trunk/</connection>
-        <developerConnection>scm:svn:https://compss.bsc.es/svn/projects/pmes2/trunk/</developerConnection>
-        <url>https://compss.bsc.es/svn/projects/pmes2/trunk</url>
+        <connection>scm:svn:http://compss.bsc.es/svn/projects/pmes2/trunk/</connection>
+        <developerConnection>scm:svn:http://compss.bsc.es/svn/projects/pmes2/trunk/</developerConnection>
+        <url>http://compss.bsc.es/svn/projects/pmes2/trunk</url>
     </scm>
 
     <distributionManagement>
@@ -48,6 +48,7 @@
 
         <junit.version>4.12</junit.version>
         <log4j.version>2.6.1</log4j.version>
+        <conn.version>1.0</conn.version>
 
         <!-- Maven Plugins -->
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -78,11 +79,11 @@
             <name>BSC Grid computing and Clusters group</name>
             <url>http://compss.bsc.es/artifactory/grid-devel-repo</url>
         </repository>
-        <repository>
+        <!--<repository>
             <id>mvn-repo</id>
             <name>Maven Repo</name>
             <url>https://mvnrepository.com/artifact/org.apache.mesos/mesos</url>
-        </repository>
+        </repository>-->
     </repositories>
 
     <pluginRepositories>
@@ -95,7 +96,7 @@
             </snapshots>
             <id>central</id>
             <name>Central Repository</name>
-            <url>http://repo1.maven.apache.org/maven</url>
+            <url>http://repo1.maven.apache.org/maven2</url>
         </pluginRepository>
     </pluginRepositories>
 
@@ -109,16 +110,17 @@
         <dependency>
             <groupId>es.bsc.conn</groupId>
             <artifactId>connectors-rocci</artifactId>
-            <version>1.0</version>
-            <!--<scope>system</scope>-->
-            <!--<systemPath>/home/bscuser/subversion/projects/conn/trunk/rocci/target/compss-connectors-rocci.jar</systemPath>-->
+            <version>${conn.version}</version>
         </dependency>
+        <!--<dependency>
+            <groupId>es.bsc</groupId>
+            <artifactId>commons-conn</artifactId>
+            <version>${conn.version}</version>
+        </dependency>-->
         <dependency>
             <groupId>es.bsc.conn</groupId>
             <artifactId>connectors-commons</artifactId>
-            <version>1.0</version>
-            <!--<scope>system</scope>-->
-            <!--<systemPath>/home/bscuser/subversion/projects/conn/trunk/commons/target/compss-connectors-commons.jar</systemPath>-->
+            <version>${conn.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>

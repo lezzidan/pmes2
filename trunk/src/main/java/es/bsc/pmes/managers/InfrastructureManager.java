@@ -67,14 +67,17 @@ public class InfrastructureManager {
                 rocciClient = new ROCCI(prop);
                 VirtualResource vr = (VirtualResource) rocciClient.create(hd, sd, prop);
                 logger.trace("compute id: " + vr.getId());
+                logger.trace("IM update: "+vr.getHd().getTotalComputingUnits() +" "+ vr.getHd().getMemorySize());
 
                 vr = rocciClient.waitUntilCreation(vr.getId());
                 logger.trace("VM id: " + vr.getId());
                 logger.trace("VM ip: " + vr.getIp());
+
                 // Update System Status
-                //TODO know host
+                //TODO know host, use data from vr
                 Host h = systemStatus.getCluster().get(0); //test purposes
-                //systemStatus.update(h, vr.getHd().getTotalComputingUnits(), vr.getHd().getMemorySize());
+                systemStatus.update(h, hd.getTotalComputingUnits(), hd.getMemorySize());
+                logger.trace("IM update: "+hd.getTotalComputingUnits() +" "+ hd.getMemorySize());
                 // TODO: Usar VirtualResource
                 Resource newResource = new Resource(vr.getIp(), prop, vr);
                 activeResources.put((String) vr.getId(), newResource);
@@ -121,14 +124,12 @@ public class InfrastructureManager {
 
         // Update System Status
         //TODO know host
-        Host h = systemStatus.getCluster().get(0); //test purposes
+        //Host h = systemStatus.getCluster().get(0); //test purposes
         //systemStatus.update(h, -vr.getHd().getTotalComputingUnits(), -vr.getHd().getMemorySize());
-
     }
 
     public void configureResources() throws ParserConfigurationException {
         // TODO: change path
-        //File fXML = new File("/home/bscuser/subversion/projects/pmes2/trunk/src/main/resources/config.xml"); //TODO path
         File fXML = new File("/home/pmes/pmes/config/config.xml"); //TODO path
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();

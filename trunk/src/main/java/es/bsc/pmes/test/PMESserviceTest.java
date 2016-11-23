@@ -62,7 +62,6 @@ public class PMESserviceTest {
         System.out.println("Testing app");
 
         client = new PMESclient("http://localhost:9998/");
-        System.out.println(client.getClichedMessage());
         SystemStatus systemStatus = client.getSystemStatus();
         ArrayList<Host> cluster = systemStatus.getCluster();
         System.out.println(cluster.size());

@@ -1,6 +1,8 @@
 package es.bsc.pmes.managers;
 
 import es.bsc.pmes.types.Job;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 
@@ -14,6 +16,9 @@ public class JobManager{
     private InfrastructureManager im;
     private DataManager dm;
     private SchedulerThread scheduler;
+
+    private static final Logger logger = LogManager.getLogger(InfrastructureManager.class.getName());
+
 
     private JobManager(InfrastructureManager im){
         this.jobs = new HashMap<>();
@@ -29,13 +34,19 @@ public class JobManager{
 
     public void enqueueJob(Job newJob){
         this.jobs.put(newJob.getId(), newJob);
+        newJob.setStatus("PENDING");
         this.scheduler.addJob(newJob);
     }
 
     public void deleteJob(Job job){
-        this.scheduler.deleteJob(job);
-        Job deletedJob = this.jobs.get(job.getId());
-        deletedJob.setStatus("CANCELLED");
+        if (job.getStatus().equals("PENDING")){
+            this.scheduler.deleteJob(job);
+            Job deletedJob = this.jobs.get(job.getId());
+            deletedJob.setStatus("CANCELLED");
+        }
+        else {
+            logger.trace("Job not in pending jobs");
+        }
     }
 
 

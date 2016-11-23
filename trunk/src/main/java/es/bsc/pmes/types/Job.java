@@ -25,9 +25,9 @@ public class Job {
     private User user;
     private ArrayList<String> dataIn;
     private ArrayList<String> dataOut;
-    //private String cmd;
     private String[] cmd;
     private JobDefinition jobDef;
+    private Boolean terminate;
 
     private static final Logger logger = LogManager.getLogger(Job.class.getName());
 
@@ -40,6 +40,7 @@ public class Job {
         this.dataOut = null;
         this.cmd = new String[]{};
         this.jobDef = null;
+        this.terminate = Boolean.FALSE;
     }
 
 
@@ -103,4 +104,8 @@ public class Job {
     public JobDefinition getJobDef() {
         return jobDef;
     }
+
+    public Boolean getTerminate() { return terminate; }
+
+    public void setTerminate(Boolean terminate) { this.terminate = terminate; }
 }

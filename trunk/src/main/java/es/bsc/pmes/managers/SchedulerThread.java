@@ -38,12 +38,15 @@ public class SchedulerThread extends Thread{
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            System.out.println(pendingJobs.size());
+            logger.trace("Pending jobs: "+pendingJobs.size());
             if (!pendingJobs.isEmpty()){
-                System.out.println(pendingJobs.size());
                 Job nextJob = this.nextJob();
-                nextJob.setStatus("RUNNING");
-                this.executeJob(nextJob);
+                if (nextJob.getTerminate()){
+                    nextJob.setStatus("CANCELLED");
+                } else {
+                    nextJob.setStatus("RUNNING");
+                    this.executeJob(nextJob);
+                }
             }
         }
     }
@@ -60,19 +63,24 @@ public class SchedulerThread extends Thread{
         //Run job
         COMPSsExecutionThread executor = new COMPSsExecutionThread(job);
         executor.start();
-        System.out.println("waiting");
         try {
+            logger.trace("Waiting for execution to finish.");
             executor.join();
             job.setStatus("FINISHED");
-            System.out.println("Execution Finished");
+            logger.trace("Execution Finished");
         } catch (Exception e){
-            job.setStatus("CANCELLED");
-            System.out.println("Interrupted execution");
+            job.setStatus("FAILED");
+            logger.trace("Interrupted execution");
         }
     }
 
     public void deleteJob(Job job){
-        this.pendingJobs.remove(job);
+        Boolean removed = this.pendingJobs.remove(job);
+        if (removed) {
+            logger.trace("Job removed from the scheduler pending jobs");
+        } else {
+            logger.trace("Job not found in scheduler pending jobs");
+        }
     }
 
     /** GETTERS AND SETTERS*/

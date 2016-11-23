@@ -144,17 +144,6 @@ public class PMESclient {
         return systemStatus;
     }
 
-
-    // Test purposes
-    @GET
-    @Path("/message")
-    @Produces("text/plain")
-    public static String getClichedMessage() {
-        // Return some cliched textual content
-        //http://localhost:8081/trunk_war_exploded/pmes/message
-        return "pmes message";
-    }
-
     // Test purposes
     @GET
     @Path("/createActivity/{id}")
@@ -164,53 +153,6 @@ public class PMESclient {
         //http://localhost:8081/trunk_war_exploded/pmes/message
         System.out.println(name);
         return name;
-    }
-
-    // Test purposes
-    @GET
-    @Path("/get")
-    @Produces(MediaType.APPLICATION_JSON)
-    public static MyObj getAttribute() {
-        // Return some cliched textual content
-        //http://localhost:8081/trunk_war_exploded/pmes/message
-
-        MyObj obj = new MyObj("test");
-        return obj;
-    }
-
-    @POST
-    @Path("/post")
-    @Consumes("text/plain")
-    @Produces("text/plain")
-    public static String setAttribute(String name) {
-        // Return some cliched textual content
-        //http://localhost:8081/trunk_war_exploded/pmes/message
-        System.out.println(name);
-        return name;
-    }
-
-    @POST
-    @Path("/post2")
-    @Consumes("application/json")
-    @Produces("application/json")
-    public static MyObj setAttributeJSON(MyObj obj) {
-        // Return some cliched textual content
-        //http://localhost:8081/trunk_war_exploded/pmes/message
-        System.out.println(obj.name);
-        obj.name += "ret";
-        return obj;
-    }
-
-    @POST
-    @Path("/testArray")
-    @Consumes("application/json")
-    @Produces("application/json")
-    public static ArrayList<MyObj> setAttributeJSON(ArrayList<MyObj> objs) {
-        // Return some cliched textual content
-        //http://localhost:8081/trunk_war_exploded/pmes/message
-        System.out.println(objs.get(0).name);
-        objs.get(0).name += "ret";
-        return objs;
     }
 
     @GET

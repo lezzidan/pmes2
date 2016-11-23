@@ -41,10 +41,10 @@ public class PMESservice {
             Job newJob = new Job();
             newJob.setUser(jobDef.getUser());
             newJob.setJobDef(jobDef);
+            logger.trace("JobDef "+jobDef.getCores().toString()+" "+jobDef.getMemory().toString());
 
             jobIds.add(newJob.getId());
             logger.trace("New Job created with id "+newJob.getId());
-
             this.jm.enqueueJob(newJob);
         }
         return jobIds;
@@ -54,11 +54,40 @@ public class PMESservice {
         // TODO: terminateActivity
         ArrayList<String> messages = new ArrayList<>(jobIds.size());
         for (String id:jobIds) {
-            logger.trace("Setting status cancelled for job: "+id);
+            String message = "";
             Job job = this.jm.getJobs().get(id);
-            job.setStatus("cancelled");
+            if (job != null) {
+                job.setTerminate(Boolean.TRUE);
+
+                if (job.getStatus().equals("FAILED")) {
+                    message += "Job with id "
+                            + id
+                            + " cannot be cancelled, the job has been finished in Failed state.";
+                } else {
+                    if (job.getStatus().equals("FINISHED")) {
+                        message += "Job with id "
+                                + id
+                                + " cannot be cancelled, the job has been finished.";
+                    } else {
+                        // Set status to cancelled
+                        // TODO: provisional
+                        logger.trace("Stopping job...");
+                        this.jm.deleteJob(job);
+                        logger.trace("Setting status cancelled for job: " + id);
+                        //job.setStatus("CANCELLED");
+                        //TODO: wait until status is cancelled
+                        message += "Job with id "
+                                + id
+                                + " has been cancelled.";
+                    }
+                }
+            }
+            else {
+                message += "Job not found";
+            }
+            messages.add(message);
         }
-        return null;
+        return messages;
     }
 
     public ArrayList<JobStatus> getActivityStatus(ArrayList<String> jobids){
@@ -86,6 +115,7 @@ public class PMESservice {
     }
 
     public SystemStatus getSystemStatus(){
+        logger.trace(im.getSystemStatus().print());
         return im.getSystemStatus();
     }
 

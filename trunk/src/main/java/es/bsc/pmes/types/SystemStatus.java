@@ -27,6 +27,18 @@ public class SystemStatus {
         cluster.get(i).setUsedMemory(valueMem+used_mem);
     }
 
+    public String print(){
+        String s = new String();
+        s += "___________________________________________";
+        s += "Cluster: \n";
+        for (int i=0; i < this.cluster.size(); i++){
+            s += "Host "+i+" Cpu: "+cluster.get(i).getUsedCores()+" Memory: "+cluster.get(i).getUsedMemory();
+            s += "\n";
+        }
+        s += "___________________________________________";
+        return s;
+    }
+
     /** GETTERS AND SETTERS*/
     public ArrayList<Host> getCluster() {
         return cluster;
