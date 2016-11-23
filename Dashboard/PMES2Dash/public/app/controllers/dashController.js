@@ -157,6 +157,18 @@ angular.module('pmes2')
 
         this.stopJob = function(job){
             //TODO
+            $http({
+                method: 'POST',
+                url: 'api/terminateActivity',
+                data: [jobToSend.pmesID]
+            }).then(
+                function(data) {
+                    store.error = null;
+                    //store.getJobsList();
+                }, function(error) {
+                    store.error = 'Activity creation error'+error.data.error;
+                }
+            );
         };
 
         this.removeJob = function(job) {

@@ -434,7 +434,7 @@ module.exports = function(app, passport) {
         request.post(options, function(error, response, body){
             if (!error && response.statusCode == 200){
                 //TODO: actualizar estado jobs.
-                for (i = 0; i < listOfIds.length; i++){
+                for (var i = 0; i < listOfIds.length; i++){
                     Job.findOne({pmesID: listOfIds[i]}, function(err, jb){
                         if(err){
                             console.log(err);
@@ -444,6 +444,36 @@ module.exports = function(app, passport) {
                         jb.save();
                     });
                 }
+                res.send(body);
+            } else {
+                console.log(error);
+                res.status(404).send({ error: error});
+            }
+        });
+    });
+
+    app.post('/api/terminateActivity', function(req, res){
+        console.log("Terminate activity");
+        var listOfIds = req.body;
+        var request = require('request');
+        var options = {
+            uri: 'http://localhost:8080/trunk_war_exploded/pmes/terminateActivity',
+            method: 'POST',
+            json: listOfIds
+        };
+        request.post(options, function(error, response, body){
+            if (!error && response.statusCode == 200){
+                /*for (var i = 0; i < listOfIds.length; i++){
+                    Job.findOne({pmesID: listOfIds[i]}, function(err, jb){
+                        if(err){
+                            console.log(err);
+                        }
+                        jb.status = body;
+                        //jb.status = body[i]; //TODO: la api no devuelve una lista
+                        jb.save();
+                    });
+                }*/
+                console.log(body);
                 res.send(body);
             } else {
                 console.log(error);
