@@ -42,6 +42,7 @@ public class SchedulerThread extends Thread{
             if (!pendingJobs.isEmpty()){
                 Job nextJob = this.nextJob();
                 if (nextJob.getTerminate()){
+                    logger.trace("Job Stop before execution");
                     nextJob.setStatus("CANCELLED");
                 } else {
                     nextJob.setStatus("RUNNING");
@@ -61,17 +62,24 @@ public class SchedulerThread extends Thread{
 
     public void executeJob(Job job){
         //Run job
+        // TODO: single or COMPSs Job
         COMPSsExecutionThread executor = new COMPSsExecutionThread(job);
         executor.start();
         try {
             logger.trace("Waiting for execution to finish.");
             executor.join();
-            job.setStatus("FINISHED");
+            if (!job.getStatus().equals("CANCELLED")){
+                job.setStatus("FINISHED");
+            }
             logger.trace("Execution Finished");
         } catch (Exception e){
             job.setStatus("FAILED");
             logger.trace("Interrupted execution");
         }
+    }
+
+    public void stopJob(){
+        //TODO: stopJob scheduler method.
     }
 
     public void deleteJob(Job job){

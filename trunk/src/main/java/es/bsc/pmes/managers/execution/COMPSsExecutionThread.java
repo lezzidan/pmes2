@@ -38,11 +38,20 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
 
     public void executeJob(){
         // Create Resource
+        if (job.getTerminate()){
+            return;
+        }
         String Id = createResource();
         logger.trace("Resource created with Id: "+ Id);
 
 
         //StageIn
+        if (job.getTerminate()){
+            //TODO: Destroy resource
+            logger.trace("Job cancelled: Destroying resource with Id: "+Id);
+            destroyResource(Id);
+            return;
+        }
         logger.trace("Stage in");
         stageIn();
 
@@ -75,16 +84,23 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
         }
 
         //Run job
+        if (job.getTerminate()){
+            logger.trace("Job cancelled: Destroying resource with Id: "+Id);
+            destroyResource(Id);
+            return;
+        }
         logger.trace("runnning");
         Integer exitValue = executeCommand(command);
+
         logger.trace("exit code"+ exitValue);
         if (exitValue > 0){
             job.setStatus("FAILED");
+        } else {
+            // TODO: Si cancelan un job cuando ya se ha ejecutado, traemos datos?
+            //StageOut
+            logger.trace("Stage out");
+            stageOut();
         }
-
-        //StageOut
-        logger.trace("Stage out");
-        stageOut();
 
         //Destroy Resource
         logger.trace("Destroy resource");
@@ -129,7 +145,6 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
 
     public void destroyResource(String Id){
         logger.trace("Deleting Resource");
-        //job.setStatus("FINISHED");
         this.im.destroyResource(Id);
     }
 
