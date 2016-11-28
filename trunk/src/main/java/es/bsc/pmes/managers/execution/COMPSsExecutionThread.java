@@ -23,6 +23,7 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
     private Job job;
     private InfrastructureManager im = InfrastructureManager.getInfrastructureManager();
     private static final Logger logger = LogManager.getLogger(COMPSsExecutionThread.class);
+    private Process process = null;
 
     public COMPSsExecutionThread(Job job){
         this.job = job;
@@ -33,12 +34,18 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
     }
 
     public void cancel() throws Exception {
-        //TODO
+        if (this.process != null){
+            this.process.destroy();
+            this.job.setStatus("CANCELLED");
+        }
+        //reset interrupted flag
+        //Thread.currentThread().interrupt();
     }
 
     public void executeJob(){
         // Create Resource
         if (job.getTerminate()){
+            job.setStatus("CANCELLED");
             return;
         }
         String Id = createResource();
@@ -47,9 +54,10 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
 
         //StageIn
         if (job.getTerminate()){
-            //TODO: Destroy resource
+            //Destroy VM if the user cancel the job.
             logger.trace("Job cancelled: Destroying resource with Id: "+Id);
             destroyResource(Id);
+            job.setStatus("CANCELLED");
             return;
         }
         logger.trace("Stage in");
@@ -85,21 +93,29 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
 
         //Run job
         if (job.getTerminate()){
+            //Destroy VM if the user cancel the job.
             logger.trace("Job cancelled: Destroying resource with Id: "+Id);
             destroyResource(Id);
+            job.setStatus("CANCELLED");
             return;
         }
+
         logger.trace("runnning");
         Integer exitValue = executeCommand(command);
 
         logger.trace("exit code"+ exitValue);
         if (exitValue > 0){
-            job.setStatus("FAILED");
+            if (exitValue == 143){
+                job.setStatus("CANCELLED");
+                // TODO: Si cancelan un job cuando ya se ha ejecutado, traemos datos? salida de compss
+            } else {
+                job.setStatus("FAILED");
+            }
         } else {
-            // TODO: Si cancelan un job cuando ya se ha ejecutado, traemos datos?
             //StageOut
             logger.trace("Stage out");
             stageOut();
+            job.setStatus("FINISHED");
         }
 
         //Destroy Resource
@@ -151,13 +167,13 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
     public Integer executeCommand(String[] cmd){
         Runtime runtime = Runtime.getRuntime();
         try {
-            Process process = runtime.exec(cmd);
+            this.process = runtime.exec(cmd);
 
             BufferedReader in = new BufferedReader(new
-                    InputStreamReader(process.getInputStream()));
+                    InputStreamReader(this.process.getInputStream()));
 
             BufferedReader err= new BufferedReader(new
-                    InputStreamReader(process.getErrorStream()));
+                    InputStreamReader(this.process.getErrorStream()));
 
             // Output log
             String outStr = "";
@@ -177,8 +193,8 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
             err.close();
             logger.trace("err: " + errStr);
 
-            process.waitFor();
-            Integer exitValue = process.exitValue();
+            this.process.waitFor();
+            Integer exitValue = this.process.exitValue();
             return exitValue;
             
         } catch (IOException e) {

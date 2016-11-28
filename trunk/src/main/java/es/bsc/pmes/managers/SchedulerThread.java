@@ -3,6 +3,7 @@ package es.bsc.pmes.managers;
 import es.bsc.conn.types.HardwareDescription;
 import es.bsc.conn.types.SoftwareDescription;
 import es.bsc.pmes.managers.execution.COMPSsExecutionThread;
+import es.bsc.pmes.managers.execution.ExecutionThread;
 import es.bsc.pmes.types.Job;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +22,9 @@ public class SchedulerThread extends Thread{
     private LinkedList<Job> pendingJobs;
     private Boolean stop = Boolean.FALSE;
     private InfrastructureManager im = InfrastructureManager.getInfrastructureManager();
+
+    private HashMap<String, ExecutionThread> tasks = new HashMap<>();
+
     private static final Logger logger = LogManager.getLogger(SchedulerThread.class);
 
     private SchedulerThread(){
@@ -42,7 +46,7 @@ public class SchedulerThread extends Thread{
             if (!pendingJobs.isEmpty()){
                 Job nextJob = this.nextJob();
                 if (nextJob.getTerminate()){
-                    logger.trace("Job Stop before execution");
+                    logger.trace("Job cancelled: Job Stop before execution");
                     nextJob.setStatus("CANCELLED");
                 } else {
                     nextJob.setStatus("RUNNING");
@@ -64,6 +68,9 @@ public class SchedulerThread extends Thread{
         //Run job
         // TODO: single or COMPSs Job
         COMPSsExecutionThread executor = new COMPSsExecutionThread(job);
+        this.tasks.put(job.getId(), executor);
+        executor.start();
+        /*COMPSsExecutionThread executor = new COMPSsExecutionThread(job);
         executor.start();
         try {
             logger.trace("Waiting for execution to finish.");
@@ -75,19 +82,28 @@ public class SchedulerThread extends Thread{
         } catch (Exception e){
             job.setStatus("FAILED");
             logger.trace("Interrupted execution");
-        }
+        }*/
     }
 
-    public void stopJob(){
-        //TODO: stopJob scheduler method.
+    public void stopJob(Job job){
+        ExecutionThread executionThread = this.tasks.get(job.getId());
+        if (executionThread != null) {
+            try {
+                executionThread.cancel();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
     }
 
     public void deleteJob(Job job){
         Boolean removed = this.pendingJobs.remove(job);
         if (removed) {
-            logger.trace("Job removed from the scheduler pending jobs");
+            logger.trace("Job cancelled: Job removed from the scheduler");
         } else {
-            logger.trace("Job not found in scheduler pending jobs");
+            logger.trace("Job not found in scheduler");
+            this.stopJob(job);
         }
     }
 
