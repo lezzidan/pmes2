@@ -41,11 +41,9 @@ public class JobManager{
     public void deleteJob(Job job){
         if (job.getStatus().equals("PENDING")){
             this.scheduler.deleteJob(job);
-            Job deletedJob = this.jobs.get(job.getId());
-            deletedJob.setStatus("CANCELLED");
         }
         else {
-            logger.trace("Job not in pending jobs");
+            this.scheduler.stopJob(job);
         }
     }
 

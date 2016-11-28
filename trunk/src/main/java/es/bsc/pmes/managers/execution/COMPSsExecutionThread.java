@@ -36,6 +36,7 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
     public void cancel() throws Exception {
         if (this.process != null){
             this.process.destroy();
+            logger.trace("Job cancelled: Execution stopped");
             this.job.setStatus("CANCELLED");
         }
         //reset interrupted flag

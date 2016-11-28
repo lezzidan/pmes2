@@ -102,7 +102,6 @@ public class SchedulerThread extends Thread{
         if (removed) {
             logger.trace("Job cancelled: Job removed from the scheduler");
         } else {
-            logger.trace("Job not found in scheduler");
             this.stopJob(job);
         }
     }

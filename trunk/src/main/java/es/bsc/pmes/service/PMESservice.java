@@ -51,7 +51,6 @@ public class PMESservice {
     }
 
     public ArrayList<String> terminateActivity(ArrayList<String> jobIds) {
-        // TODO: terminateActivity
         ArrayList<String> messages = new ArrayList<>(jobIds.size());
         for (String id:jobIds) {
             String message = "";
@@ -69,16 +68,10 @@ public class PMESservice {
                                 + id
                                 + " cannot be cancelled, the job has been finished.";
                     } else {
-                        // Set status to cancelled
-                        // TODO: provisional
-                        logger.trace("Stopping job...");
                         this.jm.deleteJob(job);
-                        logger.trace("Setting status cancelled for job: " + id);
-                        //job.setStatus("CANCELLED");
-                        //TODO: wait until status is cancelled
                         message += "Job with id "
                                 + id
-                                + " has been cancelled.";
+                                + " will be cancelled.";
                     }
                 }
             }
