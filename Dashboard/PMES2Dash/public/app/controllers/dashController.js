@@ -160,7 +160,7 @@ angular.module('pmes2')
             $http({
                 method: 'POST',
                 url: 'api/terminateActivity',
-                data: [jobToSend.pmesID]
+                data: job.pmesID
             }).then(
                 function(data) {
                     store.error = null;

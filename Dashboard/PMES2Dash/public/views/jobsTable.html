@@ -31,7 +31,7 @@
                         <a ng-click="dashCtrl.editJobFun(x)" data-toggle="modal" data-target="#editJob" class="btn btn-primary" role="button"><span class="glyphicon glyphicon-edit" aria-hidden="true" ></span></a>
                         <a ng-click="dashCtrl.runJob(x)" class="btn btn-success" role="button" ng-show="x.status == 'FINISHED'"><span class="glyphicon glyphicon-repeat" aria-hidden="true" ></span></a>
                         <a ng-click="dashCtrl.runJob(x)" class="btn btn-success" role="button" ng-show="x.status == 'created'"><span class="glyphicon glyphicon-play" aria-hidden="true"></span></a>
-                        <a ng-click="dashCtrl.stopJob(x)" class="btn btn-warning" role="button" ng-show="x.status == 'RUNNING'"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></a>
+                        <a ng-click="dashCtrl.stopJob(x)" class="btn btn-warning" role="button" ng-show="(x.status == 'RUNNING' || x.status == 'PENDING')"><span class="glyphicon glyphicon-stop" aria-hidden="true"></span></a>
                         <a ng-click="dashCtrl.removeJob(x)" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
                     </div></td>
                 </tr>

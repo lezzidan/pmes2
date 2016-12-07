@@ -454,7 +454,7 @@ module.exports = function(app, passport) {
 
     app.post('/api/terminateActivity', function(req, res){
         console.log("Terminate activity");
-        var listOfIds = req.body;
+        var listOfIds = [req.body];
         var request = require('request');
         var options = {
             uri: 'http://localhost:8080/trunk_war_exploded/pmes/terminateActivity',
