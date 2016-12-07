@@ -1,0 +1,250 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+
+\title{PMES API Definition}
+\author{Sandra Corella - Workflows and distributed computing}
+\date{Draft - December 2016}
+
+\usepackage{natbib}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{multirow}
+\usepackage{listings}
+\usepackage{color}
+ 
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+ 
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+ 
+\lstset{style=mystyle}
+
+\begin{document}
+
+\maketitle
+
+\section{Introduction}
+
+\section{API Definition}
+
+\begin{enumerate}
+    \item \textbf{createActivity}: Submits a list of jobs to the PMES service.
+    \item \textbf{getActivityStatus}: Retrieves the JobStatus object of a set of submitted jobs.
+    \item \textbf{getActivityReport}: Gets the activity documents of a set of jobs giving the: JSDLs, jobs status, execution progress, elapsed time and error messages.
+    \item \textbf{terminateActivity}: Terminates a set of submitted jobs.
+    \item \textbf{getSystemStatus}: Provides information about the resources consuption of the system.
+\end{enumerate}
+
+\begin{table}[h!]
+    \centering
+    \resizebox{1.3\textwidth}{!} {
+    \begin{tabular}{l|l|l|l}
+        Method & Name & Input & Return \\\hline
+        POST & createActivity & \texttt{ArrayList<JobDefinition> jobDef} &  \texttt{ArrayList<String> jobIds} \\
+        POST & getActivityStatus & \texttt{ArrayList<String> jobids} &  \texttt{ArrayList<JobStatus> jobStatus} \\
+        POST & getActivityReport & \texttt{ArrayList<String> jobids} &  \texttt{ArrayList<JobReport> jobReports} \\
+        POST & terminateActivity & \texttt{ArrayList<String> jobIds} &  \texttt{ArrayList<String> terminateMessages} \\
+        GET & getSystemStatus & - &  \texttt{SystemStatus} \\
+    \end{tabular}}
+    \caption{PMES API specification}
+    \label{tab:api}
+\end{table}
+
+\section{Types}
+\subsection{Main Types}
+\begin{itemize}
+    \item JobDefinition:
+\begin{tabular}{|c|c|}
+    \hline
+    \multicolumn{2}{ |c| }{JobDefinition} \\\hline
+    Type & name \\\hline
+    String & id \\
+    String & jobName \\
+    App & app \\
+    Image & image \\
+    User & user \\
+    String & inputPath \\
+    String & outputPath \\
+    Integer & wallTime \\
+    Integer & numNodes \\
+    Integer & cores \\
+    Float & memory \\
+    Float & disk \\
+    \texttt{HashMap<String, String>} & compss\_flags \\
+    Integer & initialVMs \\
+    Integer & minimumVMs \\
+    Integer & maximumVMs \\
+    Integer & limitVMs \\\hline
+\end{tabular}
+    \item JobStatus
+\begin{tabular}{|c|}
+    \hline
+    JobStatus\\\hline
+    PENDING\\
+    RUNNING\\
+    FINISHED\\
+    CANCELLED\\
+    FAILED\\
+    ALL\\\hline
+\end{tabular}
+    \item JobReport
+\begin{tabular}{|c|c|}
+    \hline
+    \multicolumn{2}{ |c| }{JobReport} \\\hline
+    Type & name \\\hline
+    JobDefinition & jobDefinition \\
+    String & jobOutputMessage \\
+    String & jobErrorMessage \\
+    JobStatus & jobStatus \\
+    String & elapsedTime \\\hline
+\end{tabular}
+    \item SystemStatus
+\begin{tabular}{|c|c|}
+    \hline
+    \multicolumn{2}{ |c| }{SystemStatus} \\\hline
+    Type & name \\\hline
+    \texttt{ArrayList<Host>} & cluster\\\hline
+\end{tabular}
+
+\end{itemize}
+
+\subsection{Secondary Types}
+\begin{itemize}
+    \item App:
+\begin{tabular}{|c|c|}
+    \hline
+    \multicolumn{2}{ |c| }{App} \\\hline
+    Type & name \\\hline
+    String & id \\
+    String & name \\
+    String & target \\
+    String & source \\
+    String & type \\
+    \texttt{HashMap<String, String>} & args \\\hline
+\end{tabular}
+    \item Image:
+\begin{tabular}{|c|c|}
+    \hline
+    \multicolumn{2}{ |c| }{Image} \\\hline
+    Type & name \\\hline
+    String & id \\
+    String & imageName \\
+    String & imageType \\\hline
+\end{tabular}
+    \item User:
+\begin{tabular}{|c|c|}
+    \hline
+    \multicolumn{2}{ |c| }{User} \\\hline
+    Type & name \\\hline
+    String & username \\
+    \texttt{HashMap<String, String>} & credentials \\\hline
+\end{tabular}
+    \item Host: 
+\begin{tabular}{|c|c|}
+    \hline
+    \multicolumn{2}{ |c| }{Host} \\\hline
+    Type & name \\\hline
+    String & name \\
+    Integer & usedCores \\
+    Integer & totalCores \\
+    Float & usedMemory \\
+    Float & totalMemory \\\hline
+\end{tabular}
+
+\end{itemize}
+
+
+\section{Usage example}
+
+
+\begin{lstlisting}[caption=getSystemStatus]
+> curl http://localhost:8080/trunk_war_exploded/pmes/getSystemStatus
+{"cluster":[
+    {"name":"bsccv14",
+     "usedCores":1,
+     "totalCores":2400,
+     "usedMemory":1.0,
+     "totalMemory":9.9195808E7},
+    {"name":"bsccv15",
+     "usedCores":0,
+     "totalCores":2400,
+     "usedMemory":0.0,
+     "totalMemory":9.9195808E7}
+    ]
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption=getActivityStatus]
+> curl -H 'Content-Type: application/json' 
+       -X POST 
+       --data '["18045e7f-a670-46fe-a067-3b1a19870bcf"]'
+       http://localhost:8080/trunk_war_exploded/pmes/getActivityStatus
+
+["FINISHED"]
+\end{lstlisting}
+
+\begin{lstlisting}[caption=terminateActivity]
+> curl -H 'Content-Type: application/json'
+       -X POST
+       --data '["18045e7f-a670-46fe-a067-3b1a19870bcf"]'
+       http://localhost:8080/trunk_war_exploded/pmes/terminateActivity
+
+["Job with id 18045e7f-a670-46fe-a067-3b1a19870bcf cannot be cancelled,
+  the job has been finished."]
+\end{lstlisting}
+
+
+\begin{lstlisting}[caption=createActivity]
+> curl -H 'Content-Type: application/json'
+       -X POST
+       --data 
+       '[{ "jobName": "HelloTest2_584817558cb7550b5e9970b0",
+           "wallTime": "5",
+           "minimumVMs": "1",
+           "maximumVMs": "1",
+           "limitVMs": "1",
+           "initialVMs": "1",
+           "memory": "1",
+           "cores": "1",
+           "inputPath": "/home/",
+           "outputPath": "/home/",
+           "numNodes": "1",
+           "user": 
+              { "username": "scorella",
+                "credentials": 
+                { "pem": "/home/pmes/certs/scorella_test.pem",
+                  "key": "/home/pmes/certs/scorella_test.key" } 
+              },
+           "img": { "imageName": "uuid_pmescompss_83", "imageType": "small" },
+           "app": 
+              { "name": "HelloTest2",
+                "target": "/home/pmes/testSimple",
+                "source": "launch.sh",
+                "args": { "val1": "Hola", "val2": "Mundo" } 
+              } 
+        }]'
+     http://localhost:8080/trunk_war_exploded/pmes/createActivity
+
+["31eb1268-b6bc-4be2-9fa9-f8a046b752db"]
+\end{lstlisting}
+
+\end{document}
