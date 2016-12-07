@@ -7,7 +7,7 @@ public class JobReport {
     private JobDefinition jobDefinition;
     private String jobOutputMessage;
     private String jobErrorMessage;
-    private String jobStatus;
+    private JobStatus jobStatus;
     private String elapsedTime;
 
     /** GETTERS AND SETTERS*/
@@ -36,10 +36,10 @@ public class JobReport {
     }
 
     public String getJobStatus() {
-        return jobStatus;
+        return jobStatus.toString();
     }
 
-    public void setJobStatus(String jobStatus) {
+    public void setJobStatus(JobStatus jobStatus) {
         this.jobStatus = jobStatus;
     }
 
