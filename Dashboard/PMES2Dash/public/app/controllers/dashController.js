@@ -91,10 +91,11 @@ angular.module('pmes2')
                     $('#newApp').modal('hide');
                     store.appsList.push(store.newApp);
                     store.error = null;
-                    store.newApp = null;
+                    store.newApp = {args:[], user:"test"};
                 },
                 function(error) {
                     store.error = 'ERROR: '+error.data.error;
+                    store.newApp = {args:[], user:"test"};
                 }
             );
         };
@@ -129,11 +130,15 @@ angular.module('pmes2')
                     store.newJob.jobName = data.data;
                     store.jobsList.push(store.newJob);
                     store.error = null;
-                    store.newJob = null;
+                    store.newJob = {};
+                    this.newJob.app = {};
+                    this.newJob.img = {};
                 },
                 function(error) {
                     store.error = 'Error: '+error.data.error;
-                    store.newJob = null;
+                    store.newJob = {};
+                    this.newJob.app = {};
+                    this.newJob.img = {};
                 }
             );
 
@@ -328,10 +333,14 @@ angular.module('pmes2')
                     store.runJob(store.newJob);
                     store.error = null;
                     store.newJob = null;
+                    this.newJob.app = {};
+                    this.newJob.img = {};
                 },
                 function(error) {
                     store.error = 'Error: '+error.data.error;
                     store.newJob = null;
+                    this.newJob.app = {};
+                    this.newJob.img = {};
                 }
             );
 

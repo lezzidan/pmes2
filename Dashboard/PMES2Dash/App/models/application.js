@@ -5,7 +5,7 @@ var mongoose = require('mongoose');
 var User = require('./user');
 
 var appSchema = mongoose.Schema({
-    username : {
+    name : {
         type: String,
         unique: true
     },
@@ -20,5 +20,15 @@ var appSchema = mongoose.Schema({
     args: [{name: String, defaultV: String, prefix: String, file: Boolean, optional: Boolean}]
 
 });
+
+var autoPopulate = function (next) {
+    this.populate('user');
+    this.populate('location');
+    next();
+};
+
+appSchema
+    .pre('findOne', autoPopulate)
+    .pre('find', autoPopulate)
 
 module.exports = mongoose.model('Application', appSchema);

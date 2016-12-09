@@ -15,7 +15,7 @@
     <tr ng-repeat="app in dashCtrl.appsList">
         <td>{{app.name}}</td>
         <td>{{app.image}}</td>
-        <td>{{app.location}}</td>
+        <td>{{app.location.name}}</td>
         <td>{{app.target}}</td>
         <td>{{app.source}}</td>
         <td><input type="checkbox" disabled="disabled" ng-model="app.compss"></td>
