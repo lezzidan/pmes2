@@ -23,8 +23,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLStreamReader;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
@@ -111,17 +110,51 @@ public class InfrastructureManager {
         properties.put("owner", jobDef.getUser().getUsername());
         properties.put("jobname", jobDef.getJobName());
 
-        //TODO: context data file
-        properties.put("context", "user_data=\"file:///home/pmes/pmes/config/tmpfedcloud.login\"");
+
+        String contextDataFile = createContextDataFile(jobDef);
+        properties.put("context", "user_data=\"file://"+contextDataFile+"\"");
+        //properties.put("context", "user_data=\"file:///home/pmes/pmes/config/tmpfedcloud.login\"");
 
         return properties;
+    }
+
+    public String createContextDataFile(JobDefinition jobDef){
+        //TODO: add shared folders
+        logger.trace("Creating context data file");
+        String dir = jobDef.getJobName();
+        String path = "/home/pmes/pmes/jobs/"+dir+"/context.login";
+        logger.trace("Creating context data file "+path);
+        try {
+            PrintWriter writer = new PrintWriter(path, "UTF-8");
+            writer.println("#cloud-config");
+            writer.println("users:");
+            writer.println("  - name: "+jobDef.getUser().getUsername());
+            writer.println("    shell: /bin/bash");
+            writer.println("    sudo: ALL=(ALL) NOPASSWD:ALL");
+            writer.println("    lock-passwd: true");
+            writer.println("    ssh-import-id: "+jobDef.getUser().getUsername());
+            writer.println("    ssh-authorized-keys:");
+            writer.println("      - ssh-dss AAAAB3NzaC1kc3MAAACBAIVkG+P1XWkNHalfOI6dVD1xFb8RCqf8ItqyAa03saiEO+zlPdnxhq9gORfJ7DHgPJm5gKnN+vQ/o2cI9qJTH8eZH+2+6TQRym5IR+4bfPsOAeMnilaT2rzazcKW+GhSG08MPEYy3fuNJmEw6YLLGjV3hwgAai7tagnnfwTQXbjTAAAAFQCpvcG9XETb0PUbJwNPUNQXlWeEYwAAAIBwAV/JPdmaTRehPlm/mTRqLnPahsWjM4fMLCKXcm4a0veZJIjcPrdHamVP1r+GGflzuv3z0LDuAv/TO5kUf/cyKX6Fz8N1jhdSFZ19XvD9ix1HdzmeD2kebpACy6R2/VSg16KFO9sSDGn3T/DQ6hg6qJ9YXaXqJ2c8hzIZYdG5YQAAAIAvBfLuIDbvPkdQeEk7+V5b67IJvIiN+CGaLNQoLuklWB9jJ7IhHS/ZP9hMNW6KGaVJZibFfvJ7mdcdkkszpI8ysILSktx9jp7ZFQFXf0Q1mm63M/NltA/TUqSyHqVtbfzVRS99lpC/kL1BymskouN8BM7pioeD/HD5uRysDK7fng== scorella@bsccv02");
+            writer.println("      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDXDr8kPXCU68flTbPBtuTb9TnAoHcUsrMKgUEXOoz0hAbP5R9R6AvDNpzsOmkXvC2lnNwSSnXkDdb3cuJ+Oe4irxkzYPyoDq/O7N02xkq2btQbxWCxYf2h+2oLJrLC1XrnAI1cOx3MsIuW57/12jWv35yS0DLacWn9XIIMsRy6ERDn8SSWjBzDpAZIeZZ3D412kAbbS1tBS0s/pAlb0yUTXo6T5peTX4BgI2z4+i3RdedAXPrjkUknTn7xUpaB29v5xGjUcoDmcpiwzhLwiMnPrHLVE8zRWegmfHakwKBDdsUYTHFRWl+/UneoWevJaqYG+ivb5nV4HhVyo5zAVjOV pmes@pmes2");
+            writer.println("runcmd:");
+            writer.println("  - [ssh-keygen, -f, ~/.ssh/id_rsa, -t, rsa, -N, \'\']" );
+            writer.println("  - [cat, ~/.ssh/id_rsa.pub, >>, ~/.ssh/authorized_keys]");
+            writer.println("  - [export, JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64]");
+            //TODO uncomment for COMPSs 2.0
+            //writer.println("  - [echo, \"source /opt/COMPSs/compssenv\", >>, ~/.bashrc]" );
+            //writer.println("  - [source, ~/.bashrc]");
+            writer.close();
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return path;
     }
 
     public void destroyResource(String Id){
         VirtualResource vr = activeResources.get(Id).getVr();
         logger.trace("Destroying VM " + Id);
         rocciClient.destroy(vr.getId());
-
+        // TODO test if destroy is done
         // Update System Status
         //TODO know host
         //Host h = systemStatus.getCluster().get(0); //test purposes

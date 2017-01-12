@@ -37,14 +37,22 @@ public class PMESservice {
     public ArrayList<String> createActivity(ArrayList<JobDefinition> jobDefinitions) {
         ArrayList<String> jobIds = new ArrayList<>(jobDefinitions.size());
         for (JobDefinition jobDef:jobDefinitions) {
+            Job newJob = null;
+            if (jobDef.getApp().getType().equals("COMPSs")){
+                newJob = new COMPSsJob();
+            } else {
+                newJob = new SingleJob();
+            }
             //** Create new job
-            Job newJob = new Job();
+            //Job newJob = new Job();
             newJob.setUser(jobDef.getUser());
             newJob.setJobDef(jobDef);
             logger.trace("JobDef "+jobDef.getCores().toString()+" "+jobDef.getMemory().toString());
 
             jobIds.add(newJob.getId());
-            logger.trace("New Job created with id "+newJob.getId());
+
+            String type = newJob instanceof COMPSsJob ? "COMPSs" : "Single";
+            logger.trace("New "+type+" Job created with id "+newJob.getId());
             this.jm.enqueueJob(newJob);
         }
         return jobIds;

@@ -66,7 +66,7 @@ public class PMESclient {
     @Produces("text/plain")
     public String stopService(){
         logger.trace("Stopping PMES client at "+this.address);
-        // TODO
+        // TODO stop service
         return this.address;
     }
 

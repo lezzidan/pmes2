@@ -12,7 +12,7 @@ import java.util.HashMap;
  * Created by scorella on 8/22/16.
  */
 public class PMESserviceTest {
-    public static PMESclient client;
+    /*public static PMESclient client;
 
     public static void testCreateActivity(){
         // java -classpath /home/user/compss-connectors-commons.jar:/home/user/compss-connectors-rocci.jar:/home/user/pmes.jar es.bsc.pmes.test.PMESserviceTest
@@ -56,12 +56,12 @@ public class PMESserviceTest {
     public static void  testGenerateResources() {
         COMPSsJob jobTest = new COMPSsJob();
         jobTest.generateResources();
-    }
+    }*/
 
     public static void main(String[] args){
         System.out.println("Testing app");
 
-        client = new PMESclient("http://localhost:9998/");
+        /*client = new PMESclient("http://localhost:9998/");
         SystemStatus systemStatus = client.getSystemStatus();
         ArrayList<Host> cluster = systemStatus.getCluster();
         System.out.println(cluster.size());
@@ -75,7 +75,8 @@ public class PMESserviceTest {
             e.printStackTrace();
         }
 
-        //testCreateActivity();
+        testCreateActivity();*/
+
     }
 
 }

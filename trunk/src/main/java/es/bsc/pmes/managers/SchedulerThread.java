@@ -4,10 +4,14 @@ import es.bsc.conn.types.HardwareDescription;
 import es.bsc.conn.types.SoftwareDescription;
 import es.bsc.pmes.managers.execution.COMPSsExecutionThread;
 import es.bsc.pmes.managers.execution.ExecutionThread;
+import es.bsc.pmes.managers.execution.SingleExecutionThread;
+import es.bsc.pmes.types.COMPSsJob;
 import es.bsc.pmes.types.Job;
+import es.bsc.pmes.types.SingleJob;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -42,7 +46,7 @@ public class SchedulerThread extends Thread{
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            logger.trace("Pending jobs: "+pendingJobs.size());
+            //logger.trace("Pending jobs: "+pendingJobs.size());
             if (!pendingJobs.isEmpty()){
                 Job nextJob = this.nextJob();
                 if (nextJob.getTerminate()){
@@ -65,11 +69,29 @@ public class SchedulerThread extends Thread{
     }
 
     public void executeJob(Job job){
+        //Create execution dir
+        String path = "/home/pmes/pmes/jobs/"+job.getJobDef().getJobName();
+        File dir = new File(path);
+        if (!dir.exists()) {
+            boolean result = dir.mkdir();
+            if (result){
+                logger.trace("Job execution directory created: "+path);
+            }
+        }
+
         //Run job
-        // TODO: single or COMPSs Job
-        COMPSsExecutionThread executor = new COMPSsExecutionThread(job);
+
+        //TODO: Test single or COMPSs Job
+        ExecutionThread executor = null;
+        if (job instanceof COMPSsJob){
+            executor = new COMPSsExecutionThread((COMPSsJob) job);
+        } else {
+            executor = new SingleExecutionThread((SingleJob) job);
+        }
         this.tasks.put(job.getId(), executor);
         executor.start();
+
+        //OLD
         /*COMPSsExecutionThread executor = new COMPSsExecutionThread(job);
         executor.start();
         try {

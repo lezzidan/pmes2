@@ -4,6 +4,7 @@ import es.bsc.conn.exceptions.ConnectorException;
 import es.bsc.conn.types.HardwareDescription;
 import es.bsc.conn.types.SoftwareDescription;
 import es.bsc.pmes.managers.InfrastructureManager;
+import es.bsc.pmes.types.COMPSsJob;
 import es.bsc.pmes.types.Job;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,12 +21,13 @@ import java.util.Map;
  * Created by scorella on 8/23/16.
  */
 public class COMPSsExecutionThread extends Thread implements ExecutionThread{
-    private Job job;
+    //private Job job;
+    private COMPSsJob job;
     private InfrastructureManager im = InfrastructureManager.getInfrastructureManager();
     private static final Logger logger = LogManager.getLogger(COMPSsExecutionThread.class);
     private Process process = null;
 
-    public COMPSsExecutionThread(Job job){
+    public COMPSsExecutionThread(COMPSsJob job){
         this.job = job;
     }
 
@@ -74,13 +76,35 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
 
         // Create command to execute
         ArrayList<String> cmd = new ArrayList<>();
-        cmd.add("ssh");
+        /*cmd.add("ssh");
         cmd.add(address);
         cmd.add(target+"/./"+source);
         for (Object o : args.entrySet()) {
             Map.Entry pair = (Map.Entry) o;
             cmd.add((String) pair.getValue());
+        }*/
+        //TODO if it's a COMPSs job...
+        // BEGIN COMPSs
+        cmd.add("ssh");
+        cmd.add(address);
+        cmd.add("runcompss");
+        for (Object o: job.getJobDef().getCompss_flags().entrySet()){
+            Map.Entry pair = (Map.Entry) o;
+            cmd.add((String) pair.getValue());
         }
+        if (job.getJobDef().getApp().getSource().endsWith(".py")){
+            cmd.add("--lang=python");
+            cmd.add("--pythonpath="+target);
+        } else {
+            cmd.add("--classpath="+target);
+        }
+        cmd.add(target+"/"+source);
+        for (Object o : args.entrySet()) {
+            Map.Entry pair = (Map.Entry) o;
+            cmd.add((String) pair.getValue());
+        }
+        //END COMPSs
+
         String[] command = new String[cmd.size()];
         job.setCmd(cmd.toArray(command));
         logger.trace(Arrays.toString(command));
@@ -167,42 +191,59 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
 
     public Integer executeCommand(String[] cmd){
         Runtime runtime = Runtime.getRuntime();
-        try {
-            this.process = runtime.exec(cmd);
+        Integer times = 3;
+        Integer exitValue = 1;
+        Integer i = 0;
+        while (i < times && exitValue != 0) {
+            logger.trace("Round "+String.valueOf(i));
 
-            BufferedReader in = new BufferedReader(new
-                    InputStreamReader(this.process.getInputStream()));
-
-            BufferedReader err= new BufferedReader(new
-                    InputStreamReader(this.process.getErrorStream()));
-
-            // Output log
-            String outStr = "";
-            String line = null;
-            while ((line = in.readLine()) != null) {
-                outStr += line;
+            if (i > 0){
+                //Wait until vm will be ready
+                try {
+                    Thread.sleep(60000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-            in.close();
-            logger.trace("out: " + outStr);
+            try {
+                this.process = runtime.exec(cmd);
 
-            //Error log
-            line = null;
-            String errStr = "";
-            while ((line = err.readLine()) != null) {
-                errStr += line;
+                BufferedReader in = new BufferedReader(new
+                        InputStreamReader(this.process.getInputStream()));
+
+                BufferedReader err = new BufferedReader(new
+                        InputStreamReader(this.process.getErrorStream()));
+
+                // Output log
+                String outStr = "";
+                String line = null;
+                while ((line = in.readLine()) != null) {
+                    outStr += line;
+                }
+                in.close();
+                logger.trace("out: " + outStr);
+
+                //Error log
+                line = null;
+                String errStr = "";
+                while ((line = err.readLine()) != null) {
+                    errStr += line;
+                }
+                err.close();
+                logger.trace("err: " + errStr);
+
+                this.process.waitFor();
+                exitValue = this.process.exitValue();
+                logger.trace("Exit Value "+String.valueOf(exitValue));
+                //return exitValue;
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-            err.close();
-            logger.trace("err: " + errStr);
-
-            this.process.waitFor();
-            Integer exitValue = this.process.exitValue();
-            return exitValue;
-            
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            i += 1;
         }
-        return 1;
+        return exitValue;
     }
 }
