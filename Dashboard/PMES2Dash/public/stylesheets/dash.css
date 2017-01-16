@@ -158,6 +158,7 @@ body {
 .nav-tabs > li > a{
     color: #050505;
 }
+
 /*
  * Footer
  */
@@ -206,6 +207,8 @@ body {
 table {
     table-layout: fixed;
 }
+
+
 
 #newApp .modal-dialog  {width:75%;}
 #newJob .modal-dialog  {width:75%;}

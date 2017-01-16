@@ -49,6 +49,34 @@ angular.module('pmes2')
         this.systemStatusData = {};
         this.systemStatusDataDash = {};
 
+        this.compss_flags = {
+            lang: {
+                name: "lang",
+                defaultV: "python",
+                value: ""
+            },
+            path: {
+                name: "path",
+                defaultV: "/home/",
+                value: ""
+            },
+            graph: {
+                name: "graph",
+                defaultV: false,
+                value: ""
+            },
+            tracing: {
+                name: "tracing",
+                defaultV: false,
+                value: ""
+            },
+            debug: {
+                name: "debug",
+                defaultV: false,
+                value: ""
+            }
+        };
+
         //TODO: remove groups list from variables
         this.groups = [];
         this.Groups = ["test", "all"];
@@ -274,6 +302,10 @@ angular.module('pmes2')
                 map[obj.name] = obj.value;
                 return map;
             }, {});
+            var type = "Single";
+            if (job.app.compss){
+                type = "COMPSs";
+            }
             var jobToSend = {
                 "jobName":job.jobName,
                 "wallTime": job.wallTime,
@@ -295,13 +327,16 @@ angular.module('pmes2')
                     "name":job.app.name,
                     "target":job.app.target,
                     "source":job.app.source,
-                    "args": resultArgs
+                    "args": resultArgs,
+                    "type": type
                 }
             };
+            console.log(jobToSend);
             return jobToSend;
         };
 
         this.saveNewJobAndRun = function() {
+            //TODO: test if type is passing
             this.newJob.app = this.newJob.appVal;
             this.newJob.jobName = this.newJob.appVal.name;
             this.newJob.status = 'created';

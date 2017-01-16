@@ -248,10 +248,10 @@ module.exports = function(app, passport) {
     /* Get user */
     app.get('/dash/user', isLoggedIn, function(req, res, next) {
         console.log("REQ user"+req.user);
-        //TODO req.user username
-        User.find({username:'scorella'},function(err, user){
+        /*User.find({username:'scorella'},function(err, user){*/
+        User.find({username: req.user.username},function(err, user){
             if(err){
-                console.log(err);
+                console.log("user not found");
                 res.send([]);
             } else {
                 console.log(user);

@@ -31,7 +31,19 @@ var jobSchema = mongoose.Schema({
     output: String,
     error: String,
     inputPath: String,
-    outputPath: String
+    outputPath: String,
+    compss_flags: {
+        lang: String,
+        path: String,
+        library_path: String,
+        graph: Boolean,
+        tracing: Boolean,
+        monitoring: Boolean,
+        debug: Boolean,
+        comm: String,
+        conn: String,
+        scheduler: String
+    }
 });
 
 //private HashMap<String, String> compss_flags;

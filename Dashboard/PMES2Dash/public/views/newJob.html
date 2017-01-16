@@ -23,6 +23,24 @@
                     </tbody>
                 </table>
             </div>
+            <div class="form-group" ng-show="dashCtrl.newJob.appVal.compss">
+                <label>COMPSs Flags</label>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="flag in dashCtrl.compss_flags">
+                        <td><label>{{flag.name}}</label></td>
+                        <td ng-show="flag.name != 'tracing' && flag.name != 'graph' && flag.name != 'debug'"><label for="flagV"><input type="text" id="flagV"  size="10" placeholder="{{flag.defaultV}}" ng-init="flag.defaultV" ng-model="Flag.value"></label></td>
+                        <td ng-show="flag.name == 'tracing' || flag.name == 'graph' || flag.name == 'debug'" ><label for="flagV"><input type="checkbox" id="compss" ng-init="dashCtrl.newApp.compss=false" ng-model="Flag.value"></label></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
         <div class="col-sm-6 col-md-6 col-lg-6">
             <div class="form-group">
