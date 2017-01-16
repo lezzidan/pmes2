@@ -159,14 +159,14 @@ angular.module('pmes2')
                     store.jobsList.push(store.newJob);
                     store.error = null;
                     store.newJob = {};
-                    this.newJob.app = {};
-                    this.newJob.img = {};
+                    store.newJob.app = {};
+                    store.newJob.img = {};
                 },
                 function(error) {
                     store.error = 'Error: '+error.data.error;
                     store.newJob = {};
-                    this.newJob.app = {};
-                    this.newJob.img = {};
+                    store.newJob.app = {};
+                    store.newJob.img = {};
                 }
             );
 
