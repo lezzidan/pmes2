@@ -500,6 +500,37 @@ module.exports = function(app, passport) {
         });
     });
 
+    app.post('/api/getActivityReport', function(req, res){
+        console.log("asking for report");
+        var listOfIds = req.body;
+        console.log(listOfIds);
+        var request = require('request');
+        var options = {
+            uri: 'http://localhost:8080/trunk_war_exploded/pmes/getActivityReport',
+            method: 'POST',
+            json: listOfIds
+        };
+        request.post(options, function(error, response, body){
+            if (!error && response.statusCode == 200){
+                /*for (var i = 0; i < listOfIds.length; i++){
+                    Job.findOne({pmesID: listOfIds[i]}, function(err, jb){
+                        if(err){
+                            console.log(err);
+                        }
+                        jb.status = body;
+                        //jb.status = body[i];
+                        jb.save();
+                    });
+                }*/
+                console.log(body);
+                res.send(body);
+            } else {
+                console.log(error);
+                res.status(404).send({ error: error});
+            }
+        });
+    });
+
 };
 
 // route middleware to make sure a user is logged in

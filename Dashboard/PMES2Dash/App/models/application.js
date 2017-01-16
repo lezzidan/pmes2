@@ -20,7 +20,7 @@ var appSchema = mongoose.Schema({
     args: [{name: String, defaultV: String, prefix: String, file: Boolean, optional: Boolean}]
 
 });
-//TODO: test type
+
 var autoPopulate = function (next) {
     this.populate('user');
     this.populate('location');

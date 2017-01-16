@@ -493,6 +493,22 @@ angular.module('pmes2')
             var index = this.jobsList.indexOf(job);
             store.infoJob = store.jobsList[index];
             store.index = index;
+            var id = job.pmesID;
+            console.log(id);
+            $http({
+                method: 'POST',
+                url: 'api/getActivityReport',
+                data: [id]
+            }).then(
+                function(data) {
+                    store.error = null;
+                    //store.selectedJobs = [];
+                    //store.getJobsList();
+                    console.log(data);
+                }, function(error) {
+                    store.error = 'Get Activity status error '+error.data.error;
+                }
+            );
         };
 
         this.removeArg = function (index) {
@@ -645,6 +661,22 @@ angular.module('pmes2')
                         store.error = 'Error: '+error.data.error;
                     }
                 );
+        };
+
+        this.getReportJob = function (x) {
+            $http({
+                method: 'POST',
+                url: 'api/getActivityReport',
+                data: x.pmesID
+            }).then(
+                function(data) {
+                    store.error = null;
+                    store.selectedJobs = [];
+                    store.getJobsList();
+                }, function(error) {
+                    store.error = 'Get Activity status error '+error.data.error;
+                }
+            );
         };
 
         //Init values
