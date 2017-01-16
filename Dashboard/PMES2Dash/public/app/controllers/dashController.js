@@ -193,7 +193,7 @@ angular.module('pmes2')
             $http({
                 method: 'POST',
                 url: 'api/terminateActivity',
-                data: job.pmesID
+                data: [job.pmesID]
             }).then(
                 function(data) {
                     store.error = null;
@@ -367,13 +367,13 @@ angular.module('pmes2')
                     store.jobsList.push(store.newJob);
                     store.runJob(store.newJob);
                     store.error = null;
-                    store.newJob = null;
+                    store.newJob = {};
                     this.newJob.app = {};
                     this.newJob.img = {};
                 },
                 function(error) {
                     store.error = 'Error: '+error.data.error;
-                    store.newJob = null;
+                    store.newJob = {};
                     this.newJob.app = {};
                     this.newJob.img = {};
                 }

@@ -365,7 +365,7 @@ module.exports = function(app, passport) {
         var userCred = " --user-cred "+req.body.credentials.pem;
         var userPass = " --password "+req.body.credentials.key;
         var action = " --action list --resource os_tpl";
-        var command = "occi "+endpoint+auth+caPath+userCred+userPass+action;
+        var command = "/usr/bin/occi "+endpoint+auth+caPath+userCred+userPass+action;
         try {
             var ex = execSync(command);
             var listOfImages = ex.toString().split("\n");
@@ -454,7 +454,7 @@ module.exports = function(app, passport) {
 
     app.post('/api/terminateActivity', function(req, res){
         console.log("Terminate activity");
-        var listOfIds = [req.body];
+        var listOfIds = req.body;
         var request = require('request');
         var options = {
             uri: 'http://localhost:8080/trunk_war_exploded/pmes/terminateActivity',
