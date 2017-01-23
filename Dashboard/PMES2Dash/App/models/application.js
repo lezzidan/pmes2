@@ -29,6 +29,6 @@ var autoPopulate = function (next) {
 
 appSchema
     .pre('findOne', autoPopulate)
-    .pre('find', autoPopulate)
+    .pre('find', autoPopulate);
 
 module.exports = mongoose.model('Application', appSchema);

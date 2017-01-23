@@ -36,6 +36,7 @@ angular.module('pmes2')
         this.storagesList = [];
         this.imagesList = [];
         this.usersList = [];
+        this.groupsList = [];
 
         this.error = null;
         this.logFile ="";
@@ -632,6 +633,18 @@ angular.module('pmes2')
                 );
         };
 
+        this.getGroupsList = function() {
+            $http.get('dash/groups')
+                .then(
+                    function(data) {
+                        store.groupsList = data.data;
+                    }, function(error){
+                        console.log('OH NO, SOOMETHING HAS FAILED! AND NOBODY CARES');
+                        store.error = 'Error: '+error.data.error;
+                    }
+                );
+        };
+
         this.getSystemStatus = function () {
             $http.get('api/getSystemStatus')
                 .then(
@@ -684,6 +697,7 @@ angular.module('pmes2')
         this.getAppsList();
         this.getStorageList();
         this.getImagesList();
+        this.getGroupsList();
         this.getUsersList();
         this.getUser();
         this.getSystemStatus();

@@ -3,6 +3,7 @@
  */
 var mongoose = require('mongoose');
 var bcrypt   = require('bcrypt-nodejs');
+var Group = require('./group');
 
 var userSchema = mongoose.Schema({
     username : {
@@ -26,7 +27,8 @@ var userSchema = mongoose.Schema({
             name: String
         }
     },
-    group: [String],
+    //group: [String],
+    group: [{type:mongoose.Schema.Types.ObjectId, ref: 'Group'}],
     authorized: Boolean
 });
 
@@ -40,5 +42,15 @@ userSchema.methods.generateHash = function(password) {
 userSchema.methods.validPassword = function(password) {
  return bcrypt.compareSync(password, this.login.local.password);
 };
+
+var autoPopulate = function (next) {
+    this.populate('group');
+    next();
+};
+
+userSchema
+    .pre('findOne', autoPopulate)
+    .pre('find', autoPopulate);
+
 
 module.exports = mongoose.model('User', userSchema);

@@ -98,7 +98,10 @@ angular.module('pmes2')
                     storeAuth.error = 'ERROR: '+error.data.error;
                 }
             );*/
+
+
         };
         //Init calls
         //this.saveNewUser();
+
     }]);

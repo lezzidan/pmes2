@@ -6,6 +6,7 @@ var LocalStrategy   = require('passport-local').Strategy;
 var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
 var User = require('../App/models/user');
+var Group = require('../App/models/group');
 
 var configAuth = require('./auth');
 
@@ -48,7 +49,20 @@ module.exports = function(passport) {
                         console.log("Creating new user");
                         var newUser = new User();
                         newUser.username = email.split("@")[0];
-                        newUser.group = ["test"];
+                        /*var gid = null;
+                        Group.find({name: "admin"},function(err, group){
+                            if(err){
+                                console.log("Group not found");
+                                newUser.group = [];
+                            } else {
+                                console.log(group);
+                                console.log(group._id);
+                                gid = group._id;
+                                console.log(gid);
+                            }
+                        });*/
+
+                        newUser.group = [];
                         newUser.credentials.key = "";
                         newUser.credentials.pem = "";
                         newUser.login.local.email = email;

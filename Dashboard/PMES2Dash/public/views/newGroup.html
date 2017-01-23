@@ -1,0 +1,42 @@
+<form>
+    <div class="form-group">
+        <label for="name">Name</label>
+        <input type="text" class="form-control" id="name" placeholder="MyGroup" ng-model="dashCtrl.newGroup.name">
+    </div>
+    <div class="row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="form-group checkbox">
+                <label for="admin">
+                    <input type="checkbox" id="admin" ng-init="dashCtrl.newGroup.permission.admin=false" ng-model="dashCtrl.newGroup.permission.admin"> Admin
+                </label>
+            </div>
+            <div class="form-group checkbox">
+                <label for="users">
+                    <input type="checkbox" id="users" ng-init="dashCtrl.newGroup.permission.users=false" ng-model="dashCtrl.newGroup.permission.users"> users
+                </label>
+            </div>
+            <div class="form-group checkbox">
+                <label for="groups">
+                    <input type="checkbox" id="groups" ng-init="dashCtrl.newGroup.permission.groups=false" ng-model="dashCtrl.newGroup.permission.groups"> groups
+                </label>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="form-group checkbox">
+                <label for="admin">
+                    <input type="checkbox" id="storages" ng-init="dashCtrl.newGroup.permission.storages=false" ng-model="dashCtrl.newGroup.permission.storages"> storages
+                </label>
+            </div>
+            <div class="form-group checkbox">
+                <label for="users">
+                    <input type="checkbox" id="apps" ng-init="dashCtrl.newGroup.permission.apps=false" ng-model="dashCtrl.newGroup.permission.apps"> apps
+                </label>
+            </div>
+            <div class="form-group checkbox">
+                <label for="groups">
+                    <input type="checkbox" id="jobs" ng-init="dashCtrl.newGroup.permission.jobs=false" ng-model="dashCtrl.newGroup.permission.jobs"> jobs
+                </label>
+            </div>
+        </div>
+    </div>
+</form>

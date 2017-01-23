@@ -9,6 +9,7 @@
     "async": "^2.0.1",
     "bcrypt-nodejs": "0.0.3",
     "body-parser": "~1.15.1",
+    "bootstrap-select": "^1.12.1",
     "cookie-parser": "~1.4.3",
     "debug": "~2.2.0",
     "ejs": "~2.4.1",

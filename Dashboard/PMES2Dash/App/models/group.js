@@ -10,7 +10,16 @@ var groupSchema = mongoose.Schema({
         unique: true
     },
     permission: {
+        admin: Boolean,
         users: Boolean,
-        storage: String
+        groups: Boolean,
+        storages: Boolean,
+        apps: Boolean,
+        jobs: Boolean
     }
 });
+
+
+module.exports = mongoose.model('Group', groupSchema);
+
+/* Create Admin and Test Group */

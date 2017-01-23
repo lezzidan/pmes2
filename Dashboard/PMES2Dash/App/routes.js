@@ -2,6 +2,7 @@ var Application = require('./models/application');
 var Job = require('./models/job');
 var Storage = require('./models/storage');
 var User = require('./models/user');
+var Group = require('./models/group');
 var fs = require('fs');
 var async = require('async');
 
@@ -113,6 +114,21 @@ module.exports = function(app, passport) {
         }
     });
 
+    /* Create new group */
+    app.post('/dash/group', isLoggedIn, function(req, res, next){
+        console.log("---- New Group ----");
+        if(!req.body.name){
+            res.status(404).send({error: 'name or credentials'});
+        } else {
+            var newGroup = new Group(req.body);
+            newGroup.save(function(err, group){
+                if(err) console.log(err);
+                console.log("group created"+group);
+            });
+            res.send(newGroup._id);
+        }
+    });
+
     /* update app */
     app.put('/dash/app', isLoggedIn, function(req, res, next){
         console.log("---- updating App ----");
@@ -188,11 +204,25 @@ module.exports = function(app, passport) {
                 usr.authorized = req.body.authorized;
                 usr.credentials.key = req.body.credentials.key;
                 usr.credentials.pem = req.body.credentials.pem;
-                usr.group = req.body.group;
-                console.log(usr);
-                usr.save();
+                //usr.group = req.body.group;
+                console.log(req.body.group);
+                //for (var i=0; i < req.body.group.length; i++) {
+                var g = req.body.group[0];
+                Group.findOne({name:g.name}, function (err, grp) {
+                    if (err) {
+                        console.log(err);
+                    } else {
+                        usr.group = usr.group.concat([grp._id]);
+                        console.log(usr);
+                        usr.save();
+                        res.send('OK');
+                    }
+                });
+                //}
+                //console.log(usr);
+                //usr.save();
             });
-            res.send('OK');
+            //res.send('OK');
         }
     });
 
@@ -245,6 +275,19 @@ module.exports = function(app, passport) {
         });
     });
 
+    /* delete group */
+    app.delete('/dash/group', isLoggedIn, function(req, res, next){
+        console.log("---- deleting Group ----");
+        Group.findOneAndRemove({name: req.body.name}, function(err){
+            if (err) {
+                console.log("Group not found");
+                console.log(err);
+            }
+            console.log("deleted");
+            res.send('OK');
+        });
+    });
+
     /* Get user */
     app.get('/dash/user', isLoggedIn, function(req, res, next) {
         console.log("REQ user"+req.user);
@@ -256,6 +299,22 @@ module.exports = function(app, passport) {
             } else {
                 console.log(user);
                 res.send(user);
+            }
+        });
+
+    });
+
+    /* Get Group */
+    app.get('/dash/group', isLoggedIn, function(req, res, next) {
+        console.log("REQ group"+req.group.name);
+        /*User.find({username:'scorella'},function(err, user){*/
+        Group.find({name: req.group.name},function(err, group){
+            if(err){
+                console.log("Group not found");
+                res.send([]);
+            } else {
+                console.log(group);
+                res.send(group);
             }
         });
 
@@ -279,7 +338,10 @@ module.exports = function(app, passport) {
 
     /* Get list of jobs */
     app.get('/dash/jobs', isLoggedIn, function(req, res, next) {
-        Job.find(function(err, jobs){
+        console.log('USER: '+req.user);
+        var ObjectId = (require('mongoose').Types.ObjectId);
+
+        Job.find({user: new ObjectId(req.user._id)},function(err, jobs){
             if(err){
                 console.log(err);
                 res.send([]);
@@ -309,6 +371,18 @@ module.exports = function(app, passport) {
                 res.send([]);
             } else {
                 res.send(users);
+            }
+        });
+    });
+
+    /* Get list of groups */
+    app.get('/dash/groups', isLoggedIn, function(req, res, next) {
+        Group.find(function(err, groups){
+            if(err){
+                console.log(err);
+                res.send([]);
+            } else {
+                res.send(groups);
             }
         });
     });

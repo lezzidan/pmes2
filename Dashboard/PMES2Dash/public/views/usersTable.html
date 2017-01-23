@@ -12,8 +12,8 @@
     <tbody>
     <tr ng-repeat="x in dashCtrl.usersList">
         <td>{{x.username}}</td>
-        <!--<td>{{x.group}}</td>-->
-        <td><select class="input-large multiselect" ng-disabled="!editU" ng-model="x.group" ng-options="item for item in dashCtrl.Groups"
+        <!--<td>{{x.group}} select class="input-large multiselect"</td>-->
+        <td><select class="selectpicker" multiple ng-disabled="!editU" ng-model="x.group" ng-options="item.name for item in dashCtrl.groupsList"
                     multiple="multiple" multiselect-dropdown></select></td>
         <td><input type="checkbox" ng-disabled="!editU" value="x.authorized" ng-model="x.authorized"></td>
         <td><input type="text" value="x.credentials.key" ng-disabled="!editU" ng-model="x.credentials.key" size="10"></td>
