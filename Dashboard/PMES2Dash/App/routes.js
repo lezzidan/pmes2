@@ -5,6 +5,7 @@ var User = require('./models/user');
 var Group = require('./models/group');
 var fs = require('fs');
 var async = require('async');
+var ObjectId = (require('mongoose').Types.ObjectId);
 
 var formatJob = function (job) {
     console.log("Format Job "+job);
@@ -90,6 +91,7 @@ module.exports = function(app, passport) {
         } else {
             var newStorage = new Storage(req.body);
             newStorage.password = newStorage.encrypt(newStorage.password);
+
             newStorage.save(function(err, storage){
                 if(err) console.log(err);
                 console.log(storage);
@@ -204,7 +206,6 @@ module.exports = function(app, passport) {
                 usr.authorized = req.body.authorized;
                 usr.credentials.key = req.body.credentials.key;
                 usr.credentials.pem = req.body.credentials.pem;
-                //usr.group = req.body.group;
                 console.log(req.body.group);
                 //for (var i=0; i < req.body.group.length; i++) {
                 var g = req.body.group[0];
@@ -326,7 +327,8 @@ module.exports = function(app, passport) {
 
     /* Get list of applications */
     app.get('/dash/apps', isLoggedIn, function(req, res, next) {
-        Application.find(function(err, apps){
+        //TODO: add public apps that belong to the same group
+        Application.find({user: new ObjectId(req.user._id)},function(err, apps){
             if(err){
                 console.log(err);
                 res.send([]);
@@ -339,7 +341,7 @@ module.exports = function(app, passport) {
     /* Get list of jobs */
     app.get('/dash/jobs', isLoggedIn, function(req, res, next) {
         console.log('USER: '+req.user);
-        var ObjectId = (require('mongoose').Types.ObjectId);
+
 
         Job.find({user: new ObjectId(req.user._id)},function(err, jobs){
             if(err){
@@ -353,7 +355,7 @@ module.exports = function(app, passport) {
 
     /* Get list of storages */
     app.get('/dash/storages', isLoggedIn, function(req, res, next) {
-        Storage.find(function(err, storages){
+        Storage.find({username: new ObjectId(req.user._id)}, function(err, storages){
             if(err){
                 console.log(err);
                 res.send([]);

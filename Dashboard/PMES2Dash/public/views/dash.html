@@ -1,7 +1,7 @@
 <link rel='stylesheet' href='/stylesheets/dash.css' />
 <nav class="nav masthead-nav navbar-fixed-top bg-faded">
     <div class="container-fluid">
-        <h3 class="masthead-brand" style="padding-left: 20px"> PMES2 Dashboard {{dashCtrl.user.name}}</h3>
+        <h3 class="masthead-brand" style="padding-left: 20px"> PMES2 Dashboard {{dashCtrl.user.username}}</h3>
         <div id="navbar" class="navbar-collapse collapse">
             <ul class="nav masthead-nav navbar-right">
                 <li class="active"><a href="#" ui-sref="dash">Dashboard</a></li>
@@ -191,12 +191,12 @@
                 <li><a data-toggle="modal" data-target="#system" ng-click="dashCtrl.getSystemStatus()">Cloud Load Information</a></li>
                 <li class="nav-divider"></li>
             </ul>
-            <ul class="nav nav-sidebar">
+            <ul class="nav nav-sidebar" ng-show="dashCtrl.rol">
                 <li class="nav-header" style="color: white; border-bottom-color: white; font-size: large; text-align: left"><a>Users</a> </li>
                 <li><a data-toggle="modal" data-target="#users">Manage users</a></li>
                 <li class="nav-divider"></li>
             </ul>
-            <ul class="nav nav-sidebar">
+            <ul class="nav nav-sidebar" ng-show="dashCtrl.rol">
                 <li class="nav-header" style="color: white; border-bottom-color: white; font-size: large; text-align: left"><a>Groups</a> </li>
                 <li><a data-toggle="modal" data-target="#groups">Manage groups</a></li>
                 <li class="nav-divider"></li>

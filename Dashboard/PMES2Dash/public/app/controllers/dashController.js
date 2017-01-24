@@ -13,7 +13,9 @@ angular.module('pmes2')
                 key: "/home/pmes/certs/scorella_test.key",
                 pem: "/home/pmes/certs/scorella_test.pem"
             }
+
         };
+        store.admin = false;
         store.userS = {
             _id: "57f601522aa80824dc4f094e"
         };
@@ -389,6 +391,8 @@ angular.module('pmes2')
         };*/
 
         this.saveNewStorage = function() {
+            this.newStorage.username = store.user._id;
+            console.log(this.newStorage);
             $http({
                 method: 'POST',
                 url: 'dash/storage',
@@ -540,6 +544,18 @@ angular.module('pmes2')
 
         };
 
+        this.isAdmin = function() {
+            var adm = false;
+            for (var i=0; i < store.user.group.length; i++){
+                if (store.user.group[i].name == "admin"){
+                    console.log(store.user.group[i].name);
+                    adm = true;
+                }
+            }
+            console.log(adm);
+            return adm
+        };
+
         this.getUser = function(){
             $http({
                 method: 'GET',
@@ -548,6 +564,8 @@ angular.module('pmes2')
                 function(data) {
                     store.user = data.data[0];
                     store.userS._id = data.data[0]._id;
+                    store.rol = store.isAdmin();
+                    console.log(store.rol);
                     store.error = null;
                 },
                 function(error) {
@@ -693,13 +711,13 @@ angular.module('pmes2')
         };
 
         //Init values
+        this.getUser();
         this.getJobsList();
         this.getAppsList();
         this.getStorageList();
         this.getImagesList();
         this.getGroupsList();
         this.getUsersList();
-        this.getUser();
         this.getSystemStatus();
 
     }]);

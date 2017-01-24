@@ -4,6 +4,8 @@ var crypto = require('crypto'),
     algorithm = 'aes-256-ctr',
     password = 'd6F3Efeq';
 
+var User = require('./user');
+
 var storageSchema = mongoose.Schema({
     name : {
         type: String,
@@ -11,7 +13,8 @@ var storageSchema = mongoose.Schema({
     },
     path: String,
     user: String,
-    password: String
+    password: String,
+    username: {type:mongoose.Schema.Types.ObjectId, ref: 'User'}
 });
 
 // methods ======================
