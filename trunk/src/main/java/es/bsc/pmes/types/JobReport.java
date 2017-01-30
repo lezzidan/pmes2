@@ -9,6 +9,16 @@ public class JobReport {
     private String jobErrorMessage;
     private JobStatus jobStatus;
     private String elapsedTime;
+    private String exitValue;
+
+    public JobReport() {
+        this.jobDefinition = null;
+        this.jobOutputMessage = "";
+        this.jobErrorMessage ="";
+        this.jobStatus = JobStatus.valueOf("PENDING");
+        this.elapsedTime = "-1";
+        this.exitValue = "-1";
+    }
 
     /** GETTERS AND SETTERS*/
     public JobDefinition getJobDefinition() {
@@ -50,4 +60,10 @@ public class JobReport {
     public void setElapsedTime(String elapsedTime) {
         this.elapsedTime = elapsedTime;
     }
+
+    public void setExitValue(Integer exitValue) {
+        this.exitValue = exitValue.toString();
+    }
+
+    public String getExitValue() { return exitValue; }
 }

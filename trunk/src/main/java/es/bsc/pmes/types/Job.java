@@ -11,7 +11,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.*;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -28,6 +28,9 @@ public class Job {
     private String[] cmd;
     private JobDefinition jobDef;
     private Boolean terminate;
+    private JobReport report;
+    private String dirPath;
+
 
     private static final Logger logger = LogManager.getLogger(Job.class.getName());
 
@@ -36,11 +39,12 @@ public class Job {
         this.status = JobStatus.PENDING;
         this.resources = new ArrayList<Resource>();
         this.user = null;
-        this.dataIn = null;
-        this.dataOut = null;
+        this.dataIn = new ArrayList<String>();
+        this.dataOut = new ArrayList<String>();
         this.cmd = new String[]{};
         this.jobDef = null;
         this.terminate = Boolean.FALSE;
+        this.report = new JobReport();
     }
 
 
@@ -55,6 +59,7 @@ public class Job {
 
     public void setStatus(String status) {
         this.status = JobStatus.valueOf(status);
+        this.report.setJobStatus(this.status);
     }
 
     public Resource getResource(Integer idx) {
@@ -99,6 +104,7 @@ public class Job {
 
     public void setJobDef(JobDefinition jobDef) {
         this.jobDef = jobDef;
+        this.report.setJobDefinition(jobDef);
     }
 
     public JobDefinition getJobDef() {
@@ -108,4 +114,112 @@ public class Job {
     public Boolean getTerminate() { return terminate; }
 
     public void setTerminate(Boolean terminate) { this.terminate = terminate; }
+
+    public JobReport getReport() {
+        return report;
+    }
+
+    public void setReport(JobReport report) {
+        this.report = report;
+    }
+
+    public String getDirPath() {
+        return dirPath;
+    }
+
+    public void setDirPath(String dirPath) {
+        this.dirPath = dirPath;
+    }
+
+    public void createReport() {
+        //TODO write report
+        try (PrintWriter writer = new PrintWriter(this.dirPath + "/report.txt", "UTF-8")) {
+            writer.println("Job Report");
+            writer.close();
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void createExecutionDir(){
+        String path = "/home/pmes/pmes/jobs/"+this.getJobDef().getJobName();
+        this.dirPath = path;
+        File dir = new File(path);
+        if (!dir.exists()) {
+            boolean result = dir.mkdir();
+            if (result){
+                logger.trace("Job execution directory created: "+path);
+            }
+        }
+    }
+
+    public Integer stage(Integer direction){
+        /*direction = 0 --> Stage In
+        * direction = 1 --> Stage out*/
+        Runtime runtime = Runtime.getRuntime();
+        String resourceAddress = this.resources.get(0).getIp(); //get master IP
+        String user = this.user.getUsername();
+        String address = user+"@"+resourceAddress;
+        Integer exitValue = 0;
+        ArrayList<String> dataToTransfer;
+        if (direction == 1){
+            dataToTransfer = this.dataOut;
+        } else {
+            dataToTransfer = this.dataIn;
+        }
+        for (String path:dataToTransfer) {
+            //TODO Quiza el path no es absoluto
+            logger.trace("Staging file: "+path);
+            logger.trace("direction: "+direction.toString());
+            ArrayList<String> cmd = new ArrayList<>();
+            cmd.add("scp");
+            cmd.add("-r");
+            if (direction == 0){
+                cmd.add(path);
+                cmd.add(address+":"+this.dirPath);
+            } else {
+                cmd.add(address+":"+path);
+                cmd.add(this.dirPath);
+            }
+
+            String[] command = new String[cmd.size()];
+            try {
+                Process process = runtime.exec(cmd.toArray(command));
+
+                BufferedReader in = new BufferedReader(new
+                        InputStreamReader(process.getInputStream()));
+
+                BufferedReader err = new BufferedReader(new
+                        InputStreamReader(process.getErrorStream()));
+
+                // Output log
+                String outStr = "";
+                String line = null;
+                while ((line = in.readLine()) != null) {
+                    outStr += line;
+                }
+                in.close();
+                logger.trace("outMessage: " + outStr);
+
+                //Error log
+                line = null;
+                String errStr = "";
+                while ((line = err.readLine()) != null) {
+                    errStr += line;
+                }
+                err.close();
+                logger.trace("errMessage: " + errStr);
+
+                process.waitFor();
+                Integer pExitValue = process.exitValue();
+                logger.trace("exit Code: "+pExitValue);
+                exitValue += pExitValue; //How many transfers have been failed
+
+            } catch (IOException | InterruptedException e) {
+                e.printStackTrace();
+            }
+
+        }
+    return exitValue;
+    }
 }

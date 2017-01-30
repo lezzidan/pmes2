@@ -37,16 +37,18 @@ public class PMESservice {
     public ArrayList<String> createActivity(ArrayList<JobDefinition> jobDefinitions) {
         ArrayList<String> jobIds = new ArrayList<>(jobDefinitions.size());
         for (JobDefinition jobDef:jobDefinitions) {
-            Job newJob = null;
+            Job newJob;
+            logger.trace("Job Type: "+jobDef.getApp().getType());
             if (jobDef.getApp().getType().equals("COMPSs")){
                 newJob = new COMPSsJob();
             } else {
                 newJob = new SingleJob();
             }
             //** Create new job
-            //Job newJob = new Job();
             newJob.setUser(jobDef.getUser());
             newJob.setJobDef(jobDef);
+            newJob.setDataIn(jobDef.getInputPaths());
+            newJob.setDataOut(jobDef.getOutputPaths());
             logger.trace("JobDef "+jobDef.getCores().toString()+" "+jobDef.getMemory().toString());
 
             jobIds.add(newJob.getId());
@@ -92,7 +94,7 @@ public class PMESservice {
     }
 
     public ArrayList<JobStatus> getActivityStatus(ArrayList<String> jobids){
-        ArrayList<JobStatus> status = new ArrayList<JobStatus>(jobids.size());
+        ArrayList<JobStatus> status = new ArrayList<>(jobids.size());
         for (String id:jobids) {
             logger.trace("Asking status for job: "+id);
             Job job = this.jm.getJobs().get(id);
@@ -111,8 +113,21 @@ public class PMESservice {
     }
 
     public ArrayList<JobReport> getActivityReport(ArrayList<String> jobids){
-        // TODO: getActivityReport
-        return null;
+        ArrayList<JobReport> reports = new ArrayList<>(jobids.size());
+        for (String id:jobids) {
+            logger.trace("Asking Activity for job: "+id);
+            Job job = this.jm.getJobs().get(id);
+            if (job != null) {
+                logger.trace("Job Found");
+                JobReport jr = job.getReport();
+                reports.add(jr);
+            }
+            else {
+                logger.trace("Job not found");
+                reports.add(new JobReport());
+            }
+        }
+        return reports;
     }
 
     public SystemStatus getSystemStatus(){

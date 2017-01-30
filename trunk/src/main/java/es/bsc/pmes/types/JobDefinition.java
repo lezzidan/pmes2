@@ -1,5 +1,6 @@
 package es.bsc.pmes.types;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.UUID;
 
@@ -12,8 +13,10 @@ public class JobDefinition {
     private App app;
     private Image img;
     private User user;
-    private String inputPath;
-    private String outputPath;
+    /*private String inputPath;
+    private String outputPath;*/
+    private ArrayList<String> inputPaths;
+    private ArrayList<String> outputPaths;
     private Integer wallTime;
     private Integer numNodes;
     private Integer cores;
@@ -32,14 +35,16 @@ public class JobDefinition {
         this.app = null;
         this.img = null;
         this.user = null;
-        this.inputPath = "";
-        this.outputPath = "";
+        /*this.inputPath = "";
+        this.outputPath = "";*/
+        this.inputPaths = new ArrayList<String>();
+        this.outputPaths = new ArrayList<String>();
         this.wallTime = -1;
         this.numNodes = -1;
         this.cores = -1;
-        this.memory = new Float(-1.0);
-        this.disk = new Float(-1.0);
-        this.compss_flags = null;
+        this.memory = (float) -1.0;
+        this.disk = (float) -1.0;
+        this.compss_flags = new HashMap<String, String>();
         this.initialVMs = 0;
         this.minimumVMs = 0;
         this.maximumVMs = 1;
@@ -87,7 +92,7 @@ public class JobDefinition {
         this.user = user;
     }
 
-    public String getInputPath() {
+    /*public String getInputPath() {
         return inputPath;
     }
 
@@ -101,7 +106,7 @@ public class JobDefinition {
 
     public void setOutputPath(String outputPath) {
         this.outputPath = outputPath;
-    }
+    }*/
 
     public Integer getWallTime() {
         return wallTime;
@@ -185,4 +190,19 @@ public class JobDefinition {
     }
 
 
+    public ArrayList<String> getInputPaths() {
+        return inputPaths;
+    }
+
+    public void setInputPaths(ArrayList<String> inputPaths) {
+        this.inputPaths = inputPaths;
+    }
+
+    public ArrayList<String> getOutputPaths() {
+        return outputPaths;
+    }
+
+    public void setOutputPaths(ArrayList<String> outputPaths) {
+        this.outputPaths = outputPaths;
+    }
 }

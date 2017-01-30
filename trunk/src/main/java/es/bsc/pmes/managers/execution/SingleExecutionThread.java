@@ -37,6 +37,7 @@ public class SingleExecutionThread extends Thread implements ExecutionThread{
         if (this.process != null){
             this.process.destroy();
             logger.trace("Job cancelled: Execution stopped");
+            this.job.getReport().setJobOutputMessage("Job cancelled: Execution stopped");
             this.job.setStatus("CANCELLED");
         }
         //reset interrupted flag
@@ -51,7 +52,6 @@ public class SingleExecutionThread extends Thread implements ExecutionThread{
         }
         String Id = createResource();
         logger.trace("Resource created with Id: "+ Id);
-
 
         //StageIn
         if (job.getTerminate()){
@@ -76,6 +76,8 @@ public class SingleExecutionThread extends Thread implements ExecutionThread{
         ArrayList<String> cmd = new ArrayList<>();
         cmd.add("ssh");
         cmd.add(address);
+        cmd.add("bash");
+        cmd.add("-ic");
         cmd.add(target+"/./"+source);
         for (Object o : args.entrySet()) {
             Map.Entry pair = (Map.Entry) o;
@@ -102,7 +104,10 @@ public class SingleExecutionThread extends Thread implements ExecutionThread{
         }
 
         logger.trace("runnning");
+        long startTime = System.currentTimeMillis();
         Integer exitValue = executeCommand(command);
+        long endTime = System.currentTimeMillis()-startTime;
+        job.getReport().setElapsedTime(String.valueOf(endTime));
 
         logger.trace("exit code"+ exitValue);
         if (exitValue > 0){
@@ -122,6 +127,9 @@ public class SingleExecutionThread extends Thread implements ExecutionThread{
         //Destroy Resource
         logger.trace("Destroy resource");
         destroyResource(Id);
+
+        //Create Report
+        this.job.createReport();
     }
 
     public String createResource(){
@@ -152,12 +160,14 @@ public class SingleExecutionThread extends Thread implements ExecutionThread{
 
     public void stageIn(){
         logger.trace("Staging in");
-        //TODO: stageIN
+        Integer failedTransfers = this.job.stage(0);
+        logger.trace("Failed Transfers: "+failedTransfers.toString());
     }
 
     public void stageOut(){
         logger.trace("Staging out");
-        //TODO: stageOUT
+        Integer failedTransfers = this.job.stage(1);
+        logger.trace("Failed Transfers: "+failedTransfers.toString());
     }
 
     public void destroyResource(String Id){
@@ -199,6 +209,7 @@ public class SingleExecutionThread extends Thread implements ExecutionThread{
                 }
                 in.close();
                 logger.trace("out: " + outStr);
+                job.getReport().setJobOutputMessage(outStr);
 
                 //Error log
                 line = null;
@@ -208,11 +219,12 @@ public class SingleExecutionThread extends Thread implements ExecutionThread{
                 }
                 err.close();
                 logger.trace("err: " + errStr);
+                job.getReport().setJobErrorMessage(errStr);
 
                 this.process.waitFor();
                 exitValue = this.process.exitValue();
                 logger.trace("Exit Value "+String.valueOf(exitValue));
-                //return exitValue;
+                this.job.getReport().setExitValue(exitValue);
 
             } catch (IOException e) {
                 e.printStackTrace();

@@ -11,6 +11,7 @@ public class App {
     private String id;
     private String name;
     private HashMap<String, String> args;
+    private HashMap<String, String> outputs;
     private String target;
     private String source;
     private String type;
@@ -19,6 +20,7 @@ public class App {
         this.id = UUID.randomUUID().toString();
         this.name = "";
         this.args = new HashMap<>();
+        this.outputs = new HashMap<>();
         this.target = "/home/user/apps/";
         this.source = "";
         this.type = "";
@@ -27,6 +29,7 @@ public class App {
         this.id = UUID.randomUUID().toString();
         this.name = name;
         this.args = new HashMap<>();
+        this.outputs = new HashMap<>();
         this.target = "/home/user/apps/";
         this.source = "";
         this.type = "";
@@ -74,5 +77,13 @@ public class App {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public HashMap<String, String> getOutputs() {
+        return outputs;
+    }
+
+    public void setOutputs(HashMap<String, String> outputs) {
+        this.outputs = outputs;
     }
 }

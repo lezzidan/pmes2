@@ -70,41 +70,27 @@ public class SchedulerThread extends Thread{
 
     public void executeJob(Job job){
         //Create execution dir
-        String path = "/home/pmes/pmes/jobs/"+job.getJobDef().getJobName();
+        job.createExecutionDir();
+        /*String path = "/home/pmes/pmes/jobs/"+job.getJobDef().getJobName();
         File dir = new File(path);
         if (!dir.exists()) {
             boolean result = dir.mkdir();
             if (result){
                 logger.trace("Job execution directory created: "+path);
             }
-        }
+        }*/
 
         //Run job
-
-        //TODO: Test single or COMPSs Job
         ExecutionThread executor = null;
         if (job instanceof COMPSsJob){
+            logger.trace("COMPSs Job");
             executor = new COMPSsExecutionThread((COMPSsJob) job);
         } else {
+            logger.trace("Single Job");
             executor = new SingleExecutionThread((SingleJob) job);
         }
         this.tasks.put(job.getId(), executor);
         executor.start();
-
-        //OLD
-        /*COMPSsExecutionThread executor = new COMPSsExecutionThread(job);
-        executor.start();
-        try {
-            logger.trace("Waiting for execution to finish.");
-            executor.join();
-            if (!job.getStatus().equals("CANCELLED")){
-                job.setStatus("FINISHED");
-            }
-            logger.trace("Execution Finished");
-        } catch (Exception e){
-            job.setStatus("FAILED");
-            logger.trace("Interrupted execution");
-        }*/
     }
 
     public void stopJob(Job job){

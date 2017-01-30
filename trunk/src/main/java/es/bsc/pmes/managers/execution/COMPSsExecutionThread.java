@@ -21,7 +21,6 @@ import java.util.Map;
  * Created by scorella on 8/23/16.
  */
 public class COMPSsExecutionThread extends Thread implements ExecutionThread{
-    //private Job job;
     private COMPSsJob job;
     private InfrastructureManager im = InfrastructureManager.getInfrastructureManager();
     private static final Logger logger = LogManager.getLogger(COMPSsExecutionThread.class);
@@ -76,33 +75,30 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
 
         // Create command to execute
         ArrayList<String> cmd = new ArrayList<>();
-        /*cmd.add("ssh");
-        cmd.add(address);
-        cmd.add(target+"/./"+source);
-        for (Object o : args.entrySet()) {
-            Map.Entry pair = (Map.Entry) o;
-            cmd.add((String) pair.getValue());
-        }*/
-        //TODO if it's a COMPSs job...
         // BEGIN COMPSs
         cmd.add("ssh");
         cmd.add(address);
-        cmd.add("runcompss");
+        cmd.add("bash");
+        cmd.add("-ic");
+        String runcompss = "\"runcompss";
+        //TODO: test compss flags
         for (Object o: job.getJobDef().getCompss_flags().entrySet()){
             Map.Entry pair = (Map.Entry) o;
-            cmd.add((String) pair.getValue());
+            runcompss += (String) pair.getValue();
         }
         if (job.getJobDef().getApp().getSource().endsWith(".py")){
-            cmd.add("--lang=python");
-            cmd.add("--pythonpath="+target);
+            runcompss += " --lang=python";
+            runcompss += " --pythonpath="+target;
         } else {
-            cmd.add("--classpath="+target);
+            runcompss += " --classpath="+target;
         }
-        cmd.add(target+"/"+source);
+        runcompss += " "+target+"/"+source;
         for (Object o : args.entrySet()) {
             Map.Entry pair = (Map.Entry) o;
-            cmd.add((String) pair.getValue());
+            runcompss += " "+(String) pair.getValue();
         }
+        runcompss += "\"";
+        cmd.add(runcompss);
         //END COMPSs
 
         String[] command = new String[cmd.size()];
@@ -126,8 +122,12 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
         }
 
         logger.trace("runnning");
+        long startTime = System.currentTimeMillis();
         Integer exitValue = executeCommand(command);
+        long endTime = System.currentTimeMillis()-startTime;
+        job.getReport().setElapsedTime(String.valueOf(endTime));
 
+        logger.trace("Execution Time: "+String.valueOf(endTime));
         logger.trace("exit code"+ exitValue);
         if (exitValue > 0){
             if (exitValue == 143){
@@ -146,6 +146,9 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
         //Destroy Resource
         logger.trace("Destroy resource");
         destroyResource(Id);
+
+        //Create Report
+        this.job.createReport();
     }
 
     public String createResource(){
@@ -176,12 +179,14 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
 
     public void stageIn(){
         logger.trace("Staging in");
-        //TODO: stageIN
+        Integer failedTransfers = this.job.stage(0);
+        logger.trace("Failed Transfers: "+failedTransfers.toString());
     }
 
     public void stageOut(){
         logger.trace("Staging out");
-        //TODO: stageOUT
+        Integer failedTransfers = this.job.stage(1);
+        logger.trace("Failed Transfers: "+failedTransfers.toString());
     }
 
     public void destroyResource(String Id){
@@ -222,6 +227,7 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
                 }
                 in.close();
                 logger.trace("out: " + outStr);
+                job.getReport().setJobOutputMessage(outStr);
 
                 //Error log
                 line = null;
@@ -231,11 +237,12 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
                 }
                 err.close();
                 logger.trace("err: " + errStr);
+                job.getReport().setJobErrorMessage(errStr);
 
                 this.process.waitFor();
                 exitValue = this.process.exitValue();
                 logger.trace("Exit Value "+String.valueOf(exitValue));
-                //return exitValue;
+                this.job.getReport().setExitValue(exitValue);
 
             } catch (IOException e) {
                 e.printStackTrace();
