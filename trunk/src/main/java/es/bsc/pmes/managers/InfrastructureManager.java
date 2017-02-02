@@ -49,7 +49,7 @@ public class InfrastructureManager {
 
     private InfrastructureManager() {
         this.activeResources = new HashMap<>();
-        this.provider = "one"; //openNebula by default
+        this.provider = "ONE"; //openNebula by default
         this.systemStatus = new SystemStatus();
         this.auth_keys = new ArrayList<>();
         this.commands = "";
@@ -70,7 +70,7 @@ public class InfrastructureManager {
     public String createResource(HardwareDescription hd, SoftwareDescription sd, HashMap<String, String> prop){
         // TODO: revisar tipo salida
         logger.trace("Creating Resource");
-        if (Objects.equals("one", this.provider)) {
+        if (Objects.equals("ONE", this.provider)) {
             try {
                 rocciClient = new ROCCI(prop);
                 VirtualResource vr = (VirtualResource) rocciClient.create(hd, sd, prop);

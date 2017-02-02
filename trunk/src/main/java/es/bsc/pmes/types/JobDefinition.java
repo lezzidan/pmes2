@@ -15,6 +15,7 @@ public class JobDefinition {
     private User user;
     /*private String inputPath;
     private String outputPath;*/
+    private String mountPath;
     private ArrayList<String> inputPaths;
     private ArrayList<String> outputPaths;
     private Integer wallTime;
@@ -39,6 +40,7 @@ public class JobDefinition {
         this.outputPath = "";*/
         this.inputPaths = new ArrayList<String>();
         this.outputPaths = new ArrayList<String>();
+        this.mountPath = "";
         this.wallTime = -1;
         this.numNodes = -1;
         this.cores = -1;
@@ -91,22 +93,6 @@ public class JobDefinition {
     public void setUser(User user) {
         this.user = user;
     }
-
-    /*public String getInputPath() {
-        return inputPath;
-    }
-
-    public void setInputPath(String inputPath) {
-        this.inputPath = inputPath;
-    }
-
-    public String getOutputPath() {
-        return outputPath;
-    }
-
-    public void setOutputPath(String outputPath) {
-        this.outputPath = outputPath;
-    }*/
 
     public Integer getWallTime() {
         return wallTime;
@@ -204,5 +190,13 @@ public class JobDefinition {
 
     public void setOutputPaths(ArrayList<String> outputPaths) {
         this.outputPaths = outputPaths;
+    }
+
+    public String getMountPath() {
+        return mountPath;
+    }
+
+    public void setMountPath(String mountPath) {
+        this.mountPath = mountPath;
     }
 }
