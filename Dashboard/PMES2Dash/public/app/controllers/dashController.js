@@ -148,8 +148,9 @@ angular.module('pmes2')
             this.newJob.log = "";
             this.newJob.output = "";
             this.newJob.error = "";
-            this.newJob.inputPath = "/home/";
-            this.newJob.outputPath = "/home/";
+            this.newJob.inputPath = ["/home/pmes/pmes/test/hola.txt"]; //TODO: remove
+            this.newJob.outputPath = ["/home/pmes/testSimple/launch.sh"];
+            this.newJob.mountPath = "/home/";
 
             $http({
                 method: 'POST',
