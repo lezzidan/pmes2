@@ -62,8 +62,8 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
             job.setStatus("CANCELLED");
             return;
         }
-        logger.trace("Stage in");
-        stageIn();
+        //logger.trace("Stage in");
+        //stageIn();
 
         //Configure execution
         String resourceAddress = job.getResource(0).getIp(); //get master IP
@@ -111,6 +111,17 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        //StageIn
+        if (job.getTerminate()){
+            //Destroy VM if the user cancel the job.
+            logger.trace("Job cancelled: Destroying resource with Id: "+Id);
+            destroyResource(Id);
+            job.setStatus("CANCELLED");
+            return;
+        }
+        logger.trace("Stage in");
+        stageIn();
 
         //Run job
         if (job.getTerminate()){

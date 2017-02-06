@@ -49,7 +49,8 @@ public class PMESservice {
             newJob.setJobDef(jobDef);
             newJob.setDataIn(jobDef.getInputPaths());
             newJob.setDataOut(jobDef.getOutputPaths());
-            logger.trace("JobDef "+jobDef.getCores().toString()+" "+jobDef.getMemory().toString());
+            logger.trace("JobDef: "+jobDef.getInputPaths().toString()+" "+jobDef.getOutputPaths().toString());
+            logger.trace("newJob: "+newJob.getDataIn().toString()+" "+newJob.getDataOut().toString());
 
             jobIds.add(newJob.getId());
 

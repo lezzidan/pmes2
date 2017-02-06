@@ -168,7 +168,6 @@ public class Job {
             dataToTransfer = this.dataIn;
         }
         for (String path:dataToTransfer) {
-            //TODO Quiza el path no es absoluto
             logger.trace("Staging file: "+path);
             logger.trace("direction: "+direction.toString());
             ArrayList<String> cmd = new ArrayList<>();
@@ -176,11 +175,13 @@ public class Job {
             cmd.add("-r");
             if (direction == 0){
                 cmd.add(path);
-                cmd.add(address+":"+this.dirPath);
+                cmd.add(address+":/home/"+this.user.getUsername()+"/");
             } else {
                 cmd.add(address+":"+path);
                 cmd.add(this.dirPath);
             }
+
+            logger.trace("Command: "+cmd);
 
             String[] command = new String[cmd.size()];
             try {

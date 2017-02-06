@@ -53,16 +53,6 @@ public class SingleExecutionThread extends Thread implements ExecutionThread{
         String Id = createResource();
         logger.trace("Resource created with Id: "+ Id);
 
-        //StageIn
-        if (job.getTerminate()){
-            //Destroy VM if the user cancel the job.
-            logger.trace("Job cancelled: Destroying resource with Id: "+Id);
-            destroyResource(Id);
-            job.setStatus("CANCELLED");
-            return;
-        }
-        logger.trace("Stage in");
-        stageIn();
 
         //Configure execution
         String resourceAddress = job.getResource(0).getIp(); //get master IP
@@ -93,6 +83,17 @@ public class SingleExecutionThread extends Thread implements ExecutionThread{
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+
+        //StageIn
+        if (job.getTerminate()){
+            //Destroy VM if the user cancel the job.
+            logger.trace("Job cancelled: Destroying resource with Id: "+Id);
+            destroyResource(Id);
+            job.setStatus("CANCELLED");
+            return;
+        }
+        logger.trace("Stage in");
+        stageIn();
 
         //Run job
         if (job.getTerminate()){
