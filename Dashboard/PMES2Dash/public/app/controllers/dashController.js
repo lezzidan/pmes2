@@ -148,8 +148,8 @@ angular.module('pmes2')
             this.newJob.log = "";
             this.newJob.output = "";
             this.newJob.error = "";
-            this.newJob.inputPath = ["/home/pmes/pmes/test/hola.txt"]; //TODO: remove
-            this.newJob.outputPath = ["/home/pmes/testSimple/launch.sh"];
+            this.newJob.inputPaths = ["/home/pmes/pmes/test/hola.txt"]; //TODO: remove
+            this.newJob.outputPaths = ["/home/pmes/testSimple/launch.sh"];
             this.newJob.mountPath = "/home/";
 
             $http({
@@ -319,8 +319,9 @@ angular.module('pmes2')
                 "initialVMs": job.minimumVMs,
                 "memory": job.memory,
                 "cores": job.cores,
-                "inputPath": job.inputPath,
-                "outputPath": job.outputPath,
+                "inputPaths": job.inputPaths,
+                "outputPaths": job.outputPaths,
+                "mountPath":job.mountPath,
                 "numNodes": job.numNodes,
                 "user": {
                     "username": store.user.username,

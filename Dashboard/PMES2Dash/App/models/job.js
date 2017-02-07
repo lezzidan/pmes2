@@ -30,8 +30,9 @@ var jobSchema = mongoose.Schema({
     log: String,
     output: String,
     error: String,
-    inputPath: String,
-    outputPath: String,
+    inputPaths: [String],
+    outputPaths: [String],
+    mountPath: String,
     compss_flags: {
         lang: String,
         path: String,
