@@ -247,4 +247,56 @@
 ["31eb1268-b6bc-4be2-9fa9-f8a046b752db"]
 \end{lstlisting}
 
+\section{VM building}
+The image and the template should have the following permissions: Use and Manage for user, group and other.
+\subsection{PMES VM}
+Dependencies:
+\begin{itemize}
+
+ \item Rocci Client and RVM- \verb|{https://github.com/gwdg/rOCCI-cli; https://rvm.io/rvm/install#explained}|
+ \begin{lstlisting}
+ apt-get install ruby rubygems ruby-dev
+ curl -sSL https://get.rvm.io | bash -s stable
+ rvm requirements
+ rvm install 1.9.3
+ rvm use 1.9.3 --default
+ gem install occi-cli
+ \end{lstlisting}
+ \item move grid-security certificates to /etc/
+ \item tomcat7
+ \subitem change user to pmes:
+ \begin{verbatim}
+     sudo nano /etc/default/tomcat7
+     TOMCAT7_USER=pmes, TOMCAT7_GROUP=pmes
+ \end{verbatim}
+
+ \subitem change user to pmes 
+\texttt{ sudo nano /etc/init.d/tomcat7 } and change $TOMCAT7_USER=tomcat7, TOMCAT7_GROUP=tomcat7$
+ \subitem create environment \texttt{sudo nano /usr/share/tomcat7/bin/setenv.sh}
+ \begin{verbatim}
+  echo "setenv SETENV"
+export rvm_bin_path=/home/pmes/.rvm/bin
+export IRBRC=/home/pmes/.rvm/rubies/ruby-1.9.3-p551/.irbrc
+export MY_RUBY_HOME=/home/pmes/.rvm/rubies/ruby-1.9.3-p551
+export GEM_HOME=/home/pmes/.rvm/gems/ruby-1.9.3-p551
+export GEM_PATH=/home/pmes/.rvm/gems/ruby-1.9.3-p551:/home/pmes/.rvm/gems/ruby-1.9.3-p551@global
+export rvm_path=/home/pmes/.rvm
+export rvm_prefix=/home/pmes
+
+export PATH=/home/pmes/.rvm/gems/ruby-1.9.3-p551/bin:/home/pmes/.rvm/gems/ruby-1.9.3-p551@global/bin:/home/pmes/.rvm/rubies/ruby-1.9.3-p551/bin:/home/pmes/bin:/home/pmes/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/home/pmes/.rvm/bin
+
+env
+echo "setenv sale"
+
+ \end{verbatim}
+
+ 
+ \end{itemize}
+
+
+
+
+
+
+
 \end{document}

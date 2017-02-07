@@ -1,0 +1,140 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage{subcaption}
+
+%opening
+\title{Mount Shared Folders}
+\author{BSC - Workflows and Distributed Computing}
+
+\begin{document}
+
+\maketitle
+
+\section{Mount folders using NIS}
+\subsection{VM Configuration}
+\begin{enumerate}
+
+\item Install NIS and automount:
+\begin{verbatim}
+sudo su
+apt-get update
+apt-get install portmap nis
+apt-get install autofs
+\end{verbatim}
+\begin{enumerate}
+\item be sure that \texttt{nisdomainname} is \texttt{mmb.pcb.ub.es}
+\begin{verbatim}
+dpkg-reconfigure nis
+\end{verbatim}
+\end{enumerate}
+
+\item Configure NIS:
+\begin{enumerate}
+\item add the following lines to \texttt{/etc/yp.conf}
+\begin{verbatim}
+domain mmb.pcb.ub.es server 10.4.96.183
+domain mmb.pcb.ub.es server 10.4.96.184
+domain mmb.pcb.ub.es server 10.4.96.181
+domain mmb.pcb.ub.es server 10.4.96.182
+\end{verbatim}
+\item adapt \texttt{/etc/nsswitch.conf}
+\begin{verbatim}
+# /etc/nsswitch.conf
+#
+# Example configuration of GNU Name Service Switch functionality.
+# If you have the `glibc-doc-reference' and `info' packages installed, try:
+# `info libc "Name Service Switch"' for information about this file.
+passwd:         files nis
+group:          files nis
+shadow:         files nis
+gshadow:        files
+
+hosts:          files dns nis
+networks:       files
+
+protocols:      db files
+services:       db files
+ethers:         db files
+rpc:            db files
+
+netgroup:       nis
+
+automount:      nis
+\end{verbatim}
+\end{enumerate}
+
+\item Configure automount:
+\begin{enumerate}
+ \item create \texttt{/etc/auto.services} with the following line:
+\begin{verbatim}
++auto.services
+\end{verbatim}
+\item create \texttt{/etc/auto.homes} with the following line:
+\begin{verbatim}
++auto.homes
+\end{verbatim}
+\end{enumerate}
+
+\item \texttt{systemctl add-wants multi-user.target rpcbind.service}
+
+\item Restart services:
+\begin{verbatim}
+/etc/init.d/nis restart
+/etc/init.d/autofs restart
+\end{verbatim}
+
+\end{enumerate}
+
+\subsection{Write on mounted folders}
+\subsubsection{Home Directories}
+We can see where the home directories are using \texttt{ypcat passwd}. To have a home directory we need to create a link at \texttt{/usr/people/\$username} \\
+
+The MMB homes are at:
+\texttt{/orozco/homes/desktops/lcodo}
+
+The BSC homes are at:
+\texttt{/orozco/homes/servers/bsc/\$username}
+
+\subsubsection{Write}
+We can create a new user with the same \texttt{UID} and \texttt{GID}. Edit \texttt{/etc/passwd} and create the new user.\\
+
+Or we can use the user to write \texttt{su \$user}
+
+\section{Mount folders using CIFS}
+\subsection{VM Configuration}
+\begin{enumerate}
+\item Install CIFS:
+\begin{verbatim}
+sudo su
+apt-get install cifs-utils
+\end{verbatim}
+Configure cifs:
+
+ \item Create file \texttt{/etc/modprobe.d/cifs}
+ \begin{verbatim}
+  options cifs CIFSMaxBufSize=130048
+  options cifs cifs_min_rcv=64
+ \end{verbatim}
+ \item Execute \texttt{modprobe -r cifs}
+ \item Mount directory 
+ \begin{verbatim}
+  [ -d /transplant ] || mkdir -p /transplant
+  mount -t cifs //192.168.122.253/INBTransplant /transplant -o user=guest,
+  password=guestTransplant01,rsize=130048,sec=ntlmssp
+ \end{verbatim}
+\end{enumerate}
+\subsection{Write on mounted folder}
+\subsubsection{Home Directories}
+The BSC homes are at:
+\texttt{/data2/INB/transplant/\$username}
+\subsubsection{Write}
+Create a new user with the same \texttt{UID} and \texttt{GID}. Edit \texttt{/etc/passwd} and create the new user.\\
+Add a soft link to the folder 
+\begin{verbatim}
+ sudo useradd -m -d /home/$USERNAME -s /bin/bash --uid 306 --gid 306 $USERNAME
+ sudo mv /home/$USERNAME /tmp
+ sudo ln -s /transplant/testUser/test/ /home/test
+\end{verbatim}
+
+
+\end{document}
