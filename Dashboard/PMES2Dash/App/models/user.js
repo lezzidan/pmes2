@@ -12,7 +12,9 @@ var userSchema = mongoose.Schema({
     },
     credentials: {
         key: String,
-        pem: String
+        pem: String,
+        uid: String,
+        gid: String,
     },
     login : {
         local: {

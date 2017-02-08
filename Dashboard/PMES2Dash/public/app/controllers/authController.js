@@ -12,13 +12,13 @@ angular.module('pmes2')
         this.user.email = "";
         this.user.password = "";
         this.error = "";
-        storeAuth.userS = {
+        /*storeAuth.userS = {
             username: "scorella",
             credentials: {
                 key: "/home/pmes/certs/scorella_test.key",
                 pem: "/home/pmes/certs/scorella_test.pem"
             }
-        };
+        };*/
 
         this.login = function() {
             $http({

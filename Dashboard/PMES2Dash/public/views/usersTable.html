@@ -5,6 +5,8 @@
     <th>Authorized</th>
     <th>Key</th>
     <th>pem</th>
+    <th>uid</th>
+    <th>gid</th>
     <th>Local Email</th>
     <th>Google Email</th>
     <th>Action</th>
@@ -18,6 +20,8 @@
         <td><input type="checkbox" ng-disabled="!editU" value="x.authorized" ng-model="x.authorized"></td>
         <td><input type="text" value="x.credentials.key" ng-disabled="!editU" ng-model="x.credentials.key" size="10"></td>
         <td><input type="text" value="x.credentials.pem" ng-disabled="!editU" ng-model="x.credentials.pem" size="10"></td>
+        <td><input type="text" value="x.credentials.uid" ng-disabled="!editU" ng-model="x.credentials.uid" size="10"></td>
+        <td><input type="text" value="x.credentials.gid" ng-disabled="!editU" ng-model="x.credentials.gid" size="10"></td>
         <td>{{x.login.local.email}}</td>
         <td>{{x.login.google.email}}</td>
         <td><div class="btn-group" role="group" aria-label="...">

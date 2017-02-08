@@ -65,6 +65,8 @@ module.exports = function(passport) {
                         newUser.group = [];
                         newUser.credentials.key = "";
                         newUser.credentials.pem = "";
+                        newUser.credentials.uid = "";
+                        newUser.credentials.gid = "";
                         newUser.login.local.email = email;
                         newUser.login.local.password = newUser.generateHash(password);
                         newUser.authorized = false;
@@ -129,9 +131,11 @@ module.exports = function(passport) {
                         newUser.login.google.name  = profile.displayName;
                         newUser.login.google.email = profile.emails[0].value; // pull the first email
                         newUser.username = profile.emails[0].value.split("@")[0];
-                        newUser.group = ["test"];
+                        newUser.group = [];
                         newUser.credentials.key = "";
                         newUser.credentials.pem = "";
+                        newUser.credentials.uid = "";
+                        newUser.credentials.gid = "";
                         newUser.authorized = false;
                         // save the user
                         newUser.save(function(err) {

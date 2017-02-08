@@ -7,7 +7,7 @@ angular.module('pmes2')
     .controller('dashController', ['$state', '$http', function($state, $http) {
         var store = this;
         //TODO: clean user variables
-        store.user = {
+        /*store.user = {
             username: "scorella",
             credentials: {
                 key: "/home/pmes/certs/scorella_test.key",
@@ -18,9 +18,12 @@ angular.module('pmes2')
         store.admin = false;
         store.userS = {
             _id: "57f601522aa80824dc4f094e"
-        };
+        };*/
 
-        this.newApp = {args:[], user:"test"};
+        this.user = {};
+        this.userS = {_id:""};
+
+        this.newApp = {args:[], user:""};
         this.infoApp = {};
 
         this.arg = {};
@@ -83,6 +86,7 @@ angular.module('pmes2')
         //TODO: remove groups list from variables
         this.groups = [];
         this.Groups = ["test", "all"];
+
         this.getLog = function(){
             if(store.logFile == "log"){
                 store.readFile = {file:"/home/pmes/pmes/logs/log.txt"};

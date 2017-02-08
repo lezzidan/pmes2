@@ -7,42 +7,6 @@ var fs = require('fs');
 var async = require('async');
 var ObjectId = (require('mongoose').Types.ObjectId);
 
-var formatJob = function (job) {
-    console.log("Format Job "+job);
-    var resultArgs = job.app.args.reduce(function(map, obj){
-        map[obj.name] = obj.value;
-        return map;
-    }, {});
-    User.findOne({_id: job.user}, function(err, usr){
-        if(err){
-            console.log(err);
-        }
-        console.log("USER: "+usr);
-        var jobToSend = {
-            "jobName":job.jobName,
-            "wallTime": job.wallTime,
-            "minimumVMs": job.minimumVMs,
-            "maximumVMs": job.maximumVMs,
-            "limitVMs": job.maximumVMs,
-            "initialVMs": job.minimumVMs,
-            "memory": job.memory,
-            "cores": job.cores,
-            "inputPath": job.inputPath,
-            "outputPath": job.outputPath,
-            "numNodes": job.numNodes,
-            "user": usr,
-            "img": job.img,
-            "app": {
-                "name":job.app.name,
-                "target":job.app.target,
-                "source":job.app.source,
-                "args": resultArgs
-            }
-        };
-        console.log("jobToSend: "+jobToSend);
-        return jobToSend;
-    });
-};
 
 module.exports = function(app, passport) {
     /* Create new application */
@@ -206,6 +170,8 @@ module.exports = function(app, passport) {
                 usr.authorized = req.body.authorized;
                 usr.credentials.key = req.body.credentials.key;
                 usr.credentials.pem = req.body.credentials.pem;
+                usr.credentials.uid = req.body.credentials.uid;
+                usr.credentials.gid = req.body.credentials.gid;
                 console.log(req.body.group);
                 //for (var i=0; i < req.body.group.length; i++) {
                 var g = req.body.group[0];
@@ -292,7 +258,6 @@ module.exports = function(app, passport) {
     /* Get user */
     app.get('/dash/user', isLoggedIn, function(req, res, next) {
         console.log("REQ user"+req.user);
-        /*User.find({username:'scorella'},function(err, user){*/
         User.find({username: req.user.username},function(err, user){
             if(err){
                 console.log("user not found");
