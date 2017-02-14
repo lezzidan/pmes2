@@ -87,47 +87,7 @@ public class PMESserviceTest {
 
         testCreateActivity();*/
 
-        File fXML = new File("/home/bscuser/subversion/projects/pmes2/trunk/src/main/resources/config.xml");
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder = null;
-        try {
-            dBuilder = dbFactory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        }
-        Document doc = null;
-        try {
-            doc = dBuilder.parse(fXML);
-        } catch (SAXException e){
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
-        doc.getDocumentElement().normalize();
-        System.out.println("Root element :"+ doc.getDocumentElement().getNodeName());
-        System.out.println(doc.getDocumentElement().getChildNodes().getLength());
-        for (int i = 0; i < doc.getDocumentElement().getChildNodes().getLength(); i++){
-            Node c = doc.getDocumentElement().getChildNodes().item(i);
-            System.out.println(c.getNodeName());
-            System.out.println(c.getTextContent());
-
-        }
-        System.out.println(doc.getDocumentElement().getElementsByTagName("logLevel").item(0).getTextContent());
-        System.out.println(doc.getDocumentElement().getElementsByTagName("logPath").item(0).getTextContent());
-        System.out.println(doc.getDocumentElement().getElementsByTagName("ca-path").item(0).getTextContent());
-        System.out.println(doc.getDocumentElement().getElementsByTagName("auth").item(0).getTextContent());
-        System.out.println(doc.getDocumentElement().getElementsByTagName("endPointROCCI").item(0).getTextContent());
-        System.out.println(doc.getDocumentElement().getElementsByTagName("providerName").item(0).getAttributes().getNamedItem("Name").getTextContent());
-
-        ArrayList<String> auth_keys = new ArrayList<>();
-        NodeList keys = doc.getElementsByTagName("key");
-        for (int i = 0; i < keys.getLength(); i++){
-            Node node = keys.item(i);
-            String key = node.getTextContent();
-            System.out.println(key);
-
-        }
     }
 
 }

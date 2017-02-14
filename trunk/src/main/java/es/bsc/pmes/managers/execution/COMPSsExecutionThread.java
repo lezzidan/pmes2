@@ -20,11 +20,9 @@ import java.util.Map;
 /**
  * Created by scorella on 8/23/16.
  */
-public class COMPSsExecutionThread extends Thread implements ExecutionThread{
+public class COMPSsExecutionThread extends AbstractExecutionThread{
     private COMPSsJob job;
-    private InfrastructureManager im = InfrastructureManager.getInfrastructureManager();
     private static final Logger logger = LogManager.getLogger(COMPSsExecutionThread.class);
-    private Process process = null;
 
     public COMPSsExecutionThread(COMPSsJob job){
         this.job = job;
@@ -34,38 +32,25 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
         executeJob();
     }
 
-    public void cancel() throws Exception {
-        if (this.process != null){
-            this.process.destroy();
-            logger.trace("Job cancelled: Execution stopped");
-            this.job.setStatus("CANCELLED");
-        }
-        //reset interrupted flag
-        //Thread.currentThread().interrupt();
+    @Override
+    protected Job getJob() {
+        return job;
     }
 
+    @Override
     public void executeJob(){
         // Create Resource
-        if (job.getTerminate()){
-            job.setStatus("CANCELLED");
+        if (this.stopExecution("-1", Boolean.TRUE)){
             return;
         }
         String Id = createResource();
         logger.trace("Resource created with Id: "+ Id);
 
-
-        //StageIn
-        if (job.getTerminate()){
-            //Destroy VM if the user cancel the job.
-            logger.trace("Job cancelled: Destroying resource with Id: "+Id);
-            destroyResource(Id);
-            job.setStatus("CANCELLED");
+        //Configure execution
+        if (this.stopExecution(Id, Boolean.TRUE)){
             return;
         }
-        //logger.trace("Stage in");
-        //stageIn();
 
-        //Configure execution
         String resourceAddress = job.getResource(0).getIp(); //get master IP
         String user = job.getUser().getUsername();
         String address = user+"@"+resourceAddress;
@@ -75,7 +60,6 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
 
         // Create command to execute
         ArrayList<String> cmd = new ArrayList<>();
-        // BEGIN COMPSs
         cmd.add("ssh");
         cmd.add(address);
         cmd.add("bash");
@@ -99,7 +83,7 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
         }
         runcompss += "\"";
         cmd.add(runcompss);
-        //END COMPSs
+
 
         String[] command = new String[cmd.size()];
         job.setCmd(cmd.toArray(command));
@@ -113,22 +97,14 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
         }
 
         //StageIn
-        if (job.getTerminate()){
-            //Destroy VM if the user cancel the job.
-            logger.trace("Job cancelled: Destroying resource with Id: "+Id);
-            destroyResource(Id);
-            job.setStatus("CANCELLED");
+        if (this.stopExecution(Id, Boolean.TRUE)){
             return;
         }
         logger.trace("Stage in");
         stageIn();
 
         //Run job
-        if (job.getTerminate()){
-            //Destroy VM if the user cancel the job.
-            logger.trace("Job cancelled: Destroying resource with Id: "+Id);
-            destroyResource(Id);
-            job.setStatus("CANCELLED");
+        if (this.stopExecution(Id, Boolean.TRUE)){
             return;
         }
 
@@ -162,106 +138,8 @@ public class COMPSsExecutionThread extends Thread implements ExecutionThread{
         this.job.createReport();
     }
 
-    public String createResource(){
-        // Create Resource
-        // ** configure Resource Petition
-        logger.trace("Configuring Job " + job.getId());
-        // Configuring Hardware
-        HardwareDescription hd = new HardwareDescription();
-        hd.setMemorySize(job.getJobDef().getMemory());
-        hd.setTotalComputingUnits(job.getJobDef().getCores()*job.getJobDef().getNumNodes());
-        hd.setImageType(job.getJobDef().getImg().getImageType());
-        hd.setImageName(job.getJobDef().getImg().getImageName());
-
-        // Configure software
-        SoftwareDescription sd = new SoftwareDescription();
 
 
-        // Configure properties
-        HashMap<String, String> prop = this.im.configureResource(job.getJobDef());
 
-        //** create resource
-        logger.trace("Creating new Resource");
-        String Id = this.im.createResource(hd, sd, prop);
-        logger.trace("Resource Id " + Id);
-        job.addResource(this.im.getActiveResources().get(Id));
-        return Id;
-    }
 
-    public void stageIn(){
-        logger.trace("Staging in");
-        Integer failedTransfers = this.job.stage(0);
-        logger.trace("Failed Transfers: "+failedTransfers.toString());
-    }
-
-    public void stageOut(){
-        logger.trace("Staging out");
-        Integer failedTransfers = this.job.stage(1);
-        logger.trace("Failed Transfers: "+failedTransfers.toString());
-    }
-
-    public void destroyResource(String Id){
-        logger.trace("Deleting Resource");
-        this.im.destroyResource(Id);
-    }
-
-    public Integer executeCommand(String[] cmd){
-        Runtime runtime = Runtime.getRuntime();
-        Integer times = 3;
-        Integer exitValue = 1;
-        Integer i = 0;
-        while (i < times && exitValue != 0) {
-            logger.trace("Round "+String.valueOf(i));
-
-            if (i > 0){
-                //Wait until vm will be ready
-                try {
-                    Thread.sleep(60000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-            try {
-                this.process = runtime.exec(cmd);
-
-                BufferedReader in = new BufferedReader(new
-                        InputStreamReader(this.process.getInputStream()));
-
-                BufferedReader err = new BufferedReader(new
-                        InputStreamReader(this.process.getErrorStream()));
-
-                // Output log
-                String outStr = "";
-                String line = null;
-                while ((line = in.readLine()) != null) {
-                    outStr += line;
-                }
-                in.close();
-                logger.trace("out: " + outStr);
-                job.getReport().setJobOutputMessage(outStr);
-
-                //Error log
-                line = null;
-                String errStr = "";
-                while ((line = err.readLine()) != null) {
-                    errStr += line;
-                }
-                err.close();
-                logger.trace("err: " + errStr);
-                job.getReport().setJobErrorMessage(errStr);
-
-                this.process.waitFor();
-                exitValue = this.process.exitValue();
-                logger.trace("Exit Value "+String.valueOf(exitValue));
-                this.job.getReport().setExitValue(exitValue);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            i += 1;
-        }
-        return exitValue;
-    }
 }
