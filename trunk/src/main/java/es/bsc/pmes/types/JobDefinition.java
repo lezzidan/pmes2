@@ -36,8 +36,6 @@ public class JobDefinition {
         this.app = null;
         this.img = null;
         this.user = null;
-        /*this.inputPath = "";
-        this.outputPath = "";*/
         this.inputPaths = new ArrayList<String>();
         this.outputPaths = new ArrayList<String>();
         this.mountPath = "";

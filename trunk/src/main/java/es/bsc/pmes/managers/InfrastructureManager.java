@@ -42,7 +42,7 @@ public class InfrastructureManager {
     private String occiEndPoint;
     private String auth;
     private String ca_path;
-    private String commands;
+    private ArrayList<String> commands;
     private ArrayList<String> auth_keys;
 
     private static final Logger logger = LogManager.getLogger(InfrastructureManager.class);
@@ -52,7 +52,7 @@ public class InfrastructureManager {
         this.provider = "ONE"; //openNebula by default
         this.systemStatus = new SystemStatus();
         this.auth_keys = new ArrayList<>();
-        this.commands = "";
+        this.commands = new ArrayList<>();
         this.ca_path = "";
         this.occiEndPoint = "";
         try {
@@ -106,9 +106,6 @@ public class InfrastructureManager {
     public HashMap<String, String> configureResource(JobDefinition jobDef){
         HashMap<String, String> properties = new HashMap<>();
         // Default rocci server configuration
-        //properties.put("Server", "https://rocci-server.bsc.es:11443");
-        //properties.put("auth", "x509");
-        //properties.put("ca-path", "/etc/grid-security/certificates/");
         properties.put("Server", this.occiEndPoint);
         properties.put("auth", this.auth);
         properties.put("ca-path", this.ca_path);
@@ -128,33 +125,38 @@ public class InfrastructureManager {
     }
 
     public String createContextDataFile(JobDefinition jobDef){
-        //TODO: add shared folders
         logger.trace("Creating context data file");
         String dir = jobDef.getJobName();
         String path = "/home/pmes/pmes/jobs/"+dir+"/context.login";
         logger.trace("Creating context data file "+path);
         try {
             String user = jobDef.getUser().getUsername();
+            String gid = jobDef.getUser().getCredentials().get("gid");
+            String uid = jobDef.getUser().getCredentials().get("uid");
+            logger.trace("UID and GID: "+uid+" "+gid);
+            if (!uid.equals("306") || !gid.equals("306")){
+                uid = "306";
+                gid = "306";
+            }
             PrintWriter writer = new PrintWriter(path, "UTF-8");
             writer.println("#cloud-config");
-            writer.println("users:");
-            writer.println("  - name: "+user);
-            writer.println("    shell: /bin/bash");
-            writer.println("    sudo: ALL=(ALL) NOPASSWD:ALL");
-            writer.println("    lock-passwd: true");
-            writer.println("    ssh-import-id: "+user);
-            writer.println("    ssh-authorized-keys:");
-            writer.println("      - ssh-dss AAAAB3NzaC1kc3MAAACBAIVkG+P1XWkNHalfOI6dVD1xFb8RCqf8ItqyAa03saiEO+zlPdnxhq9gORfJ7DHgPJm5gKnN+vQ/o2cI9qJTH8eZH+2+6TQRym5IR+4bfPsOAeMnilaT2rzazcKW+GhSG08MPEYy3fuNJmEw6YLLGjV3hwgAai7tagnnfwTQXbjTAAAAFQCpvcG9XETb0PUbJwNPUNQXlWeEYwAAAIBwAV/JPdmaTRehPlm/mTRqLnPahsWjM4fMLCKXcm4a0veZJIjcPrdHamVP1r+GGflzuv3z0LDuAv/TO5kUf/cyKX6Fz8N1jhdSFZ19XvD9ix1HdzmeD2kebpACy6R2/VSg16KFO9sSDGn3T/DQ6hg6qJ9YXaXqJ2c8hzIZYdG5YQAAAIAvBfLuIDbvPkdQeEk7+V5b67IJvIiN+CGaLNQoLuklWB9jJ7IhHS/ZP9hMNW6KGaVJZibFfvJ7mdcdkkszpI8ysILSktx9jp7ZFQFXf0Q1mm63M/NltA/TUqSyHqVtbfzVRS99lpC/kL1BymskouN8BM7pioeD/HD5uRysDK7fng== scorella@bsccv02");
-            writer.println("      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDXDr8kPXCU68flTbPBtuTb9TnAoHcUsrMKgUEXOoz0hAbP5R9R6AvDNpzsOmkXvC2lnNwSSnXkDdb3cuJ+Oe4irxkzYPyoDq/O7N02xkq2btQbxWCxYf2h+2oLJrLC1XrnAI1cOx3MsIuW57/12jWv35yS0DLacWn9XIIMsRy6ERDn8SSWjBzDpAZIeZZ3D412kAbbS1tBS0s/pAlb0yUTXo6T5peTX4BgI2z4+i3RdedAXPrjkUknTn7xUpaB29v5xGjUcoDmcpiwzhLwiMnPrHLVE8zRWegmfHakwKBDdsUYTHFRWl+/UneoWevJaqYG+ivb5nV4HhVyo5zAVjOV pmes@pmes2");
-            //TODO add keys
-            //TODO add cmd
-            writer.println("runcmd:");
-            writer.println("  - [sudo, -u, "+user+", ssh-keygen, -f, /home/"+user+"/.ssh/id_rsa, -t, rsa, -N, \'\']" );
+            writer.println("bootcmd:");
+            writer.println("  - sudo groupadd -g "+gid+" transplant");
+            writer.println("  - sudo useradd -m -d /home/"+user+" -s /bin/bash --uid "+uid+" --gid "+gid+" -G root "+user);
+            writer.println("  - sudo mkdir -p /transplant");
+            writer.println("  - sudo mount -t cifs //192.168.122.253/INBTransplant /transplant -o user=guest,password=guestTransplant01,rsize=130048,sec=ntlmssp");
+            writer.println("  - sudo -u "+user+" ssh-keygen -f /home/"+user+"/.ssh/id_rsa -t rsa -N \'\'" );
             writer.println("  - cat /home/"+user+"/.ssh/id_rsa.pub >> /home/"+user+"/.ssh/authorized_keys");
             writer.println("  - echo \"export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64\" >> /home/"+user+"/.bashrc");
-            writer.println("  - echo \" export PATH=$PATH:/opt/COMPSs/Runtime/scripts/user:/opt/COMPSs/Bindings/c/bin\" >> /home/"+user+"/.bashrc");
-            //TODO uncomment for COMPSs 2.0
-            //writer.println("  - [echo, \"source /opt/COMPSs/compssenv\", >>, ~/.bashrc]" );
+            writer.println("  - echo \"export PATH=$PATH:/opt/COMPSs/Runtime/scripts/user:/opt/COMPSs/Bindings/c/bin\" >> /home/"+user+"/.bashrc");
+            //writer.println("  - [echo, \"source /opt/COMPSs/compssenv\", >>, ~/.bashrc]" ); //COMPSs 2.0
+            for (String cmd: this.commands) {
+                writer.println("  - "+cmd);
+            }
+            for (String key:this.auth_keys) {
+                writer.println("  - echo \""+key+"\" >> /home/"+user+"/.ssh/authorized_keys");
+            }
+            writer.println("output: {all: '| tee -a /var/log/cloud-init-output.log'}");
             writer.close();
         } catch (FileNotFoundException | UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -197,7 +199,6 @@ public class InfrastructureManager {
 
         this.provider = doc.getDocumentElement().getElementsByTagName("providerName").item(0).getAttributes().getNamedItem("Name").getTextContent();
 
-        this.commands = doc.getDocumentElement().getElementsByTagName("runCmd").item(0).getTextContent();
 
         NodeList nlist = doc.getElementsByTagName("host");
         for (int i = 0; i < nlist.getLength(); i++){
@@ -216,6 +217,13 @@ public class InfrastructureManager {
         for (int i = 0; i < keys.getLength(); i++){
             Node node = keys.item(i);
             this.auth_keys.add(node.getTextContent());
+        }
+
+        //this.commands = doc.getDocumentElement().getElementsByTagName("runCmd").item(0).getTextContent();
+        NodeList cmds = doc.getElementsByTagName("cmd");
+        for (int i = 0; i < cmds.getLength(); i++){
+            Node node = cmds.item(i);
+            this.commands.add(node.getTextContent());
         }
     }
 
