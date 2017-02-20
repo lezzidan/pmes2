@@ -13,8 +13,6 @@ public class JobDefinition {
     private App app;
     private Image img;
     private User user;
-    /*private String inputPath;
-    private String outputPath;*/
     private String mountPath;
     private ArrayList<String> inputPaths;
     private ArrayList<String> outputPaths;

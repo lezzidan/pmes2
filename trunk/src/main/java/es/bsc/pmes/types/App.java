@@ -21,7 +21,7 @@ public class App {
         this.name = "";
         this.args = new HashMap<>();
         this.outputs = new HashMap<>();
-        this.target = "/home/user/apps/";
+        this.target = "";
         this.source = "";
         this.type = "";
     }
@@ -30,7 +30,7 @@ public class App {
         this.name = name;
         this.args = new HashMap<>();
         this.outputs = new HashMap<>();
-        this.target = "/home/user/apps/";
+        this.target = "";
         this.source = "";
         this.type = "";
     }

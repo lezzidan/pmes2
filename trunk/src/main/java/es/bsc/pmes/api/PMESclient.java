@@ -32,7 +32,7 @@ public class PMESclient {
      * @param address
      */
     public PMESclient(String address){
-        this.pmesService = new PMESservice();
+        pmesService = new PMESservice();
         this.address = address;
         logger.trace("New PMESclient created with address "+this.address);
     }
@@ -41,7 +41,7 @@ public class PMESclient {
      * Instantiates a new PMES client.
      */
     public PMESclient(){
-        this.pmesService = new PMESservice();
+        pmesService = new PMESservice();
         this.address = "";
         logger.trace("New PMESclient created");
     }
@@ -80,7 +80,7 @@ public class PMESclient {
     @Consumes("application/json")
     @Produces("application/json")
     public ArrayList<String> createActivity(ArrayList<JobDefinition> jobDefinitions){
-        ArrayList<String> jobIds = this.pmesService.createActivity(jobDefinitions);
+        ArrayList<String> jobIds = pmesService.createActivity(jobDefinitions);
         logger.trace("Jobs created: "+jobIds.toString());
         return jobIds;
     }
@@ -97,7 +97,7 @@ public class PMESclient {
     @Consumes("application/json")
     @Produces("application/json")
     public ArrayList<JobStatus> getActivityStatus(ArrayList<String> jobids){
-        ArrayList<JobStatus> jobStatuses = this.pmesService.getActivityStatus(jobids);
+        ArrayList<JobStatus> jobStatuses = pmesService.getActivityStatus(jobids);
         return jobStatuses;
     }
 
@@ -114,7 +114,7 @@ public class PMESclient {
     @Consumes("application/json")
     @Produces("application/json")
     public ArrayList<JobReport> getActivityReport(ArrayList<String> jobids){
-        ArrayList<JobReport> jobReports = this.pmesService.getActivityReport(jobids);
+        ArrayList<JobReport> jobReports = pmesService.getActivityReport(jobids);
         return jobReports;
     }
 
@@ -128,7 +128,7 @@ public class PMESclient {
     @Consumes("application/json")
     @Produces("application/json")
     public ArrayList<String> terminateActivity(ArrayList<String> jobIds){
-        ArrayList<String> terminateMessages = this.pmesService.terminateActivity(jobIds);
+        ArrayList<String> terminateMessages = pmesService.terminateActivity(jobIds);
         return terminateMessages;
     }
 
@@ -140,7 +140,7 @@ public class PMESclient {
     @Path("/getSystemStatus")
     @Produces("application/json")
     public SystemStatus getSystemStatus(){
-        SystemStatus systemStatus = this.pmesService.getSystemStatus();
+        SystemStatus systemStatus = pmesService.getSystemStatus();
         return systemStatus;
     }
 
@@ -160,7 +160,7 @@ public class PMESclient {
     @Produces("text/plain")
     public String pending(){
         logger.trace("Starting PMES client at "+this.address);
-        Integer size = this.pmesService.getJm().getJobs().size();
+        Integer size = pmesService.getJm().getJobs().size();
         return size.toString();
     }
 

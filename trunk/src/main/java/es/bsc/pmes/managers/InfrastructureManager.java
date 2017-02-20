@@ -219,7 +219,6 @@ public class InfrastructureManager {
             this.auth_keys.add(node.getTextContent());
         }
 
-        //this.commands = doc.getDocumentElement().getElementsByTagName("runCmd").item(0).getTextContent();
         NodeList cmds = doc.getElementsByTagName("cmd");
         for (int i = 0; i < cmds.getLength(); i++){
             Node node = cmds.item(i);

@@ -37,10 +37,10 @@ public class Job {
     public Job() {
         this.id = UUID.randomUUID().toString();
         this.status = JobStatus.PENDING;
-        this.resources = new ArrayList<Resource>();
+        this.resources = new ArrayList<>();
         this.user = null;
-        this.dataIn = new ArrayList<String>();
-        this.dataOut = new ArrayList<String>();
+        this.dataIn = new ArrayList<>();
+        this.dataOut = new ArrayList<>();
         this.cmd = new String[]{};
         this.jobDef = null;
         this.terminate = Boolean.FALSE;
@@ -132,9 +132,36 @@ public class Job {
     }
 
     public void createReport() {
-        //TODO write report
         try (PrintWriter writer = new PrintWriter(this.dirPath + "/report.txt", "UTF-8")) {
             writer.println("Job Report");
+            writer.println("---- Job Definition ----");
+            writer.println("Job Name: "+this.jobDef.getJobName());
+            writer.println("App: "+this.jobDef.getApp().getName());
+            writer.println("- Target: "+this.jobDef.getApp().getTarget());
+            writer.println("- Source: "+this.jobDef.getApp().getSource());
+            writer.println("- Type: "+this.jobDef.getApp().getType());
+            writer.println("Image: "+this.jobDef.getImg().getImageName());
+            writer.println("User: "+this.jobDef.getUser().getUsername());
+            writer.println("- UID: "+this.jobDef.getUser().getCredentials().get("uid"));
+            writer.println("- GID: "+this.jobDef.getUser().getCredentials().get("gid"));
+            writer.println("Mount Path: "+this.jobDef.getMountPath());
+            writer.println("Input Files: "+this.jobDef.getInputPaths().toString());
+            writer.println("Output Files: "+this.jobDef.getOutputPaths().toString());
+            writer.println("Wall Clock time: "+this.jobDef.getWallTime());
+            writer.println("Number of Nodes: "+this.jobDef.getNumNodes());
+            writer.println("Number of Cores: "+this.jobDef.getCores());
+            writer.println("Memory: "+this.jobDef.getMemory());
+            writer.println("Disk: "+this.jobDef.getDisk());
+            writer.println("COMPSs Flags: "+this.jobDef.getCompss_flags().toString());
+            writer.println("InitialVMs: "+this.jobDef.getInitialVMs());
+            writer.println("Number of VMs: ["+this.jobDef.getMinimumVMs()+", "+this.jobDef.getMaximumVMs());
+            writer.println("---- Job Execution -----");
+            writer.println("Job Status: "+String.valueOf(this.report.getJobStatus()));
+            writer.println("Exit value: "+this.report.getExitValue());
+            writer.println("Elapsed Time: "+this.report.getElapsedTime());
+            writer.println("---- Job Out/Err -------");
+            writer.println("OUT: "+this.report.getJobOutputMessage());
+            writer.println("ERR: "+this.report.getJobErrorMessage());
             writer.close();
         } catch (FileNotFoundException | UnsupportedEncodingException e) {
             e.printStackTrace();
