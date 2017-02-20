@@ -48,6 +48,21 @@ angular.module('pmes2')
         this.readFile = "";
         this.logFiles = ["log", "out", "err"];
         this.logData ="";
+        this.activityReport = {};
+        /*this.activityReport = {
+            jobDefinition: {
+                jobName: "HelloWorldSimple_58985f34e26a515d1e6db86f",
+                app: {
+                    name: "Hello",
+                    args: {"arg2": "yrtyrt", "arg1": "ytrytr"}
+                }
+            },
+            jobOutputMessage:"SIMPLE APP ____________________Mon Feb  6 12:37:56 CET 2017__________ip-192-168-122-13__________admin__________/home/admin__________","jobErrorMessage":"Warning: Permanently added '192.168.122.13' (ECDSA) to the list of known hosts.bash: cannot set terminal process group (-1): Inappropriate ioctl for devicebash: no job control in this shell",
+            jobStatus:"FINISHED",
+            elapsedTime:"542",
+            exitValue:"0"
+
+        };*/
 
         this.selectedJob = {};
         this.selectedJobs = [];
@@ -83,17 +98,16 @@ angular.module('pmes2')
             }
         };
 
-        //TODO: remove groups list from variables
         this.groups = [];
-        this.Groups = ["test", "all"];
 
         this.getLog = function(){
+            var name = store.activityReport.jobDefinition.jobName;
             if(store.logFile == "log"){
-                store.readFile = {file:"/home/pmes/pmes/logs/log.txt"};
+                store.readFile = {file:"/home/pmes/pmes/jobs/"+name+"/report.txt"};
             } else if(store.logFile == "err"){
-                store.readFile = {file:"/home/pmes/pmes/logs/err.txt"};
+                store.readFile = {file:"/home/pmes/pmes/jobs/"+name+"/err.txt"};
             } else {
-                store.readFile = {file:"/home/pmes/pmes/logs/out.txt"};
+                store.readFile = {file:"/home/pmes/pmes/jobs/"+name+"/out.txt"};
             }
             $http({
                 method: 'POST',
@@ -516,6 +530,7 @@ angular.module('pmes2')
                     //store.selectedJobs = [];
                     //store.getJobsList();
                     console.log(data);
+                    store.activityReport = data;
                 }, function(error) {
                     store.error = 'Get Activity status error '+error.data.error;
                 }

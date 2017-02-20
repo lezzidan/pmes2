@@ -1,5 +1,51 @@
 <form>
     <div class="row">
+        <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="form-group">
+                <label for="jobName">jobName</label>
+                <input type="text" class="form-control" id="jobName" ng-value="dashCtrl.activityReport.jobDefinition.jobName">
+            </div>
+            <div class="form-group">
+                <label for="appName">App</label>
+                <input type="text" class="form-control" id="appName" ng-value="dashCtrl.activityReport.jobDefinition.app.name">
+            </div>
+            <div class="form-group">
+                <label>Arguments</label>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Value</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="arg in dashCtrl.activityReport.jobDefinition.app.args">
+                        <td><label for="value"><input type="text" id="value" size="10" ng-value="arg"></label></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-6 col-lg-6">
+            <div class="form-group">
+                <label for="outMsg">Output Message</label>
+                <input type="text" class="form-control" id="outMsg" ng-value="dashCtrl.activityReport.jobOutputMessage">
+            </div>
+            <div class="form-group">
+                <label for="jobStatus">Job Status</label>
+                <input type="text" class="form-control" id="jobStatus" ng-value="dashCtrl.activityReport.jobStatus">
+            </div>
+            <div class="form-group">
+                <label for="elapsedTime">Elapsed Time</label>
+                <input type="text" class="form-control" id="elapsedTime" ng-value="dashCtrl.activityReport.elapsedTime">
+            </div>
+            <div class="form-group">
+                <label for="exitValue">Exit Value</label>
+                <input type="text" class="form-control" id="exitValue" ng-value="dashCtrl.activityReport.exitValue">
+            </div>
+        </div>
+         {{dashCtrl.activityReport}}
+    </div>
+    <div class="row">
         <div class="col-sm-12 col-md-12 col-lg-12">
             <div class="form-group">
                 <label for="log">File</label>
