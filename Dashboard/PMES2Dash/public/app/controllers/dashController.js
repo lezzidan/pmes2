@@ -529,8 +529,8 @@ angular.module('pmes2')
                     store.error = null;
                     //store.selectedJobs = [];
                     //store.getJobsList();
-                    console.log(data);
-                    store.activityReport = data;
+                    console.log(data.data[0]);
+                    store.activityReport = data.data[0];
                 }, function(error) {
                     store.error = 'Get Activity status error '+error.data.error;
                 }
