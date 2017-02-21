@@ -100,31 +100,34 @@ angular.module('pmes2')
 
         this.groups = [];
 
-        this.getLog = function(){
-            var name = store.activityReport.jobDefinition.jobName;
+        this.getLog = function(name){
+            //var name = store.activityReport.jobDefinition.jobName;
             if(store.logFile == "log"){
                 store.readFile = {file:"/home/pmes/pmes/jobs/"+name+"/report.txt"};
+                $http({
+                    method: 'POST',
+                    url: 'dash/log',
+                    data: this.readFile
+                }).then(
+                    function(data) {
+                        store.logData = data.data;
+                        store.error = null;
+                        document.getElementById("logData").value = store.logData;
+                    },
+                    function(error) {
+                        store.logData = "Error";
+                        store.error = 'HA FALLADO: '+error.data.error;
+                        document.getElementById("logData").value = store.logData;
+                    }
+                );
             } else if(store.logFile == "err"){
-                store.readFile = {file:"/home/pmes/pmes/jobs/"+name+"/err.txt"};
+                //store.readFile = {file:"/home/pmes/pmes/jobs/"+name+"/err.txt"};
+                store.logData = store.activityReport.jobErrorMessage;
             } else {
-                store.readFile = {file:"/home/pmes/pmes/jobs/"+name+"/out.txt"};
+                //store.readFile = {file:"/home/pmes/pmes/jobs/"+name+"/out.txt"};
+                store.logData = store.activityReport.jobOutputMessage;
             }
-            $http({
-                method: 'POST',
-                url: 'dash/log',
-                data: this.readFile
-            }).then(
-                function(data) {
-                    store.logData = data.data;
-                    store.error = null;
-                    document.getElementById("logData").value = store.logData;
-                },
-                function(error) {
-                    store.logData = "Error";
-                    store.error = 'HA FALLADO: '+error.data.error;
-                    document.getElementById("logData").value = store.logData;
-                }
-            );
+
 
         };
 

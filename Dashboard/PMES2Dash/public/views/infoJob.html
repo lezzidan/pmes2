@@ -44,7 +44,7 @@
         <div class="col-sm-12 col-md-12 col-lg-12">
             <div class="form-group">
                 <label for="log">File</label>
-                <select type="file" id="log" class="form-control" ng-change="dashCtrl.getLog()" ng-options="file for file in dashCtrl.logFiles" ng-model="dashCtrl.logFile">
+                <select type="file" id="log" class="form-control" ng-change="dashCtrl.getLog(dashCtrl.activityReport.jobDefinition.jobName)" ng-options="file for file in dashCtrl.logFiles" ng-model="dashCtrl.logFile">
                 </select>
             </div>
             <div class="form-group">
