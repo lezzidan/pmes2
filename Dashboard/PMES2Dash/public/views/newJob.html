@@ -17,9 +17,55 @@
                     </thead>
                     <tbody>
                         <tr ng-repeat="arg in dashCtrl.newJob.appVal.args">
-                            <td><label>{{arg.name}}</label></td>
-                            <td><label for="value"><input type="text" id="value" size="10" placeholder="{{arg.defaultV}}" ng-init="arg.defaultV" ng-model="arg.value"></label></td>
+                            <td ng-show="arg.file != true"><label>{{arg.name}}</label></td>
+                            <td ng-show="arg.file != true"><label for="value"><input type="text" id="value" size="10" placeholder="{{arg.defaultV}}" ng-init="arg.defaultV" ng-model="arg.value"></label></td>
                         </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="form-group">
+                <label>Inputs</label>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Path</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="arg in dashCtrl.newJob.appVal.args">
+                        <td ng-show="arg.file"><label>{{arg.name}}</label></td>
+                        <td ng-show="arg.file"><label for="value"><input type="text" size="10" placeholder="{{arg.defaultV}}" ng-init="arg.defaultV" ng-model="arg.value"></label></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="form-group">
+                <label>Outputs</label>
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Path</th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr ng-repeat="out in dashCtrl.newJob.outputPaths">
+                        <td>{{out}}</td>
+                        <td>
+                            <div class="btn-group" role="group" aria-label="...">
+                                <a ng-click="dashCtrl.removeInOut(out, true)" class="btn btn-danger" role="button"><span class="glyphicon glyphicon-trash" aria-hidden="true" ></span></a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><label for="pout"><input type="text" id="pout" size="10" ng-model="dashCtrl.out"></label></td>
+                        <td>
+                            <div class="btn-group" role="group" aria-label="...">
+                                <a ng-click="dashCtrl.addINOut(dashCtrl.out, true)" class="btn btn-success" role="button"><span class="glyphicon glyphicon-plus" aria-hidden="true" ></span></a>
+                            </div>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
@@ -47,38 +93,47 @@
                 <label for="description">Description</label>
                 <textarea class="form-control" rows="3" id="description" ng-model="dashCtrl.newJob.description"></textarea>
             </div>
+
+            <div class="form-group">
+                <label for="mountPath">MountPath</label>
+                <input type="text" class="form-control" id="mountPath" ng-model="dashCtrl.newJob.mountPath">
+            </div>
+
+
             <div class="row">
                 <div class="col-sm-6 col-md-6 col-lg-6">
                     <div class="form-group">
                         <label for="time">Wall Clock Time (min)</label>
-                        <input type="number" class="form-control" id="time" value="15" step="5" ng-model="dashCtrl.newJob.wallTime">
+                        <input type="number" class="form-control" id="time" ng-value="15.0" step="5" ng-model="dashCtrl.newJob.wallTime">
                     </div>
                     <div class="form-group">
                         <label for="memory">Memory (GB)</label>
-                        <input type="number" class="form-control" id="memory" value="1.0" ng-model="dashCtrl.newJob.memory">
+                        <input type="number" class="form-control" id="memory" ng-value="1.0" ng-model="dashCtrl.newJob.memory">
                     </div>
                     <div class="form-group">
                         <label for="minvm">Min VMs</label>
-                        <input type="number" class="form-control" id="minvm" value="1.0" ng-model="dashCtrl.newJob.minimumVMs">
+                        <input type="number" class="form-control" id="minvm" ng-value="1.0" ng-model="dashCtrl.newJob.minimumVMs">
 
                     </div>
                 </div>
                 <div class="col-sm-6 col-md-6 col-lg-6">
                     <div class="form-group">
                         <label for="core">Cores</label>
-                        <input type="number" class="form-control" id="core" value="1" ng-model="dashCtrl.newJob.cores">
+                        <input type="number" class="form-control" id="core" ng-value="1.0" ng-model="dashCtrl.newJob.cores">
                     </div>
                     <div class="form-group">
                         <label for="disk">Disk Size (GB)</label>
-                        <input type="number" class="form-control" id="disk" value="1.0" ng-model="dashCtrl.newJob.disk">
+                        <input type="number" class="form-control" id="disk" ng-value="1.0" ng-model="dashCtrl.newJob.disk">
                     </div>
                     <div class="form-group">
                         <label for="maxvm">Max VMs</label>
-                        <input type="number" class="form-control" id="maxvm" value="1.0" ng-model="dashCtrl.newJob.maximumVMs">
+                        <input type="number" class="form-control" id="maxvm" ng-value="1.0" ng-model="dashCtrl.newJob.maximumVMs">
                     </div>
                 </div>
+
             </div>
         </div>
+
     </div>
     <div class="row">
         {{ dashCtrl.error }}

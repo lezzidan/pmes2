@@ -27,10 +27,15 @@ angular.module('pmes2')
         this.infoApp = {};
 
         this.arg = {};
+        this.out = "";
+        this.in = "";
 
         this.newJob = {};
         this.newJob.app = {};
         this.newJob.img = {};
+        this.newJob.outputPaths = [];
+        this.newJob.inputPaths = [];
+        this.newJob.mountPath = "";
         this.infoJob = {};
 
         this.newStorage = {};
@@ -159,8 +164,8 @@ angular.module('pmes2')
             this.newJob.user = store.userS._id;
             this.newJob.img.imageName = this.newJob.appVal.image;
             this.newJob.img.imageType = 'small';
-            this.newJob.submitted = new Date().toJSON().slice(0,10);
-            this.newJob.finished = new Date().toJSON().slice(0,10);
+            this.newJob.submitted = new Date().toLocaleString();//new Date().toJSON().slice(0,10);
+            this.newJob.finished = new Date().toLocaleString();//new Date().toJSON().slice(0,10);
             this.newJob.duration = 0;
             this.newJob.errorMessage = "";
             this.newJob.numNodes = "1";
@@ -169,9 +174,15 @@ angular.module('pmes2')
             this.newJob.log = "";
             this.newJob.output = "";
             this.newJob.error = "";
-            this.newJob.inputPaths = ["/home/pmes/pmes/test/hola.txt"]; //TODO: remove
-            this.newJob.outputPaths = ["/home/pmes/testSimple/launch.sh"];
-            this.newJob.mountPath = "/home/";
+            this.newJob.inputPaths = [];
+            for (var i=0; i < store.newJob.appVal.args.length; i++){
+                if (store.newJob.appVal.args[i].file){
+                    this.newJob.inputPaths.push(store.newJob.appVal.args[i].value);
+                }
+            }
+            //this.newJob.inputPaths = ["/home/pmes/pmes/test/hola.txt"]; //TODO: remove
+            //this.newJob.outputPaths = ["/home/pmes/testSimple/launch.sh"];
+            //this.newJob.mountPath = "/home/";
 
             $http({
                 method: 'POST',
@@ -551,6 +562,33 @@ angular.module('pmes2')
             var newArg = {name:arg.name, defaultV:arg.defaultV, prefix:arg.prefix, file:arg.file, optional:arg.optional}
             this.newApp.args.push(newArg);
             store.arg = null;
+        };
+
+        this.addINOut = function(path, direction){
+            if (direction) {
+                this.newJob.outputPaths.push(path);
+                this.out = "";
+            }
+            else {
+                this.newJob.inputPaths.push(path);
+                this.in = "";
+            }
+
+        };
+
+        this.removeInOut = function(path, direction){
+            if (direction) {
+                var idx = this.newJob.outputPaths.indexOf(index);
+                if (idx > -1){
+                    this.newJob.outputPaths.splice(idx, 1);
+                }
+            }
+            else {
+                var idx = this.newJob.inputPaths.indexOf(index);
+                if (idx > -1){
+                    this.newJob.inputPaths.splice(idx, 1);
+                }
+            }
         };
 
         this.collectChecked = function(job) {
