@@ -154,7 +154,7 @@ public class Job {
             writer.println("Disk: "+this.jobDef.getDisk());
             writer.println("COMPSs Flags: "+this.jobDef.getCompss_flags().toString());
             writer.println("InitialVMs: "+this.jobDef.getInitialVMs());
-            writer.println("Number of VMs: ["+this.jobDef.getMinimumVMs()+", "+this.jobDef.getMaximumVMs());
+            writer.println("Number of VMs: ["+this.jobDef.getMinimumVMs()+", "+this.jobDef.getMaximumVMs()+"]");
             writer.println("---- Job Execution -----");
             writer.println("Job Status: "+String.valueOf(this.report.getJobStatus()));
             writer.println("Exit value: "+this.report.getExitValue());

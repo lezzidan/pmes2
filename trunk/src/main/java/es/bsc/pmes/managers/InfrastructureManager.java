@@ -133,6 +133,11 @@ public class InfrastructureManager {
             String user = jobDef.getUser().getUsername();
             String gid = jobDef.getUser().getCredentials().get("gid");
             String uid = jobDef.getUser().getCredentials().get("uid");
+            String mount = jobDef.getMountPath();
+            if (mount.equals("bsccv02")) {
+                mount = "/transplant/testUser/test/";
+            }
+            logger.trace("MOUNT PATH: "+mount);
             logger.trace("UID and GID: "+uid+" "+gid);
             if (!uid.equals("306") || !gid.equals("306")){
                 uid = "306";
@@ -145,6 +150,11 @@ public class InfrastructureManager {
             writer.println("  - sudo useradd -m -d /home/"+user+" -s /bin/bash --uid "+uid+" --gid "+gid+" -G root "+user);
             writer.println("  - sudo mkdir -p /transplant");
             writer.println("  - sudo mount -t cifs //192.168.122.253/INBTransplant /transplant -o user=guest,password=guestTransplant01,rsize=130048,sec=ntlmssp");
+            if (!mount.equals("")) {
+                //TODO: Test if there is not mount path:...
+                writer.println("  - sudo mv /home/" + user + " /tmp");
+                writer.println("  - sudo ln -s " + mount + " /home/" + user);
+            }
             writer.println("  - sudo -u "+user+" ssh-keygen -f /home/"+user+"/.ssh/id_rsa -t rsa -N \'\'" );
             writer.println("  - cat /home/"+user+"/.ssh/id_rsa.pub >> /home/"+user+"/.ssh/authorized_keys");
             writer.println("  - echo \"export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64\" >> /home/"+user+"/.bashrc");

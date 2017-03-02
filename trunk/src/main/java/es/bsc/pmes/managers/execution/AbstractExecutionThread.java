@@ -110,6 +110,7 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
                 String line = null;
                 while ((line = in.readLine()) != null) {
                     outStr += line;
+                    outStr += "\n";
                 }
                 in.close();
                 logger.trace("out: " + outStr);
@@ -120,6 +121,7 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
                 String errStr = "";
                 while ((line = err.readLine()) != null) {
                     errStr += line;
+                    errStr += "\n";
                 }
                 err.close();
                 logger.trace("err: " + errStr);

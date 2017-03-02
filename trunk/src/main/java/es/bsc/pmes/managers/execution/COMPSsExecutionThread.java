@@ -84,6 +84,10 @@ public class COMPSsExecutionThread extends AbstractExecutionThread{
         runcompss += "\"";
         cmd.add(runcompss);
 
+        //cmd.add(">>");
+        //cmd.add("result.out");
+
+
 
         String[] command = new String[cmd.size()];
         job.setCmd(cmd.toArray(command));
