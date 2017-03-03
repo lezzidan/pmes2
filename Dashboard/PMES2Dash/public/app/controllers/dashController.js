@@ -6,19 +6,6 @@
 angular.module('pmes2')
     .controller('dashController', ['$state', '$http', function($state, $http) {
         var store = this;
-        //TODO: clean user variables
-        /*store.user = {
-            username: "scorella",
-            credentials: {
-                key: "/home/pmes/certs/scorella_test.key",
-                pem: "/home/pmes/certs/scorella_test.pem"
-            }
-
-        };
-        store.admin = false;
-        store.userS = {
-            _id: "57f601522aa80824dc4f094e"
-        };*/
 
         this.user = {};
         this.userS = {_id:""};
@@ -54,22 +41,7 @@ angular.module('pmes2')
         this.logFiles = ["log", "out", "err"];
         this.logData ="";
         this.activityReport = {};
-        /*this.activityReport = {
-            jobDefinition: {
-                jobName: "HelloWorldSimple_58985f34e26a515d1e6db86f",
-                app: {
-                    name: "Hello",
-                    args: {"arg2": "yrtyrt", "arg1": "ytrytr"}
-                }
-            },
-            jobOutputMessage:"SIMPLE APP ____________________Mon Feb  6 12:37:56 CET 2017__________ip-192-168-122-13__________admin__________/home/admin__________","jobErrorMessage":"Warning: Permanently added '192.168.122.13' (ECDSA) to the list of known hosts.bash: cannot set terminal process group (-1): Inappropriate ioctl for devicebash: no job control in this shell",
-            jobStatus:"FINISHED",
-            elapsedTime:"542",
-            exitValue:"0"
 
-        };*/
-
-        this.selectedJob = {};
         this.selectedJobs = [];
 
         this.systemStatusData = {};
@@ -180,9 +152,6 @@ angular.module('pmes2')
                     this.newJob.inputPaths.push(store.newJob.appVal.args[i].value);
                 }
             }
-            //this.newJob.inputPaths = ["/home/pmes/pmes/test/hola.txt"]; //TODO: remove
-            //this.newJob.outputPaths = ["/home/pmes/testSimple/launch.sh"];
-            //this.newJob.mountPath = "/home/";
 
             $http({
                 method: 'POST',

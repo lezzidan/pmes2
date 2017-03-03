@@ -172,8 +172,6 @@ module.exports = function(app, passport) {
                 usr.credentials.pem = req.body.credentials.pem;
                 usr.credentials.uid = req.body.credentials.uid;
                 usr.credentials.gid = req.body.credentials.gid;
-                console.log(req.body.group);
-                //for (var i=0; i < req.body.group.length; i++) {
                 var g = req.body.group[0];
                 Group.findOne({name:g.name}, function (err, grp) {
                     if (err) {
@@ -185,11 +183,7 @@ module.exports = function(app, passport) {
                         res.send('OK');
                     }
                 });
-                //}
-                //console.log(usr);
-                //usr.save();
             });
-            //res.send('OK');
         }
     });
 
@@ -273,7 +267,6 @@ module.exports = function(app, passport) {
     /* Get Group */
     app.get('/dash/group', isLoggedIn, function(req, res, next) {
         console.log("REQ group"+req.group.name);
-        /*User.find({username:'scorella'},function(err, user){*/
         Group.find({name: req.group.name},function(err, group){
             if(err){
                 console.log("Group not found");
@@ -403,8 +396,8 @@ module.exports = function(app, passport) {
         var endpoint = " --endpoint https://rocci-server.bsc.es:11443";
         var auth = " --auth x509";
         var caPath = " --ca-path /etc/grid-security/certificates/";
-        var userCred = " --user-cred "+req.body.credentials.pem;
-        var userPass = " --password "+req.body.credentials.key;
+        var userCred = " --user-cred "+req.user.credentials.pem;
+        var userPass = " --password "+req.user.credentials.key;
         var action = " --action list --resource os_tpl";
         var command = "/usr/bin/occi "+endpoint+auth+caPath+userCred+userPass+action;
         try {
@@ -553,6 +546,7 @@ module.exports = function(app, passport) {
         };
         request.post(options, function(error, response, body){
             if (!error && response.statusCode == 200){
+                //TODO save activityReport for the job
                 /*for (var i = 0; i < listOfIds.length; i++){
                     Job.findOne({pmesID: listOfIds[i]}, function(err, jb){
                         if(err){
