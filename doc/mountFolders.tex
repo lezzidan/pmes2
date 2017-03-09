@@ -131,7 +131,8 @@ The BSC homes are at:
 Create a new user with the same \texttt{UID} and \texttt{GID}. Edit \texttt{/etc/passwd} and create the new user.\\
 Add a soft link to the folder 
 \begin{verbatim}
- sudo useradd -m -d /home/$USERNAME -s /bin/bash --uid 306 --gid 306 $USERNAME
+ sudo groupadd -g 306 transplant
+ sudo useradd -m -d /home/$USERNAME -s /bin/bash --uid 306 --gid 306 -G root $USERNAME
  sudo mv /home/$USERNAME /tmp
  sudo ln -s /transplant/testUser/test/ /home/test
 \end{verbatim}

@@ -43,7 +43,8 @@
 \maketitle
 
 \section{Introduction}
-
+Dashboard is on http://192.168.122.12:3000/
+PMES Service is on http://192.168.122.12:8080/
 \section{API Definition}
 
 \begin{enumerate}
@@ -82,8 +83,9 @@
     App & app \\
     Image & image \\
     User & user \\
-    String & inputPath \\
-    String & outputPath \\
+    $[$String$]$ & inputPaths \\
+    $[$String$]$ & outputPaths \\
+    String & mountPath \\
     Integer & wallTime \\
     Integer & numNodes \\
     Integer & cores \\
@@ -150,7 +152,7 @@
     String & imageName \\
     String & imageType \\\hline
 \end{tabular}
-    \item User:
+    \item User: 
 \begin{tabular}{|c|c|}
     \hline
     \multicolumn{2}{ |c| }{User} \\\hline
@@ -158,6 +160,8 @@
     String & username \\
     \texttt{HashMap<String, String>} & credentials \\\hline
 \end{tabular}
+
+The credentials should have: user.key, user.pem, uid and gid. 
     \item Host: 
 \begin{tabular}{|c|c|}
     \hline
@@ -293,10 +297,9 @@ echo "setenv sale"
  
  \end{itemize}
 
-
-
-
-
+\subsection{COMPSs VM}
+Template 105 has Ubuntu 14, COMPSs 2.0 and CIFS.\\
+Template 104 has Ubuntu 16, COMPSs 2.0 and CIFS.
 
 
 \end{document}
