@@ -70,7 +70,7 @@ public class InfrastructureManager {
     public String createResource(HardwareDescription hd, SoftwareDescription sd, HashMap<String, String> prop){
         // TODO: revisar tipo salida
         logger.trace("Creating Resource");
-        if (Objects.equals("ONE", this.provider)) {
+        if (Objects.equals("ONE", this.provider) || Objects.equals("OpenStack", this.provider)) {
             try {
                 rocciClient = new ROCCI(prop);
                 VirtualResource vr = (VirtualResource) rocciClient.create(hd, sd, prop);
@@ -98,7 +98,7 @@ public class InfrastructureManager {
             }
         }
         else {
-            logger.error("Provider connector not supported");
+            logger.error("Provider "+this.provider+" not supported");
             return null;
         }
     }
@@ -108,12 +108,16 @@ public class InfrastructureManager {
         // Default rocci server configuration
         properties.put("Server", this.occiEndPoint);
         properties.put("auth", this.auth);
-        properties.put("ca-path", this.ca_path);
-
-        String keyPath = jobDef.getUser().getCredentials().get("key");
-        String pemPath = jobDef.getUser().getCredentials().get("pem");
-        properties.put("password", keyPath);
-        properties.put("user-cred", pemPath);
+        if (this.auth.equals("token")) {
+            properties.put("token", jobDef.getUser().getCredentials().get("token"));
+        }
+        else {
+            properties.put("ca-path", this.ca_path);
+            String keyPath = jobDef.getUser().getCredentials().get("key");
+            String pemPath = jobDef.getUser().getCredentials().get("pem");
+            properties.put("password", keyPath);
+            properties.put("user-cred", pemPath);
+        }
 
         properties.put("owner", jobDef.getUser().getUsername());
         properties.put("jobname", jobDef.getJobName());

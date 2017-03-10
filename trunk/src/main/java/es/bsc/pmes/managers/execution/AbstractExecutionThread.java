@@ -143,6 +143,11 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
     }
 
     public Boolean stopExecution(String Id, Boolean destroyMachine){
+        if (Id == null || Id.equals("-1")){
+            getJob().setStatus("FAILED");
+            getJob().getReport().setJobErrorMessage("OCCI has failed creating the resource");
+            return Boolean.TRUE;
+        }
         if ( getJob().getTerminate() ){
             //Destroy VM if the user cancel the job.
             if (destroyMachine) {
