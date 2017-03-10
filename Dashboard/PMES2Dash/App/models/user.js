@@ -15,6 +15,7 @@ var userSchema = mongoose.Schema({
         pem: String,
         uid: String,
         gid: String,
+        token: String
     },
     login : {
         local: {
