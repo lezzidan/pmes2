@@ -266,6 +266,11 @@ Dependencies:
  rvm use 1.9.3 --default
  gem install occi-cli
  \end{lstlisting}
+ or
+ \begin{lstlisting}
+  curl -L http://go.egi.eu/fedcloud.ui | /bin/bash -
+ \end{lstlisting}
+
  \item move grid-security certificates to /etc/
  \item tomcat7
  \subitem change user to pmes:
@@ -296,6 +301,12 @@ echo "setenv sale"
 
  
  \end{itemize}
+\subsection{Install PMES}
+create the log folder /home/pmes/pmes/logs and give permissions to the tomcat7 user:
+\begin{verbatim}
+ sudo usermod -a -G tomcat7 pmes
+ sudo chmod g+w myfolder
+\end{verbatim}
 
 \subsection{COMPSs VM}
 Template 105 has Ubuntu 14, COMPSs 2.0 and CIFS.\\

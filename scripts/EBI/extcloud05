@@ -1,0 +1,9 @@
+export OS_NO_CACHE=True
+export OS_CLOUDNAME=overcloud
+export OS_AUTH_URL=https://extcloud05.ebi.ac.uk:13000/v2.0
+export NOVA_VERSION=1.1
+export COMPUTE_API_VERSION=1.1
+export OS_USERNAME=laia.codo@bsc.es
+export OS_PASSWORD=VLZtKndy
+export OS_TENANT_NAME=BSC-MuG
+export OS_TOKEN=6718197acbb04f7d9695f832cfb2e38f

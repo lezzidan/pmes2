@@ -1,0 +1,30 @@
+[{ "jobName": "HelloTest2_584817558cb7550b5e9970b0",
+           "wallTime": "5",
+           "minimumVMs": "1",
+           "maximumVMs": "1",
+           "limitVMs": "1",
+           "initialVMs": "1",
+           "memory": "1.0",
+           "cores": "1",
+           "disk" : "1.0",
+           "inputPaths": ["/home/"],
+           "outputPaths": ["/home/"],
+           "mountPath":"",
+           "numNodes": "1",
+           "user":
+              { "username": "lcodo",
+                "credentials":
+                { "pem": "/home/pmes/certs/pmes.pem",
+                  "key": "/home/pmes/certs/pmes.key",
+                  "token": "6718197acbb04f7d9695f832cfb2e38f" }
+              },
+           "img": { "imageName": "os_tpl#4f916ede-218b-47e4-93aa-b795a5acf813", "imageType": "resource_tpl#721112dd-2f33-40eb-8975-7bd34dbabfc8" },
+           "app":
+              { "name": "HelloTest2",
+                "target": "/home/pmes/testSimple",
+                "source": "launch.sh",
+                "args": { "val1": "Hola", "val2": "Mundo" } ,
+                "type": "COMPSs"
+              },
+           "compss_flags": {}
+        }]

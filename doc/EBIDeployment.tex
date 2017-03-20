@@ -1,0 +1,40 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+
+%opening
+\title{EBI PMES}
+\author{Sandra Corella}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+
+\end{abstract}
+
+\section{Acces}
+First acces to the VM with floating point.
+\begin{verbatim}
+ ssh -vv -i lcodo.pem -l ubuntu 193.62.52.104
+\end{verbatim}
+Then acces to the VM which is hosting the PMES service:
+\begin{verbatim}
+ ssh -i lcodo.pem -l ubuntu 192.168.0.23
+\end{verbatim}
+Finally change to the user PMES.
+\begin{verbatim}
+ sudo su pmes
+\end{verbatim}
+
+\section{Deployment}
+The PMES service is deployed using tomcat7. At pmes home directory there are the following important folders:
+\begin{itemize}
+ \item logs
+ \item config
+ \item jobs
+\end{itemize}
+
+
+
+\end{document}
