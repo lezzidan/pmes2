@@ -67,6 +67,7 @@ module.exports = function(passport) {
                         newUser.credentials.pem = "";
                         newUser.credentials.uid = "";
                         newUser.credentials.gid = "";
+                        newUser.credentials.token = "";
                         newUser.login.local.email = email;
                         newUser.login.local.password = newUser.generateHash(password);
                         newUser.authorized = false;
@@ -136,6 +137,7 @@ module.exports = function(passport) {
                         newUser.credentials.pem = "";
                         newUser.credentials.uid = "";
                         newUser.credentials.gid = "";
+                        newUser.credentials.token = "";
                         newUser.authorized = false;
                         // save the user
                         newUser.save(function(err) {

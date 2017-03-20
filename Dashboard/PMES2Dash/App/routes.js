@@ -392,6 +392,7 @@ module.exports = function(app, passport) {
 
     // Cloud infrastructure information
     app.post('/dash/images', isLoggedIn, function(req, res){
+        //TODO: be careful with auth and token
         var execSync = require('child_process').execSync;
         var endpoint = " --endpoint https://rocci-server.bsc.es:11443";
         var auth = " --auth x509";
