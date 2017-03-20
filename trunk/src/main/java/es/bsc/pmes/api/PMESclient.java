@@ -145,7 +145,7 @@ public class PMESclient {
     }
 
     // Test purposes
-    @GET
+    /*@GET
     @Path("/createActivity/{id}")
     @Produces("text/plain")
     public static String getAttribute(@PathParam("id") String name) {
@@ -162,6 +162,6 @@ public class PMESclient {
         logger.trace("Starting PMES client at "+this.address);
         Integer size = pmesService.getJm().getJobs().size();
         return size.toString();
-    }
+    }*/
 
 }

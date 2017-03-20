@@ -60,7 +60,7 @@ public class COMPSsExecutionThread extends AbstractExecutionThread{
         cmd.add("ssh");
         cmd.add(address);
         cmd.add("bash");
-        cmd.add("-ic");
+        cmd.add("-ic"); //interactive session IMPORTANT!
         String runcompss = "\"runcompss";
         //TODO: test compss flags
         for (Object o: job.getJobDef().getCompss_flags().entrySet()){
@@ -81,9 +81,11 @@ public class COMPSsExecutionThread extends AbstractExecutionThread{
         runcompss += "\"";
         cmd.add(runcompss);
 
-        //cmd.add(">>");
-        //cmd.add("result.out");
-
+        /*
+        // Test redirect output to a file
+        cmd.add(">>");
+        cmd.add("result.out");
+        */
 
 
         String[] command = new String[cmd.size()];

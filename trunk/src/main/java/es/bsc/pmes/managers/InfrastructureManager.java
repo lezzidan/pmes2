@@ -137,6 +137,8 @@ public class InfrastructureManager {
             String gid = jobDef.getUser().getCredentials().get("gid");
             String uid = jobDef.getUser().getCredentials().get("uid");
             String mount = jobDef.getMountPath();
+            /*
+            //Test Purposes
             if (mount.equals("bsccv02")) {
                 mount = "/transplant/testUser/test/";
             }
@@ -145,7 +147,7 @@ public class InfrastructureManager {
             if (!uid.equals("306") || !gid.equals("306")){
                 uid = "306";
                 gid = "306";
-            }
+            }*/
             PrintWriter writer = new PrintWriter(path, "UTF-8");
             writer.println("#cloud-config");
             writer.println("bootcmd:");
