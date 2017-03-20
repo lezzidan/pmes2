@@ -86,7 +86,6 @@ public class InfrastructureManager {
                 Host h = systemStatus.getCluster().get(0); //test purposes
                 systemStatus.update(h, hd.getTotalComputingUnits(), hd.getMemorySize());
                 logger.trace("IM update: "+hd.getTotalComputingUnits() +" "+ hd.getMemorySize());
-                // TODO: Usar VirtualResource
                 Resource newResource = new Resource(vr.getIp(), prop, vr);
                 activeResources.put((String) vr.getId(), newResource);
                 return (String) vr.getId();
@@ -152,10 +151,10 @@ public class InfrastructureManager {
             writer.println("bootcmd:");
             writer.println("  - sudo groupadd -g "+gid+" transplant");
             writer.println("  - sudo useradd -m -d /home/"+user+" -s /bin/bash --uid "+uid+" --gid "+gid+" -G root "+user);
-            writer.println("  - sudo mkdir -p /transplant");
-            writer.println("  - sudo mount -t cifs //192.168.122.253/INBTransplant /transplant -o user=guest,password=guestTransplant01,rsize=130048,sec=ntlmssp");
             if (!mount.equals("")) {
                 //TODO: Test if there is not mount path:...
+                writer.println("  - sudo mkdir -p /transplant");
+                writer.println("  - sudo mount -t cifs //192.168.122.253/INBTransplant /transplant -o user=guest,password=guestTransplant01,rsize=130048,sec=ntlmssp");
                 writer.println("  - sudo mv /home/" + user + " /tmp");
                 writer.println("  - sudo ln -s " + mount + " /home/" + user);
             }
