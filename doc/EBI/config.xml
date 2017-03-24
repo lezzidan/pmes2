@@ -1,0 +1,51 @@
+<pmes>
+    <providerName Name="OpenStack"/>
+    <endPointROCCI>https://extcloud05.ebi.ac.uk:8787/occi1.1/</endPointROCCI>
+    <auth>token</auth>
+    <ca-path></ca-path>
+    <hosts>
+        <host>
+            <name>bsccv14</name>
+            <MAX_CPU>2400</MAX_CPU>
+            <MAX_MEM>99195808</MAX_MEM>
+        </host>
+        <host>
+            <name>bsccv15</name>
+            <MAX_CPU>2400</MAX_CPU>
+            <MAX_MEM>99195808</MAX_MEM>
+        </host>
+        <host>
+            <name>bsccv16</name>
+            <MAX_CPU>2400</MAX_CPU>
+            <MAX_MEM>99195808</MAX_MEM>
+        </host>
+        <host>
+            <name>bsccv17</name>
+            <MAX_CPU>2400</MAX_CPU>
+            <MAX_MEM>99195808</MAX_MEM>
+        </host>
+        <host>
+            <name>bsccv18</name>
+            <MAX_CPU>2400</MAX_CPU>
+            <MAX_MEM>99195808</MAX_MEM>
+        </host>
+        <host>
+            <name>bsccv19</name>
+            <MAX_CPU>2400</MAX_CPU>
+            <MAX_MEM>99195808</MAX_MEM>
+        </host>
+    </hosts>
+    <logPath>/home/pmes/pmes/logs/</logPath>
+    <logLevel>DEBUG</logLevel>
+    <runCmd>
+        <cmd>script.sh</cmd>
+    </runCmd>
+    <auth-keys>
+        <key>ssh-dss 
+AAAAB3NzaC1kc3MAAACBAIVkG+P1XWkNHalfOI6dVD1xFb8RCqf8ItqyAa03saiEO+zlPdnxhq9gORfJ7DHgPJm5gKnN+vQ/o2cI9qJTH8eZH+2+6TQRym5IR+4bfPsOAeMnilaT2rzazcKW+GhSG08MPEYy3fuNJmEw6YLLGjV3hwgAai7tagnnfwTQXbjTAAAAFQCpvcG9XETb0PUbJwNPUNQXlWeEYwAAAIBwAV/JPdmaTRehPlm/mTRqLnPahsWjM4fMLCKXcm4a0veZJIjcPrdHamVP1r+GGflzuv3z0LDuAv/TO5kUf/cyKX6Fz8N1jhdSFZ19XvD9ix1HdzmeD2kebpACy6R2/VSg16KFO9sSDGn3T/DQ6hg6qJ9YXaXqJ2c8hzIZYdG5YQAAAIAvBfLuIDbvPkdQeEk7+V5b67IJvIiN+CGaLNQoLuklWB9jJ7IhHS/ZP9hMNW6KGaVJZibFfvJ7mdcdkkszpI8ysILSktx9jp7ZFQFXf0Q1mm63M/NltA/TUqSyHqVtbfzVRS99lpC/kL1BymskouN8BM7pioeD/HD5uRysDK7fng== 
+scorella@bsccv02</key>
+        <key>ssh-rsa 
+AAAAB3NzaC1yc2EAAAADAQABAAABAQDP3XME8+PiSNw7M99Wf0NS/+0n2B1LGRW7A1xwJaPy2/ESE/Jb3qBABMJhPDZiZwdqwpKzOyMtRUEAacy6+3ID5j1wiq51hOkhAJLOrmVOy0QA+6k60uPkd0gppr+TF7vXoyl+ecBbv8tqAgUlnaKnHG7xFsy+ajfyUibgfrxIpcG0SsrKPSRRXnF3cZXSOhHIPjc1j8MaZ+aqEtHl/n0em+LpgWheSf9lswxTfk77r8oYgO3xs6psKqx8NS6SWBt8Iux8WXpOmIzt9x9Yh1tb+8xdJJilytSGJc6oYJ6HoAqv4SBOnK246GuT7xAYjTML1bx7hZLcaH99msCvmI/L 
+pmes@pmes2</key>    
+    </auth-keys>
+</pmes>
