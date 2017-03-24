@@ -78,7 +78,6 @@ angular.module('pmes2')
         this.groups = [];
 
         this.getLog = function(name){
-            //var name = store.activityReport.jobDefinition.jobName;
             if(store.logFile == "log"){
                 store.readFile = {file:"/home/pmes/pmes/jobs/"+name+"/report.txt"};
                 $http({
@@ -136,8 +135,8 @@ angular.module('pmes2')
             this.newJob.user = store.userS._id;
             this.newJob.img.imageName = this.newJob.appVal.image;
             this.newJob.img.imageType = 'small';
-            this.newJob.submitted = new Date().toLocaleString();//new Date().toJSON().slice(0,10);
-            this.newJob.finished = new Date().toLocaleString();//new Date().toJSON().slice(0,10);
+            this.newJob.submitted = new Date().toLocaleString();
+            this.newJob.finished = new Date().toLocaleString();
             this.newJob.duration = 0;
             this.newJob.errorMessage = "";
             this.newJob.numNodes = "1";
@@ -341,7 +340,7 @@ angular.module('pmes2')
             return jobToSend;
         };
 
-        this.saveNewJobAndRun = function() {
+        /*this.saveNewJobAndRun = function() {
             //TODO: test if type is passing
             this.newJob.app = this.newJob.appVal;
             this.newJob.jobName = this.newJob.appVal.name;
@@ -385,12 +384,6 @@ angular.module('pmes2')
                 }
             );
 
-        };
-
-        /*this.saveNewJobAndRun = function() {
-            store.saveNewJob();
-            //store.newJob.jobName = store.jobsList[store.jobsList.length-1].jobName;
-            store.runJob(store.newJob);
         };*/
 
         this.saveNewStorage = function() {

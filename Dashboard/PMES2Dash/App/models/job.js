@@ -47,7 +47,6 @@ var jobSchema = mongoose.Schema({
     }
 });
 
-//private HashMap<String, String> compss_flags;
 var autoPopulate = function (next) {
     this.populate('app');
     this.populate('user');

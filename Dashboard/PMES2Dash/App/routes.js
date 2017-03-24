@@ -7,6 +7,10 @@ var fs = require('fs');
 var async = require('async');
 var ObjectId = (require('mongoose').Types.ObjectId);
 
+var pmesServiceName = 'pmes';
+var pmesEndpoint = 'localhost';
+var pmesPort = '8080';
+var pmesServiceURL = 'http://'+pmesEndpoint+':'+pmesPort+'/'+pmesServiceName+'/';
 
 module.exports = function(app, passport) {
     /* Create new application */
@@ -423,12 +427,12 @@ module.exports = function(app, passport) {
     // =====================================
     app.post('/api/createActivity', isLoggedIn, function(req, res){
         console.log("creating activity");
-        console.log(req.body);
-        console.log(req.body.user);
         var listOfJobs = [req.body];
+        var url = pmesServiceURL+'pmes/createActivity';
         var request = require('request');
         var options = {
-            uri: 'http://localhost:8080/trunk_war_exploded/pmes/createActivity',
+            //uri: 'http://localhost:8080/trunk_war_exploded/pmes/createActivity',
+            uri: url,
             method: 'POST',
             json: listOfJobs
         };
@@ -459,16 +463,16 @@ module.exports = function(app, passport) {
     app.post('/api/getActivityStatus', function(req, res){
         console.log("asking for status");
         var listOfIds = req.body;
-        console.log(listOfIds);
         var request = require('request');
+        var url = pmesServiceURL+'pmes/getActivityStatus';
         var options = {
-            uri: 'http://localhost:8080/trunk_war_exploded/pmes/getActivityStatus',
+            //uri: 'http://localhost:8080/trunk_war_exploded/pmes/getActivityStatus',
+            uri: url,
             method: 'POST',
             json: listOfIds
         };
         request.post(options, function(error, response, body){
             if (!error && response.statusCode == 200){
-                //TODO: actualizar estado jobs.
                 for (var i = 0; i < listOfIds.length; i++){
                     Job.findOne({pmesID: listOfIds[i]}, function(err, jb){
                         if(err){
@@ -491,8 +495,10 @@ module.exports = function(app, passport) {
         console.log("Terminate activity");
         var listOfIds = req.body;
         var request = require('request');
+        var url = pmesServiceURL+'pmes/terminateActivity';
         var options = {
-            uri: 'http://localhost:8080/trunk_war_exploded/pmes/terminateActivity',
+            //uri: 'http://localhost:8080/trunk_war_exploded/pmes/terminateActivity',
+            uri: url,
             method: 'POST',
             json: listOfIds
         };
@@ -520,8 +526,10 @@ module.exports = function(app, passport) {
     app.get('/api/getSystemStatus', function(req, res){
         console.log("asking for system status");
         var request = require('request');
+        var url = pmesServiceURL+'pmes/getSystemStatus';
         var options = {
-            uri: 'http://localhost:8080/trunk_war_exploded/pmes/getSystemStatus',
+            //uri: 'http://localhost:8080/trunk_war_exploded/pmes/getSystemStatus',
+            uri: url,
             method: 'GET'
         };
         request.get(options, function(error, response, body){
@@ -538,10 +546,11 @@ module.exports = function(app, passport) {
     app.post('/api/getActivityReport', function(req, res){
         console.log("asking for report");
         var listOfIds = req.body;
-        console.log(listOfIds);
         var request = require('request');
+        var url = pmesServiceURL+'pmes/getActivityReport';
         var options = {
-            uri: 'http://localhost:8080/trunk_war_exploded/pmes/getActivityReport',
+            //uri: 'http://localhost:8080/trunk_war_exploded/pmes/getActivityReport',
+            uri: url,
             method: 'POST',
             json: listOfIds
         };

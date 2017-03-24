@@ -12,13 +12,6 @@ angular.module('pmes2')
         this.user.email = "";
         this.user.password = "";
         this.error = "";
-        /*storeAuth.userS = {
-            username: "scorella",
-            credentials: {
-                key: "/home/pmes/certs/scorella_test.key",
-                pem: "/home/pmes/certs/scorella_test.pem"
-            }
-        };*/
 
         this.login = function() {
             $http({
@@ -38,22 +31,7 @@ angular.module('pmes2')
             );
         };
 
-        /*this.loginGoogle = function() {
-            $http({
-                method: 'GET',
-                url: 'auth/google',
-                dataType: 'jsonp'
-            }).then(
-                function(data) {
-                    $state.go('dash', {}, { reload: true});
-                    storeAuth.error = null;
-                },
-                function(error) {
-                    alert("User not authorized");
-                    storeAuth.error = 'ERROR: '+error.data.error;
-                }
-            );
-        };*/
+
         this.loginGoogle = function() {
             $http({
                 method: 'GET',
@@ -78,30 +56,14 @@ angular.module('pmes2')
                 function(data) {
                     $('#signup').modal('hide');
                     storeAuth.error = null;
-                    //storeAuth.userS._id = data.data;
-                    //storeAuth.user = data.data;
                 },
                 function(error) {
                     storeAuth.error = 'ERROR: '+error.data.error;
                 }
             );
-            /*$http({
-                method: 'POST',
-                url: 'dash/user',
-                data: storeAuth.newUser
-            }).then(
-                function(data) {
-                    storeAuth.error = null;
-                    storeAuth.userS._id = data.data;
-                },
-                function(error) {
-                    storeAuth.error = 'ERROR: '+error.data.error;
-                }
-            );*/
 
 
         };
         //Init calls
-        //this.saveNewUser();
 
     }]);
