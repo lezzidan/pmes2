@@ -571,7 +571,7 @@ angular.module('pmes2')
         this.isAdmin = function() {
             var adm = false;
             for (var i=0; i < store.user.group.length; i++){
-                if (store.user.group[i].name == "admin"){
+                if (store.user.group[i].permission.admin == true){
                     console.log(store.user.group[i].name);
                     adm = true;
                 }

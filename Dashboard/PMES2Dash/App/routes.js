@@ -394,6 +394,46 @@ module.exports = function(app, passport) {
         res.sendStatus(200);
     });
 
+    app.get('/auth/firstTime', function(req, res) {
+        var newGroup = new Group();
+        newGroup.name = "pmes";
+        newGroup.permission =  {
+            admin: true,
+            users: true,
+            groups: true,
+            storages: true,
+            apps: true,
+            jobs: true
+        };
+        newGroup.save(function(err, group){
+            if(err) {
+                console.log(err);
+                res.send([]);
+            } else {
+                var adminUser = new User();
+                adminUser.username = "pmes";
+                adminUser.group = [group._id];
+                adminUser.credentials.key = "";
+                adminUser.credentials.pem = "";
+                adminUser.credentials.uid = "";
+                adminUser.credentials.gid = "";
+                adminUser.credentials.token = "";
+                adminUser.login.local.email = "pmes@pmes.com";
+                adminUser.login.local.password = adminUser.generateHash("pmes");
+                adminUser.authorized = true;
+                adminUser.save(function(err, usr){
+                    if(err) {
+                        console.log(err);
+                        res.send([]);
+                    } else {
+                        console.log("first Group and user created")
+                    }
+                });
+            }
+
+        });
+    });
+
     // Cloud infrastructure information
     app.post('/dash/images', isLoggedIn, function(req, res){
         //TODO: be careful with auth and token

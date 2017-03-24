@@ -64,6 +64,22 @@ angular.module('pmes2')
 
 
         };
+
+        this.createInitialUserAndGroups = function() {
+            console.log("Create Initial User and group");
+            $http({
+                method: 'GET',
+                url: 'auth/firstTime'
+            }).then(
+                function(data) {
+                    storeAuth.error = null;
+                },
+                function(error) {
+                    storeAuth.error = 'ERROR: '+error.data.error;
+                }
+            );
+        };
         //Init calls
+        this.createInitialUserAndGroups()
 
     }]);
