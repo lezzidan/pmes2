@@ -1,16 +1,11 @@
 package es.bsc.pmes.managers.execution;
 
-import es.bsc.conn.types.HardwareDescription;
-import es.bsc.conn.types.SoftwareDescription;
-import es.bsc.pmes.managers.InfrastructureManager;
 import es.bsc.pmes.types.Job;
 import es.bsc.pmes.types.SingleJob;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;

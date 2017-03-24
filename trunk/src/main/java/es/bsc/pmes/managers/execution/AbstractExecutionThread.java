@@ -13,7 +13,6 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 
 public abstract class AbstractExecutionThread extends Thread implements ExecutionThread{
-    //private Job job = getJob();
     private InfrastructureManager im = InfrastructureManager.getInfrastructureManager();
     private Process process = null;
     private static final Logger logger = LogManager.getLogger(AbstractExecutionThread.class);
@@ -33,8 +32,6 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
             logger.trace("Job cancelled: Execution stopped");
             getJob().setStatus("CANCELLED");
         }
-        //reset interrupted flag
-        //Thread.currentThread().interrupt();
     }
 
     public void stageIn(){

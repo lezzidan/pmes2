@@ -46,7 +46,6 @@ public class SchedulerThread extends Thread{
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            //logger.trace("Pending jobs: "+pendingJobs.size());
             if (!pendingJobs.isEmpty()){
                 Job nextJob = this.nextJob();
                 if (nextJob.getTerminate()){
@@ -71,14 +70,6 @@ public class SchedulerThread extends Thread{
     public void executeJob(Job job){
         //Create execution dir
         job.createExecutionDir();
-        /*String path = "/home/pmes/pmes/jobs/"+job.getJobDef().getJobName();
-        File dir = new File(path);
-        if (!dir.exists()) {
-            boolean result = dir.mkdir();
-            if (result){
-                logger.trace("Job execution directory created: "+path);
-            }
-        }*/
 
         //Run job
         ExecutionThread executor = null;
