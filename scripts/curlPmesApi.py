@@ -29,7 +29,7 @@ def getSystemStatus():
 def createActivity(data):
     url = serviceUrl + "pmes/createActivity"
     headers = {'Content-Type': 'application/json'}
-    listJobsDef = json.dumps(dictData)
+    listJobsDef = json.dumps(data)
     result = post(url, headers, data=listJobsDef)
     return result
 
@@ -56,18 +56,18 @@ def main(args):
         r = getSystemStatus()
         print(r)
     elif action == "terminateActivity":
-        jobIds = ["18045e7f-a670-46fe-a067-3b1a19870bcf"]
-        for i in xrange(2,len(args)-1):
+        jobIds = []
+        for i in xrange(2, len(args) - 1):
             jobIds.append(args[i])
         r = terminateActivity(str(jobIds))
-        #r = terminateActivity('["18045e7f-a670-46fe-a067-3b1a19870bcf"]')
+        # r = terminateActivity('["18045e7f-a670-46fe-a067-3b1a19870bcf"]')
         print(r)
     elif action == "getActivityReport":
-        jobIds = ["18045e7f-a670-46fe-a067-3b1a19870bcf"]
-        for i in xrange(2,len(args)-1):
+        jobIds = []
+        for i in xrange(2, len(args) - 1):
             jobIds.append(args[i])
         r = getActivityReport(str(jobIds))
-        #r = getActivityReport('["18045e7f-a670-46fe-a067-3b1a19870bcf"]')
+        # r = getActivityReport('["18045e7f-a670-46fe-a067-3b1a19870bcf"]')
         print(r)
     elif action == "createActivity":
         jsonFile = args[2]
@@ -77,7 +77,6 @@ def main(args):
         print(r)
     else:
         print "Action {} not implemented".format(action)
-
 
 
 if __name__ == '__main__':
