@@ -51,7 +51,8 @@ public class PMESservice {
             newJob.setDataOut(jobDef.getOutputPaths());
             logger.trace("JobDef: "+jobDef.getInputPaths().toString()+" "+jobDef.getOutputPaths().toString());
             logger.trace("newJob: "+newJob.getDataIn().toString()+" "+newJob.getDataOut().toString());
-
+            //DEBUG
+            logger.trace("user: "+newJob.getUser().getCredentials().toString());
             jobIds.add(newJob.getId());
 
             String type = newJob instanceof COMPSsJob ? "COMPSs" : "Single";

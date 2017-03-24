@@ -1,7 +1,10 @@
 package es.bsc.pmes.managers;
 
-import es.bsc.conn.exceptions.ConnectorException;
+import es.bsc.conn.exceptions.ConnException;
+//import es.bsc.conn.exceptions.ConnectorException;
 import es.bsc.conn.rocci.ROCCI;
+//import es.bsc.conn.clients.rocci.RocciClient;
+
 import es.bsc.conn.types.HardwareDescription;
 import es.bsc.conn.types.SoftwareDescription;
 import es.bsc.conn.types.VirtualResource;
@@ -36,6 +39,7 @@ import java.util.Objects;
 public class InfrastructureManager {
     private static InfrastructureManager infrastructureManager = new InfrastructureManager();
     private ROCCI rocciClient;
+    //private RocciClient rocciClient;
     private HashMap<String, Resource> activeResources;
     private SystemStatus systemStatus;
     private String provider;
@@ -72,6 +76,7 @@ public class InfrastructureManager {
         logger.trace("Creating Resource");
         if (Objects.equals("ONE", this.provider) || Objects.equals("OpenStack", this.provider)) {
             try {
+                //rocciClient = new RocciClient();
                 rocciClient = new ROCCI(prop);
                 VirtualResource vr = (VirtualResource) rocciClient.create(hd, sd, prop);
                 logger.trace("compute id: " + vr.getId());
@@ -90,7 +95,7 @@ public class InfrastructureManager {
                 activeResources.put((String) vr.getId(), newResource);
                 return (String) vr.getId();
 
-            } catch (ConnectorException e) {
+            } catch (ConnException e) {
                 logger.error("Error creating resource");
                 e.printStackTrace();
                 return "-1";
@@ -108,9 +113,12 @@ public class InfrastructureManager {
         properties.put("Server", this.occiEndPoint);
         properties.put("auth", this.auth);
         if (this.auth.equals("token")) {
+            logger.trace("Authentication method: token");
+            logger.trace("token: "+jobDef.getUser().getCredentials().get("token"));
             properties.put("token", jobDef.getUser().getCredentials().get("token"));
         }
         else {
+            logger.trace("Authentication method: pem-key");
             properties.put("ca-path", this.ca_path);
             String keyPath = jobDef.getUser().getCredentials().get("key");
             String pemPath = jobDef.getUser().getCredentials().get("pem");
