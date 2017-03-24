@@ -157,28 +157,38 @@ public class InfrastructureManager {
                 gid = "306";
             }*/
             PrintWriter writer = new PrintWriter(path, "UTF-8");
+            // Cloud-init is not working properly on ubuntu16. Only bootcmd commands work correctly.
             writer.println("#cloud-config");
             writer.println("bootcmd:");
             writer.println("  - sudo groupadd -g "+gid+" transplant");
             writer.println("  - sudo useradd -m -d /home/"+user+" -s /bin/bash --uid "+uid+" --gid "+gid+" -G root "+user);
             if (!mount.equals("")) {
-                //TODO: Test if there is not mount path:...
                 writer.println("  - sudo mkdir -p /transplant");
+                // this line should change if the mount method is not CIFS.
                 writer.println("  - sudo mount -t cifs //192.168.122.253/INBTransplant /transplant -o user=guest,password=guestTransplant01,rsize=130048,sec=ntlmssp");
+                // change home directory to mount path.
                 writer.println("  - sudo mv /home/" + user + " /tmp");
                 writer.println("  - sudo ln -s " + mount + " /home/" + user);
             }
+            // enable ssh localhost (COMPSs requirement)
             writer.println("  - sudo -u "+user+" ssh-keygen -f /home/"+user+"/.ssh/id_rsa -t rsa -N \'\'" );
             writer.println("  - cat /home/"+user+"/.ssh/id_rsa.pub >> /home/"+user+"/.ssh/authorized_keys");
+            // COMPSs environment variables
             writer.println("  - echo \"export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64\" >> /home/"+user+"/.bashrc");
             writer.println("  - echo \"export PATH=$PATH:/opt/COMPSs/Runtime/scripts/user:/opt/COMPSs/Bindings/c/bin\" >> /home/"+user+"/.bashrc");
             //writer.println("  - [echo, \"source /opt/COMPSs/compssenv\", >>, ~/.bashrc]" ); //COMPSs 2.0
+
+            // Add commands that are in config file.
             for (String cmd: this.commands) {
                 writer.println("  - "+cmd);
             }
+
+            // Add all ssh-keys that are in config file.
             for (String key:this.auth_keys) {
                 writer.println("  - echo \""+key+"\" >> /home/"+user+"/.ssh/authorized_keys");
             }
+
+            // Redirect cloud-init log to a file
             writer.println("output: {all: '| tee -a /var/log/cloud-init-output.log'}");
             writer.close();
         } catch (FileNotFoundException | UnsupportedEncodingException e) {

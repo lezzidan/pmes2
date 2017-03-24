@@ -29,18 +29,19 @@ public class COMPSsExecutionThread extends AbstractExecutionThread{
 
     @Override
     public void executeJob(){
-        // Create Resource
+        // check if the user want to stop execution
         if (this.stopExecution("-1", Boolean.TRUE)){
             return;
         }
+        // Create Resource
         String Id = createResource();
         logger.trace("Resource created with Id: "+ Id);
 
-        //Configure execution
+        // stop check
         if (this.stopExecution(Id, Boolean.TRUE)){
             return;
         }
-
+        //Configure execution
         String resourceAddress = job.getResource(0).getIp(); //get master IP
         String user = job.getUser().getUsername();
         String address = user+"@"+resourceAddress;
@@ -53,7 +54,7 @@ public class COMPSsExecutionThread extends AbstractExecutionThread{
         cmd.add("ssh");
         cmd.add(address);
         cmd.add("bash");
-        cmd.add("-ic"); //interactive session IMPORTANT!
+        cmd.add("-ic"); //interactive session because we want to source environment variables.
         String runcompss = "\"runcompss";
         //TODO: test compss flags
         for (Object o: job.getJobDef().getCompss_flags().entrySet()){
