@@ -1,0 +1,39 @@
+\documentclass[a4paper,10pt]{article}
+\usepackage[utf8]{inputenc}
+
+%opening
+\title{PMES}
+\author{Workflows and distributed computing}
+
+\begin{document}
+
+\maketitle
+
+\section{Technologies}
+\begin{itemize}
+ \item cloud-init: http://cloudinit.readthedocs.io/en/latest/topics/examples.html
+ \item occi
+ \item mongodb and mongoose
+ \item pm2
+\end{itemize}
+
+\section{Configuration}
+\subsection{User configuration}
+\subsection{config file}
+\subsection{Folder structure}
+At pmes home directory (/home/pmes/) should be the following folders:
+\begin{itemize}
+\item pmes
+ \subitem logs
+ \subitem config
+ \subitem jobs
+\end{itemize}
+
+tomcat user should have permission to write.
+\subsection{tomcat configuration}
+The PMES service is deployed using tomcat7. 
+
+\section{Dashboard}
+The Dashboard service is deployed using pm2. 
+\section{PMES service}
+\end{document}

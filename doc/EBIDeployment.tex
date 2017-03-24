@@ -2,37 +2,67 @@
 \usepackage[utf8]{inputenc}
 
 %opening
-\title{EBI PMES}
-\author{Sandra Corella}
+\title{EBI-MuG PMES}
+\author{Workflows and Distributed computing}
 
 \begin{document}
 
 \maketitle
 
-\begin{abstract}
-
-\end{abstract}
-
 \section{Acces}
+OpenStack acces:
+\begin{verbatim}
+URL: https://extcloud05.ebi.ac.uk/dashboard/project/
+username: XXX@bsc.es
+password: XXXX
+\end{verbatim}
+
 First acces to the VM with floating point.
 \begin{verbatim}
- ssh -vv -i lcodo.pem -l ubuntu 193.62.52.104
+ ssh -vv -i XXX.pem -l ubuntu 193.62.52.104
 \end{verbatim}
 Then acces to the VM which is hosting the PMES service:
 \begin{verbatim}
- ssh -i lcodo.pem -l ubuntu 192.168.0.23
+ ssh -i XXX.pem -l ubuntu 192.168.0.27
 \end{verbatim}
 Finally change to the user PMES.
 \begin{verbatim}
  sudo su pmes
 \end{verbatim}
 
-\section{Deployment}
-The PMES service is deployed using tomcat7. At pmes home directory there are the following important folders:
+\section{OCCI}
+The occi endpoint is \texttt{https://extcloud05.ebi.ac.uk:8787/occi1.1/} \\
+The occi authentication mode is token. To get the token you have to do the following steps:
 \begin{itemize}
- \item logs
- \item config
- \item jobs
+ \item source a file with the following parameters:
+\begin{verbatim}
+export OS_NO_CACHE=True
+export OS_CLOUDNAME=overcloud
+export OS_AUTH_URL=https://extcloud05.ebi.ac.uk:13000/v2.0
+export NOVA_VERSION=1.1
+export COMPUTE_API_VERSION=1.1
+export OS_USERNAME=XXX@bsc.es
+export OS_PASSWORD=XXXX
+export OS_TENANT_NAME=BSC-MuG
+\end{verbatim}
+\item execute the following command:
+\begin{verbatim}
+ curl -v  -s -X POST $OS_AUTH_URL/tokens -H "Content-Type: application/json" 
+ -d '{"auth": {"tenantName": "'"$OS_TENANT_NAME"'", "passwordCredentials": 
+ {"username": "'"$OS_USERNAME"'", "password": 
+"'"$OS_PASSWORD"'"}}}' | python3 -m json.tool >> data.json
+\end{verbatim}
+\item get token from data.json and export the following variable:
+\begin{verbatim}
+ export OS_TOKEN=toke_from_data.json
+\end{verbatim}
+
+With the token you can execute occi commands with auth mode token. For example:
+\begin{verbatim}
+ occi --endpoint https://extcloud05.ebi.ac.uk:8787/occi1.1/ --auth token 
+ -q $OS_TOKEN --action list --resource resource_tpl
+\end{verbatim}
+
 \end{itemize}
 
 
