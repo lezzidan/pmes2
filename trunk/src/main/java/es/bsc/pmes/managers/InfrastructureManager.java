@@ -29,6 +29,7 @@ import javax.xml.stream.XMLStreamReader;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -78,11 +79,13 @@ public class InfrastructureManager {
             try {
                 //rocciClient = new RocciClient();
                 rocciClient = new ROCCI(prop);
-                VirtualResource vr = (VirtualResource) rocciClient.create(hd, sd, prop);
-                logger.trace("compute id: " + vr.getId());
-                logger.trace("IM update: "+vr.getHd().getTotalComputingUnits() +" "+ vr.getHd().getMemorySize());
+                //VirtualResource vr = (VirtualResource) rocciClient.create(hd, sd, prop);
+                String vrID = (String) rocciClient.create(hd, sd, prop);
+                logger.trace("compute id: " + vrID);
+                //logger.trace("IM update: "+vr.getHd().getTotalComputingUnits() +" "+ vr.getHd().getMemorySize());
 
-                vr = rocciClient.waitUntilCreation(vr.getId());
+                //vr = rocciClient.waitUntilCreation(vr.getId());
+                VirtualResource vr = rocciClient.waitUntilCreation(vrID);
                 logger.trace("VM id: " + vr.getId());
                 logger.trace("VM ip: " + vr.getIp());
 

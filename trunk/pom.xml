@@ -106,16 +106,27 @@
             <artifactId>connectors-rocci</artifactId>
             <version>${conn.version}</version>
         </dependency>-->
-        <dependency>
-            <groupId>es.bsc</groupId>
-            <artifactId>rocci-conn</artifactId>
-            <version>1.0-42</version>
-        </dependency>
-        <dependency>
+        <!--<dependency>
             <groupId>es.bsc.conn</groupId>
             <artifactId>connectors-commons</artifactId>
             <version>${conn.version}</version>
+        </dependency>-->
+        <!--<dependency>
+            <groupId>es.bsc</groupId>
+            <artifactId>rocci-conn</artifactId>
+            <version>1.0-50</version>
+        </dependency>-->
+        <dependency>
+            <groupId>es.bsc</groupId>
+            <artifactId>commons-conn</artifactId>
+            <version>1.0-50</version>
         </dependency>
+        <dependency>
+            <groupId>es.bsc</groupId>
+            <artifactId>rocci-conn</artifactId>
+            <version>1.0-50</version>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
