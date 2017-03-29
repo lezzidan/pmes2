@@ -82,16 +82,23 @@ public class InfrastructureManager {
                 //VirtualResource vr = (VirtualResource) rocciClient.create(hd, sd, prop);
                 String vrID = (String) rocciClient.create(hd, sd, prop);
                 logger.trace("compute id: " + vrID);
-                //logger.trace("IM update: "+vr.getHd().getTotalComputingUnits() +" "+ vr.getHd().getMemorySize());
 
-                //vr = rocciClient.waitUntilCreation(vr.getId());
-                VirtualResource vr = rocciClient.waitUntilCreation(vrID);
+                // TODO: HTTPS issue EBI - remove this code when bug has been fixed
+                // VirtualResource vr = rocciClient.waitUntilCreation(vrID);
+                VirtualResource vr = null;
+                if (this.occiEndPoint.contains("https")) {
+                    logger.trace("Replacing http by https! EBI ISSUE!");
+                    String vrIDEBI = vrID.replace("http", "https");
+                    vr = rocciClient.waitUntilCreation(vrIDEBI);
+                } else {
+                    vr = rocciClient.waitUntilCreation(vrID);
+                }
                 logger.trace("VM id: " + vr.getId());
                 logger.trace("VM ip: " + vr.getIp());
 
                 // Update System Status
-                //TODO know host, use data from vr
-                Host h = systemStatus.getCluster().get(0); //test purposes
+                //TODO: occi doesn't give information about what host will be host the VM
+                Host h = systemStatus.getCluster().get(0); //test purposes: always get first Host
                 systemStatus.update(h, hd.getTotalComputingUnits(), hd.getMemorySize());
                 logger.trace("IM update: "+hd.getTotalComputingUnits() +" "+ hd.getMemorySize());
                 Resource newResource = new Resource(vr.getIp(), prop, vr);
@@ -204,11 +211,12 @@ public class InfrastructureManager {
         VirtualResource vr = activeResources.get(Id).getVr();
         logger.trace("Destroying VM " + Id);
         rocciClient.destroy(vr.getId());
-        // TODO test if destroy is done
+        // TODO: test if destroy is done correctly
         // Update System Status
-        //TODO know host
-        //Host h = systemStatus.getCluster().get(0); //test purposes
+        //TODO: occi doesn't give information about what host will be host the VM
+        // Host h = systemStatus.getCluster().get(0); //test purposes: always get first Host
         //systemStatus.update(h, -vr.getHd().getTotalComputingUnits(), -vr.getHd().getMemorySize());
+        //logger.trace("IM update: "+h.getUsedCores()+" "+h.getUsedMemory());
     }
 
     public void configureResources() throws ParserConfigurationException {
