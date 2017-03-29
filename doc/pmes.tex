@@ -9,31 +9,207 @@
 
 \maketitle
 
-\section{Technologies}
-\begin{itemize}
- \item cloud-init: http://cloudinit.readthedocs.io/en/latest/topics/examples.html
- \item occi
- \item mongodb and mongoose
- \item pm2
-\end{itemize}
-
 \section{Configuration}
 \subsection{User configuration}
-\subsection{config file}
+PMES vm should have the user pmes.
+
 \subsection{Folder structure}
 At pmes home directory (/home/pmes/) should be the following folders:
 \begin{itemize}
 \item pmes
+ \subitem Dashboard
  \subitem logs
  \subitem config
  \subitem jobs
 \end{itemize}
 
-tomcat user should have permission to write.
-\subsection{tomcat configuration}
-The PMES service is deployed using tomcat7. 
+tomcat7 user should have permission to write on folders logs and jobs.
+Give permissions to the tomcat7 user:
+\begin{verbatim}
+ sudo usermod -a -G tomcat7 pmes
+ sudo chmod g+w myfolder
+\end{verbatim}
 
-\section{Dashboard}
-The Dashboard service is deployed using pm2. 
-\section{PMES service}
+\subsection{config file}
+The config file should be at \texttt{/home/pmes/pmes/config/config.xml}. The structure is as follows:
+
+\begin{verbatim}
+ <pmes>
+    <providerName Name="OpenStack" or "One"/>
+    <endPointROCCI>https://extcloud05.ebi.ac.uk:8787/occi1.1/</endPointROCCI>
+    <auth>"token" or "x509"</auth>
+    <ca-path></ca-path>
+    <hosts>
+        <host>
+            <name>host1</name>
+            <MAX_CPU>2400</MAX_CPU>
+            <MAX_MEM>99195808</MAX_MEM>
+        </host>
+        ...
+        <host>
+            <name>hostn</name>
+            <MAX_CPU>2400</MAX_CPU>
+            <MAX_MEM>99195808</MAX_MEM>
+        </host>
+    </hosts>
+    <logPath>/home/pmes/pmes/logs/</logPath>
+    <logLevel>DEBUG</logLevel>
+    <runCmd>
+        <cmd>boot commands to execute on vms</cmd>
+    </runCmd>
+    <auth-keys>
+        <key>ssh-key 1</key>
+        ...
+        <key>ssh-key n</key>
+    </auth-keys>
+</pmes>
+\end{verbatim}
+
+
+\subsection{logs}
+
+\section{Deploy PMES}
+\subsection{PMES Service}
+The PMES service is deployed using tomcat7. To deploy PMES service copy \texttt{pmes.war} to webapps folder (usually at \texttt{/var/lib/tomcat7/webapps}) and restart tomcat.
+
+\begin{verbatim}
+ sudo service tomcat7 stop
+ sudo cp -r pmes.war /var/lib/tomcat7/webapps/
+ sudo service tomcat7 start
+\end{verbatim}
+
+
+\subsection{Dashboard}
+The Dashboard service is deployed using pm2.\\
+\begin{verbatim}
+ cd /home/pmes/pmes/Dashboard/PMES2Dash/
+ # Install Dependencies
+ npm install --save
+ # Init pm2 Dashboard service
+ pm2 init /home/pmes/pmes/Dashboard/PMES2Dash/pm.yaml
+\end{verbatim}
+
+Data is stored at mongodb database \texttt{pmes2}.
+\begin{verbatim}
+ # start mongo service
+ sudo service mongodb start
+ # Open mongo console
+ mongo
+ # Inside mongo console use pmes2 database
+ > use pmes2
+ # show pmes collections
+ > show collections
+ # show pmes users
+ db.users.find()
+ 
+\end{verbatim}
+
+\section{Usage}
+\subsection{Dashboard}
+PMES Dashboard is  deployed using pm2. The endpoint is \texttt{http://localhost:3000}. There is an initial user created \texttt{user: pmes@pmes.com, password: pmes}
+
+\subsection{PMES Service}
+PMES service is  deployed using tomcat7. The endpoint is \texttt{http://localhost:8080/pmes/pmes/}.
+
+You can call the service using curl (see APIDefinition document) or you can call the service using the python script \texttt{/home/pmes/pmes/scripts/curlPmesApi.py}.
+
+\begin{verbatim}
+ # api call getSystemStatus
+ python3 curlPmesApi.py getSystemStatus
+ # api call getActivityReport
+ python3 curlPmesApi.py getActivityReport job_id
+ # api call terminateActivity
+ python3 curlPmesApi.py terminateActivity job_id
+ # api call createActivity
+ python3 curlPmesApi.py createActivity createVM.json
+\end{verbatim}
+
+\texttt{createVM.json} is a json file with a job definition. For example:
+\begin{verbatim}
+ [{ "jobName": "HelloTest2_584817558cb7550b5e9970b0",
+           "wallTime": "5",
+           "minimumVMs": "1",
+           "maximumVMs": "1",
+           "limitVMs": "1",
+           "initialVMs": "1",
+           "memory": "1.0",
+           "cores": "1",
+           "disk" : "1.0",
+           "inputPaths": ["/home/"],
+           "outputPaths": ["/home/"],
+           "mountPath":"",
+           "numNodes": "1",
+           "user":
+              { "username": "lcodo",
+                "credentials":
+                { "pem": "/home/pmes/certs/pmes.pem",
+                  "key": "/home/pmes/certs/pmes.key"}
+              },
+           "img": 
+              { "imageName": "os_tpl#4f916ede-218b-47e4-93aa-b795a5acf813", 
+                "imageType": "resource_tpl#721112dd-2f33-40eb-8975-7bd34dbabfc8"
+              },
+           "app":
+              { "name": "HelloTest2",
+                "target": "/home/pmes/testSimple",
+                "source": "launch.sh",
+                "args": { "val1": "Hola", "val2": "Mundo" } ,
+                "type": "COMPSs"
+              },
+           "compss_flags": {}
+        }]
+\end{verbatim}
+
+\section{Dependencies}
+The image and the template should have the following permissions: Use and Manage for user, group and other.
+\subsection{PMES VM}
+Dependencies:
+\begin{itemize}
+
+ \item Rocci Client - \verb|{https://github.com/gwdg/rOCCI-cli; https://rvm.io/rvm/install#explained}|
+ \begin{verbatim}
+  # Install occi client
+  curl -L http://go.egi.eu/fedcloud.ui | /bin/bash -
+ \end{verbatim}
+ 
+ \subitem If occi uses certificates move grid-security certificates to /etc/
+ \item tomcat7: install tomcat7 \texttt{sudo apt-get install tomcat7}
+ \subitem be sure that tomcat7 is using java8. (Export java home)
+  \begin{verbatim}
+  sudo nano /usr/share/tomcat7/bin/setenv.sh
+  export JAVA_HOME=/usr/lib/jvm/java-8-oracle/
+ \end{verbatim}
+ \subitem if default tomcat7 user is used: no extra configuration is needed.
+ 
+ \subitem if the tomcat user is changed to pmes: the following configuration is needed.
+ \begin{verbatim}
+     sudo nano /etc/default/tomcat7 # change TOMCAT7_USER=pmes, TOMCAT7_GROUP=pmes
+     
+     sudo nano /etc/init.d/tomcat7 # change TOMCAT7_USER=pmes, TOMCAT7_GROUP=pmes
+ \end{verbatim}
+ \item mongodb
+ \item pm2
+ 
+ \end{itemize}
+
+ \subsection{APP VM}
+ Dependencies:
+ \begin{enumerate}
+  \item COMPSs
+  \item cloud-init: http://cloudinit.readthedocs.io/en/latest/topics/examples.html
+  \item package nis or cifs to mount shared folders. (see document mountFolders)
+ \end{enumerate}
+
+\section{Actual Deploys}
+\subsection{COMPSs VM at bsccv02 - old cluster}
+Template 105 has Ubuntu 14, COMPSs 2.0 and CIFS.\\
+Template 104 has Ubuntu 16, COMPSs 2.0 and CIFS.
+
+\subsection{PMES VM at bsccv02 - old cluster}
+Dashboard is at http://192.168.122.12:3000/ \\
+PMES Service is at http://192.168.122.12:8080/ \\
+
+\subsection{EBI}
+PMES service is at \texttt{http://localhost:8080/pmes/pmes/}. The access is explained at EBIDeployment document.
+
 \end{document}

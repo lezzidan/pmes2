@@ -65,6 +65,59 @@ With the token you can execute occi commands with auth mode token. For example:
 
 \end{itemize}
 
+\section{PMES}
+PMES service is already installed using tomcat7. The endpoint is \texttt{http://localhost:8080/pmes/pmes/}.
+
+You can call the service using curl or you can call the service using the python script \texttt{/home/pmes/pmes/scripts/curlPmesApi.py}.
+
+\begin{verbatim}
+ # api call getSystemStatus
+ python3 curlPmesApi.py getSystemStatus
+ # api call getActivityReport
+ python3 curlPmesApi.py getActivityReport job_id
+ # api call terminateActivity
+ python3 curlPmesApi.py terminateActivity job_id
+ # api call createActivity
+ python3 curlPmesApi.py createActivity createVM.json
+\end{verbatim}
+
+\texttt{createVM.json} is a json file with a job definition. For example:
+\begin{verbatim}
+ [{ "jobName": "HelloTest2_584817558cb7550b5e9970b0",
+           "wallTime": "5",
+           "minimumVMs": "1",
+           "maximumVMs": "1",
+           "limitVMs": "1",
+           "initialVMs": "1",
+           "memory": "1.0",
+           "cores": "1",
+           "disk" : "1.0",
+           "inputPaths": ["/home/"],
+           "outputPaths": ["/home/"],
+           "mountPath":"",
+           "numNodes": "1",
+           "user":
+              { "username": "lcodo",
+                "credentials":
+                { "pem": "",
+                  "key": "",
+                  "token": "6718197acbb04f7d9695f832cfb2e38f" }
+              },
+           "img": 
+              { "imageName": "os_tpl#4f916ede-218b-47e4-93aa-b795a5acf813", 
+                "imageType": "resource_tpl#721112dd-2f33-40eb-8975-7bd34dbabfc8"
+              },
+           "app":
+              { "name": "HelloTest2",
+                "target": "/home/pmes/testSimple",
+                "source": "launch.sh",
+                "args": { "val1": "Hola", "val2": "Mundo" } ,
+                "type": "COMPSs"
+              },
+           "compss_flags": {}
+        }]
+\end{verbatim}
+
 
 
 \end{document}

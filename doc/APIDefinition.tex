@@ -42,9 +42,7 @@
 
 \maketitle
 
-\section{Introduction}
-Dashboard is at http://192.168.122.12:3000/ \\
-PMES Service is at http://192.168.122.12:8080/ \\
+
 \section{API Definition}
 
 \begin{enumerate}
@@ -239,7 +237,8 @@ The credentials should have: uid, gid and token or key and pem.
                 { "pem": "/home/pmes/certs/usr1.pem",
                   "key": "/home/pmes/certs/usr1.key",
                   "uid": "306",
-                  "gid": "306"} 
+                  "gid": "306",
+                  "token": "12345"} 
               },
            "img": { "imageName": "uuid_pmescompss_83", "imageType": "small" },
            "app": 
@@ -253,48 +252,5 @@ The credentials should have: uid, gid and token or key and pem.
 
 ["31eb1268-b6bc-4be2-9fa9-f8a046b752db"]
 \end{lstlisting}
-
-\section{VM building}
-The image and the template should have the following permissions: Use and Manage for user, group and other.
-\subsection{PMES VM}
-Dependencies:
-\begin{itemize}
-
- \item Rocci Client and RVM- \verb|{https://github.com/gwdg/rOCCI-cli; https://rvm.io/rvm/install#explained}|
- \begin{lstlisting}
-  curl -L http://go.egi.eu/fedcloud.ui | /bin/bash -
- \end{lstlisting}
-
- \item If occi uses certificates move grid-security certificates to /etc/
- \item tomcat7:
- \subitem if default tomcat7 user is used: 
- 
- \subitem if the user is changed to pmes:
- \begin{verbatim}
-     sudo nano /etc/default/tomcat7
-     TOMCAT7_USER=pmes, TOMCAT7_GROUP=pmes
- \end{verbatim}
-
- \subitem change user to pmes 
-\texttt{ sudo nano /etc/init.d/tomcat7 } and change $TOMCAT7_USER=tomcat7, TOMCAT7_GROUP=tomcat7$
- \subitem create environment \texttt{sudo nano /usr/share/tomcat7/bin/setenv.sh}
- \begin{verbatim}
-export JAVA_HOME=TODO
-
- \end{verbatim}
-
- 
- \end{itemize}
-\subsection{Install PMES}
-create the log folder /home/pmes/pmes/logs and give permissions to the tomcat7 user:
-\begin{verbatim}
- sudo usermod -a -G tomcat7 pmes
- sudo chmod g+w myfolder
-\end{verbatim}
-
-\subsection{COMPSs VM}
-Template 105 has Ubuntu 14, COMPSs 2.0 and CIFS.\\
-Template 104 has Ubuntu 16, COMPSs 2.0 and CIFS.
-
 
 \end{document}
