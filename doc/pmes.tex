@@ -65,9 +65,17 @@ The config file should be at \texttt{/home/pmes/pmes/config/config.xml}. The str
 </pmes>
 \end{verbatim}
 
+\subsection{ssh}
+Disable known\_hosts
+\begin{verbatim}
+Add "StrictHostKeyChecking no" to /etc/ssh/ssh_config
+cd ~/.ssh
+rm known_hosts
+ln -s /dev/null known_hosts
+\end{verbatim}
 
 \subsection{logs}
-
+Logs will be at \texttt{/home/pmes/pmes/logs/}. Tomcat logs are at \texttt{\$CATALINA\_HOME/logs/catalina.out}
 \section{Deploy PMES}
 \subsection{PMES Service}
 The PMES service is deployed using tomcat7. To deploy PMES service copy \texttt{pmes.war} to webapps folder (usually at \texttt{/var/lib/tomcat7/webapps}) and restart tomcat.
@@ -187,8 +195,9 @@ Dependencies:
      
      sudo nano /etc/init.d/tomcat7 # change TOMCAT7_USER=pmes, TOMCAT7_GROUP=pmes
  \end{verbatim}
- \item mongodb
+ \item mongodb: https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/
  \item pm2
+ \item node (version $>= 0.8$)
  
  \end{itemize}
 

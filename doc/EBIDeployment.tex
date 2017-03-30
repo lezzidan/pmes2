@@ -13,17 +13,17 @@
 OpenStack acces:
 \begin{verbatim}
 URL: https://extcloud05.ebi.ac.uk/dashboard/project/
-username: XXX@bsc.es
-password: XXXX
+username: laia.codo@bsc.es
+password: VLZtKndy
 \end{verbatim}
 
 First acces to the VM with floating point.
 \begin{verbatim}
- ssh -vv -i XXX.pem -l ubuntu 193.62.52.104
+ ssh -vv -i lcodo.pem -l ubuntu 193.62.52.104
 \end{verbatim}
 Then acces to the VM which is hosting the PMES service:
 \begin{verbatim}
- ssh -i XXX.pem -l ubuntu 192.168.0.27
+ ssh -i lcodo.pem -l ubuntu 192.168.0.27
 \end{verbatim}
 Finally change to the user PMES.
 \begin{verbatim}
@@ -41,8 +41,8 @@ export OS_CLOUDNAME=overcloud
 export OS_AUTH_URL=https://extcloud05.ebi.ac.uk:13000/v2.0
 export NOVA_VERSION=1.1
 export COMPUTE_API_VERSION=1.1
-export OS_USERNAME=XXX@bsc.es
-export OS_PASSWORD=XXXX
+export OS_USERNAME=laia.codo@bsc.es
+export OS_PASSWORD=VLZtKndy
 export OS_TENANT_NAME=BSC-MuG
 \end{verbatim}
 \item execute the following command:
