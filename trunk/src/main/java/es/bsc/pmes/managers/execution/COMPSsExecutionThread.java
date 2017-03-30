@@ -18,9 +18,9 @@ public class COMPSsExecutionThread extends AbstractExecutionThread{
         this.job = job;
     }
 
-    public void run() {
+    /*public void run() {
         executeJob();
-    }
+    }*/
 
     @Override
     protected Job getJob() {

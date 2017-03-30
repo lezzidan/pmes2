@@ -83,16 +83,17 @@ public class InfrastructureManager {
                 String vrID = (String) rocciClient.create(hd, sd, prop);
                 logger.trace("compute id: " + vrID);
 
+
+                VirtualResource vr = rocciClient.waitUntilCreation(vrID);
                 // TODO: HTTPS issue EBI - remove this code when bug has been fixed
-                // VirtualResource vr = rocciClient.waitUntilCreation(vrID);
-                VirtualResource vr = null;
+                /*VirtualResource vr = null;
                 if (this.occiEndPoint.contains("https")) {
                     logger.trace("Replacing http by https! EBI ISSUE!");
                     String vrIDEBI = vrID.replace("http", "https");
                     vr = rocciClient.waitUntilCreation(vrIDEBI);
                 } else {
                     vr = rocciClient.waitUntilCreation(vrID);
-                }
+                }*/
                 logger.trace("VM id: " + vr.getId());
                 logger.trace("VM ip: " + vr.getIp());
 
@@ -166,6 +167,7 @@ public class InfrastructureManager {
                 uid = "306";
                 gid = "306";
             }*/
+            //TODO: if uid and gid are null fails
             PrintWriter writer = new PrintWriter(path, "UTF-8");
             // Cloud-init is not working properly on ubuntu16. Only bootcmd commands work correctly.
             writer.println("#cloud-config");
