@@ -4,7 +4,8 @@ import sys
 
 ip = "localhost"
 port = "8080"
-serviceName = "trunk_war_exploded"
+#serviceName = "trunk_war_exploded"
+serviceName = "pmes"
 serviceUrl = "http://" + ip + ":" + port + "/" + serviceName + "/"
 
 
@@ -26,14 +27,6 @@ def getSystemStatus():
     return result
 
 
-def createActivity(data):
-    url = serviceUrl + "pmes/createActivity"
-    headers = {'Content-Type': 'application/json'}
-    listJobsDef = json.dumps(data)
-    result = post(url, headers, data=listJobsDef)
-    return result
-
-
 def terminateActivity(listOfJobsId):
     url = serviceUrl + "pmes/terminateActivity"
     headers = {'Content-Type': 'application/json'}
@@ -45,8 +38,17 @@ def terminateActivity(listOfJobsId):
 def getActivityReport(listOfJobsId):
     url = serviceUrl + "pmes/getActivityReport"
     headers = {'Content-Type': 'application/json'}
-    jobIds = json.loads(listOfJobsId)
-    result = post(url, headers, data=jobIds)
+    jobId = json.loads(listOfJobsId)
+    print(jobId)
+    result = post(url, headers, data=jobId)
+    return result
+
+
+def createActivity(data):
+    url = serviceUrl + "pmes/createActivity"
+    headers = {'Content-Type': 'application/json'}
+    #listJobsDef = json.dumps(dictData)
+    result = post(url, headers, data=data)
     return result
 
 
@@ -56,28 +58,26 @@ def main(args):
         r = getSystemStatus()
         print(r)
     elif action == "terminateActivity":
-        jobIds = []
-        for i in xrange(2, len(args) - 1):
-            jobIds.append(args[i])
-        r = terminateActivity(str(jobIds))
-        # r = terminateActivity('["18045e7f-a670-46fe-a067-3b1a19870bcf"]')
+        r = terminateActivity('["18045e7f-a670-46fe-a067-3b1a19870bcf"]')
         print(r)
     elif action == "getActivityReport":
-        jobIds = []
-        for i in xrange(2, len(args) - 1):
-            jobIds.append(args[i])
-        r = getActivityReport(str(jobIds))
-        # r = getActivityReport('["18045e7f-a670-46fe-a067-3b1a19870bcf"]')
+        r = getActivityReport('["18045e7f-a670-46fe-a067-3b1a19870bcf"]')
         print(r)
     elif action == "createActivity":
         jsonFile = args[2]
-        with open(jsonFile) as json_data:
-            data = json.loads(json_data)
+        with open(jsonFile, 'r') as json_data:
+            content = json_data.read()
+            data = json.loads(content)
+        print(data)
         r = createActivity(data)
         print(r)
     else:
-        print "Action {} not implemented".format(action)
+        print("Action {} not implemented".format(action))
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    if len(sys.argv) < 2:
+        print("Usage: action")
+        print("action: getSystemStatus | terminateActivity | getActivityReport | createActivity")
+    else:
+        main(sys.argv)
