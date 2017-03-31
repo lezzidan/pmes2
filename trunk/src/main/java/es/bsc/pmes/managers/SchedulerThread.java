@@ -76,11 +76,13 @@ public class SchedulerThread extends Thread{
         if (job instanceof COMPSsJob){
             logger.trace("COMPSs Job");
             executor = new COMPSsExecutionThread((COMPSsJob) job);
+            logger.trace("Executor created");
         } else {
             logger.trace("Single Job");
             executor = new SingleExecutionThread((SingleJob) job);
         }
         this.tasks.put(job.getId(), executor);
+        logger.trace("Executor Start");
         executor.start();
     }
 

@@ -187,8 +187,9 @@ public class InfrastructureManager {
             writer.println("  - cat /home/"+user+"/.ssh/id_rsa.pub >> /home/"+user+"/.ssh/authorized_keys");
             // COMPSs environment variables
             writer.println("  - echo \"export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64\" >> /home/"+user+"/.bashrc");
+            //writer.println("  - echo \"export JAVA_HOME=/usr/lib/jvm/java-8-oracle/\" >> /home/"+user+"/.bashrc");
             writer.println("  - echo \"export PATH=$PATH:/opt/COMPSs/Runtime/scripts/user:/opt/COMPSs/Bindings/c/bin\" >> /home/"+user+"/.bashrc");
-            //writer.println("  - [echo, \"source /opt/COMPSs/compssenv\", >>, ~/.bashrc]" ); //COMPSs 2.0
+            //writer.println("  - [echo \"source /opt/COMPSs/compssenv\" >> /home/"+user+"/.bashrc"); //COMPSs 2.0
 
             // Add commands that are in config file.
             for (String cmd: this.commands) {

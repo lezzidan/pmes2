@@ -18,9 +18,6 @@ public class COMPSsExecutionThread extends AbstractExecutionThread{
         this.job = job;
     }
 
-    /*public void run() {
-        executeJob();
-    }*/
 
     @Override
     protected Job getJob() {
@@ -30,7 +27,8 @@ public class COMPSsExecutionThread extends AbstractExecutionThread{
     @Override
     public void executeJob(){
         // check if the user want to stop execution
-        if (this.stopExecution("-1", Boolean.TRUE)){
+        if (this.stopExecution("", Boolean.FALSE)){
+            logger.trace("Terminate JOB");
             return;
         }
         // Create Resource
