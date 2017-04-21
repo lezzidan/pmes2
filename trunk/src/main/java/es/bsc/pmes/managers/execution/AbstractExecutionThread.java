@@ -11,6 +11,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.Arrays;
 
 public abstract class AbstractExecutionThread extends Thread implements ExecutionThread{
     private InfrastructureManager im = InfrastructureManager.getInfrastructureManager();
@@ -78,12 +79,13 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
     }
 
     public Integer executeCommand(String[] cmd){
-        Runtime runtime = Runtime.getRuntime();
+        // Runtime runtime = Runtime.getRuntime();
         Integer times = 3;
         Integer exitValue = 1;
         Integer i = 0;
         while (i < times && exitValue != 0) {
             logger.trace("Round "+String.valueOf(i));
+            logger.trace("Command: " + Arrays.toString(cmd));
 
             if (i > 0){
                 //Wait until vm will be ready
@@ -94,7 +96,9 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
                 }
             }
             try {
-                this.process = runtime.exec(cmd);
+                ProcessBuilder pb = new ProcessBuilder(cmd);
+                this.process = pb.start();
+                //this.process = runtime.exec(cmd);
 
                 BufferedReader in = new BufferedReader(new
                         InputStreamReader(this.process.getInputStream()));

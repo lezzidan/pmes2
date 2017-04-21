@@ -47,6 +47,7 @@ public class InfrastructureManager {
     private String occiEndPoint;
     private String auth;
     private String ca_path;
+    private String link;
     private ArrayList<String> commands;
     private ArrayList<String> auth_keys;
 
@@ -59,6 +60,7 @@ public class InfrastructureManager {
         this.auth_keys = new ArrayList<>();
         this.commands = new ArrayList<>();
         this.ca_path = "";
+        this.link = "";
         this.occiEndPoint = "";
         try {
             configureResources();
@@ -77,23 +79,12 @@ public class InfrastructureManager {
         logger.trace("Creating Resource");
         if (Objects.equals("ONE", this.provider) || Objects.equals("OpenStack", this.provider)) {
             try {
-                //rocciClient = new RocciClient();
                 rocciClient = new ROCCI(prop);
-                //VirtualResource vr = (VirtualResource) rocciClient.create(hd, sd, prop);
                 String vrID = (String) rocciClient.create(hd, sd, prop);
                 logger.trace("compute id: " + vrID);
 
-
                 VirtualResource vr = rocciClient.waitUntilCreation(vrID);
-                // TODO: HTTPS issue EBI - remove this code when bug has been fixed
-                /*VirtualResource vr = null;
-                if (this.occiEndPoint.contains("https")) {
-                    logger.trace("Replacing http by https! EBI ISSUE!");
-                    String vrIDEBI = vrID.replace("http", "https");
-                    vr = rocciClient.waitUntilCreation(vrIDEBI);
-                } else {
-                    vr = rocciClient.waitUntilCreation(vrID);
-                }*/
+
                 logger.trace("VM id: " + vr.getId());
                 logger.trace("VM ip: " + vr.getIp());
 
@@ -123,6 +114,7 @@ public class InfrastructureManager {
         // Default rocci server configuration
         properties.put("Server", this.occiEndPoint);
         properties.put("auth", this.auth);
+        properties.put("link", this.link);
         if (this.auth.equals("token")) {
             logger.trace("Authentication method: token");
             logger.trace("token: "+jobDef.getUser().getCredentials().get("token"));
@@ -186,10 +178,10 @@ public class InfrastructureManager {
             writer.println("  - sudo -u "+user+" ssh-keygen -f /home/"+user+"/.ssh/id_rsa -t rsa -N \'\'" );
             writer.println("  - cat /home/"+user+"/.ssh/id_rsa.pub >> /home/"+user+"/.ssh/authorized_keys");
             // COMPSs environment variables
-            writer.println("  - echo \"export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64\" >> /home/"+user+"/.bashrc");
-            //writer.println("  - echo \"export JAVA_HOME=/usr/lib/jvm/java-8-oracle/\" >> /home/"+user+"/.bashrc");
-            writer.println("  - echo \"export PATH=$PATH:/opt/COMPSs/Runtime/scripts/user:/opt/COMPSs/Bindings/c/bin\" >> /home/"+user+"/.bashrc");
-            //writer.println("  - [echo \"source /opt/COMPSs/compssenv\" >> /home/"+user+"/.bashrc"); //COMPSs 2.0
+            //writer.println("  - echo \"export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64\" >> /home/"+user+"/.bashrc");  // BSC
+            writer.println("  - echo \"export JAVA_HOME=/usr/lib/jvm/java-8-oracle/\" >> /home/"+user+"/.bashrc");              // EBI
+            //writer.println("  - echo \"export PATH=$PATH:/opt/COMPSs/Runtime/scripts/user:/opt/COMPSs/Bindings/c/bin\" >> /home/"+user+"/.bashrc");
+            writer.println("  - echo \"source /opt/COMPSs/compssenv\" >> /home/"+user+"/.bashrc"); //COMPSs 2.0
 
             // Add commands that are in config file.
             for (String cmd: this.commands) {
@@ -240,12 +232,11 @@ public class InfrastructureManager {
         //System.out.println(doc.getDocumentElement().getElementsByTagName("logLevel").item(0).getTextContent());
         //System.out.println(doc.getDocumentElement().getElementsByTagName("logPath").item(0).getTextContent());
 
+        this.provider = doc.getDocumentElement().getElementsByTagName("providerName").item(0).getAttributes().getNamedItem("Name").getTextContent();
         this.occiEndPoint = doc.getDocumentElement().getElementsByTagName("endPointROCCI").item(0).getTextContent();
         this.auth = doc.getDocumentElement().getElementsByTagName("auth").item(0).getTextContent();
         this.ca_path = doc.getDocumentElement().getElementsByTagName("ca-path").item(0).getTextContent();
-
-        this.provider = doc.getDocumentElement().getElementsByTagName("providerName").item(0).getAttributes().getNamedItem("Name").getTextContent();
-
+        this.link = doc.getDocumentElement().getElementsByTagName("link").item(0).getTextContent();
 
         NodeList nlist = doc.getElementsByTagName("host");
         for (int i = 0; i < nlist.getLength(); i++){

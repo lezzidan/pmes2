@@ -53,12 +53,23 @@ public class SingleExecutionThread extends AbstractExecutionThread{
         cmd.add("ssh");
         cmd.add(address);
         cmd.add("bash");
-        cmd.add("-ic");
+        cmd.add("-i");   // beware with this... it is needed in order to load .bashrc
+        //cmd.add("-c"); // not needed in this case
+        String commandToRun = "";
+        commandToRun += target+"/./"+source;
+        for (Object o : args.entrySet()) {
+            Map.Entry pair = (Map.Entry) o;
+            commandToRun += " " + (String) pair.getValue();
+        }
+        commandToRun += "";
+        cmd.add(commandToRun);
+        /*
         cmd.add(target+"/./"+source);
         for (Object o : args.entrySet()) {
             Map.Entry pair = (Map.Entry) o;
             cmd.add((String) pair.getValue());
         }
+        */
         String[] command = new String[cmd.size()];
         job.setCmd(cmd.toArray(command));
         logger.trace(Arrays.toString(command));
@@ -82,7 +93,7 @@ public class SingleExecutionThread extends AbstractExecutionThread{
             return;
         }
 
-        logger.trace("runnning");
+        logger.trace("Runnning");
         long startTime = System.currentTimeMillis();
         Integer exitValue = executeCommand(command);
         long endTime = System.currentTimeMillis()-startTime;

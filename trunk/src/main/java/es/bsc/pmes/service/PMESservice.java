@@ -32,6 +32,7 @@ public class PMESservice {
 
     public void endService(){
         // TODO: endService
+        logger.trace("Finishing PMESService");
     }
 
     public ArrayList<String> createActivity(ArrayList<JobDefinition> jobDefinitions) {
