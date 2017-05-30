@@ -48,6 +48,7 @@ public class InfrastructureManager {
     private String auth;
     private String ca_path;
     private String link;
+    private String link2;
     private ArrayList<String> commands;
     private ArrayList<String> auth_keys;
 
@@ -61,6 +62,7 @@ public class InfrastructureManager {
         this.commands = new ArrayList<>();
         this.ca_path = "";
         this.link = "";
+        this.link2 = "";
         this.occiEndPoint = "";
         try {
             configureResources();
@@ -82,6 +84,14 @@ public class InfrastructureManager {
                 rocciClient = new ROCCI(prop);
                 String vrID = (String) rocciClient.create(hd, sd, prop);
                 logger.trace("compute id: " + vrID);
+
+                if (Objects.equals("OpenStack", this.provider) && !"".equals(this.link2)){
+                    // If we are using OpenStack, like at EBI, it is necessary to attach a new
+                    // network interface for mounting the nfs.
+                    logger.trace("[EBI] Attaching new network interface for storage sharing purposes (nfs).");
+                    // TODO: ADD THE CALL TO rOCCI client.
+                    rocciClient.attachLink(vrID, this.link2);
+                }
 
                 VirtualResource vr = rocciClient.waitUntilCreation(vrID);
 
@@ -166,7 +176,7 @@ public class InfrastructureManager {
             writer.println("bootcmd:");
             writer.println("  - sudo groupadd -g "+gid+" transplant");
             writer.println("  - sudo useradd -m -d /home/"+user+" -s /bin/bash --uid "+uid+" --gid "+gid+" -G root "+user);
-            if (!mount.equals("")) {
+            if (mount.equals("transplant")) {
                 writer.println("  - sudo mkdir -p /transplant");
                 // this line should change if the mount method is not CIFS.
                 writer.println("  - sudo mount -t cifs //192.168.122.253/INBTransplant /transplant -o user=guest,password=guestTransplant01,rsize=130048,sec=ntlmssp");
@@ -174,6 +184,17 @@ public class InfrastructureManager {
                 writer.println("  - sudo mv /home/" + user + " /tmp");
                 writer.println("  - sudo ln -s " + mount + " /home/" + user);
             }
+            if (mount.equals("mug-bsc")) {
+                logger.trace("Adding context lines for the shared storage.");
+                writer.println("  - sudo mkdir -p /mug-bsc");
+                // this line should change if the mount method is not CIFS.
+                writer.println("  - sudo mount -t nfs 192.168.122.222:/data/cloud /mug-bsc/");
+            }
+            if (mount.equals("EBI")) {
+                // TODO: ADD THE LINES TO MOUNT THE SHARED STORAGE AT EBI
+                logger.trace("WARNING: TODO: Add the lines to mount the shared storage at EBI.");
+            }
+            
             // enable ssh localhost (COMPSs requirement)
             writer.println("  - sudo -u "+user+" ssh-keygen -f /home/"+user+"/.ssh/id_rsa -t rsa -N \'\'" );
             writer.println("  - cat /home/"+user+"/.ssh/id_rsa.pub >> /home/"+user+"/.ssh/authorized_keys");
@@ -237,6 +258,7 @@ public class InfrastructureManager {
         this.auth = doc.getDocumentElement().getElementsByTagName("auth").item(0).getTextContent();
         this.ca_path = doc.getDocumentElement().getElementsByTagName("ca-path").item(0).getTextContent();
         this.link = doc.getDocumentElement().getElementsByTagName("link").item(0).getTextContent();
+        this.link2 = doc.getDocumentElement().getElementsByTagName("link2").item(0).getTextContent();
 
         NodeList nlist = doc.getElementsByTagName("host");
         for (int i = 0; i < nlist.getLength(); i++){

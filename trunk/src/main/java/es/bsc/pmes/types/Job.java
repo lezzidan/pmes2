@@ -212,36 +212,48 @@ public class Job {
 
             String[] command = new String[cmd.size()];
             try {
-                Process process = runtime.exec(cmd.toArray(command));
+                Integer pExitValue = 0;
+                Integer max_retries = 0;
+                do{
+                    Process process = runtime.exec(cmd.toArray(command));
 
-                BufferedReader in = new BufferedReader(new
-                        InputStreamReader(process.getInputStream()));
+                    BufferedReader in = new BufferedReader(new
+                            InputStreamReader(process.getInputStream()));
 
-                BufferedReader err = new BufferedReader(new
-                        InputStreamReader(process.getErrorStream()));
+                    BufferedReader err = new BufferedReader(new
+                            InputStreamReader(process.getErrorStream()));
 
-                // Output log
-                String outStr = "";
-                String line = null;
-                while ((line = in.readLine()) != null) {
-                    outStr += line;
-                }
-                in.close();
-                logger.trace("outMessage: " + outStr);
+                    // Output log
+                    String outStr = "";
+                    String line = null;
+                    while ((line = in.readLine()) != null) {
+                        outStr += line;
+                    }
+                    in.close();
+                    logger.trace("outMessage: " + outStr);
 
-                //Error log
-                line = null;
-                String errStr = "";
-                while ((line = err.readLine()) != null) {
-                    errStr += line;
-                }
-                err.close();
-                logger.trace("errMessage: " + errStr);
+                    //Error log
+                    line = null;
+                    String errStr = "";
+                    while ((line = err.readLine()) != null) {
+                        errStr += line;
+                    }
+                    err.close();
+                    logger.trace("errMessage: " + errStr);
 
-                process.waitFor();
-                Integer pExitValue = process.exitValue();
-                logger.trace("exit Code: "+pExitValue);
-                exitValue += pExitValue; //How many transfers have been failed
+                    process.waitFor();
+                    pExitValue = process.exitValue();
+                    logger.trace("exit Code: "+pExitValue);
+                    exitValue += pExitValue; //How many transfers have been failed
+                    max_retries += 1;
+                    if (pExitValue != 0){
+                        try{
+                           Thread.sleep(10000);
+                        }catch(InterruptedException ex){
+                           Thread.currentThread().interrupt();
+                        }
+                    }
+                }while(pExitValue != 0 && max_retries < 3);
 
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();

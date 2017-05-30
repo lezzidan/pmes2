@@ -47,7 +47,7 @@
 
         <junit.version>4.12</junit.version>
         <log4j.version>2.6.1</log4j.version>
-        <conn.version>1.0</conn.version>
+        <conn.version>1.0-54</conn.version>
 
         <!-- Maven Plugins -->
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -119,12 +119,12 @@
         <dependency>
             <groupId>es.bsc</groupId>
             <artifactId>commons-conn</artifactId>
-            <version>1.0-50</version>
+            <version>${conn.version}</version>
         </dependency>
         <dependency>
             <groupId>es.bsc</groupId>
             <artifactId>rocci-conn</artifactId>
-            <version>1.0-50</version>
+            <version>${conn.version}</version>
         </dependency>
 
         <dependency>
