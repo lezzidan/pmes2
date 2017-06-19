@@ -10,62 +10,97 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 
 /**
- * Created by scorella on 8/5/16.
+ * PMES SERVICE Class
+ *
+ * Main PMES service class
+ *
+ * @author scorella on 8/5/16.
  */
-
 public class PMESservice {
+
+    /* Main attributes */
     private JobManager jm;
     private InfrastructureManager im;
 
+    /* Logger */
     private static final Logger logger = LogManager.getLogger(PMESservice.class);
 
+    /**
+     * Default constructor
+     */
     public PMESservice() {
         this.startService();
     }
 
-    public void startService(){
+    /**
+     * Start the PMES service: Initializes the infrastructure and job managers
+     */
+    public void startService() {
         logger.trace("Starting PMESService");
         this.im = InfrastructureManager.getInfrastructureManager();
         this.jm = JobManager.getJobManager();
-
     }
 
-    public void endService(){
-        // TODO: endService
+    /**
+     * Finishes the PMES service
+     */
+    public void endService() {
+        // Any cleanup?
         logger.trace("Finishing PMESService");
     }
 
+    /**
+     * ***********************************************************************
+     * PMES BACKEND API
+     * ***********************************************************************
+     */
+    /**
+     * CREATE ACTIVITY.
+     *
+     * This method is used to submit a job/s request to PMES. Requires a set of
+     * JobDefinitions.
+     *
+     * @param jobDefinitions Job definitions of the requested jobs
+     * @return A list of the corresponding job ids.
+     */
     public ArrayList<String> createActivity(ArrayList<JobDefinition> jobDefinitions) {
         ArrayList<String> jobIds = new ArrayList<>(jobDefinitions.size());
-        for (JobDefinition jobDef:jobDefinitions) {
+        for (JobDefinition jobDef : jobDefinitions) {
             Job newJob;
-            logger.trace("Job Type: "+jobDef.getApp().getType());
-            if (jobDef.getApp().getType().equals("COMPSs")){
+            logger.trace("Job Type: " + jobDef.getApp().getType());
+            if (jobDef.getApp().getType().equals("COMPSs")) {
                 newJob = new COMPSsJob();
             } else {
                 newJob = new SingleJob();
             }
-            //** Create new job
+            // Create new job
             newJob.setUser(jobDef.getUser());
             newJob.setJobDef(jobDef);
             newJob.setDataIn(jobDef.getInputPaths());
             newJob.setDataOut(jobDef.getOutputPaths());
-            logger.trace("JobDef: "+jobDef.getInputPaths().toString()+" "+jobDef.getOutputPaths().toString());
-            logger.trace("newJob: "+newJob.getDataIn().toString()+" "+newJob.getDataOut().toString());
-            //DEBUG
-            logger.trace("user: "+newJob.getUser().getCredentials().toString());
+            logger.trace("JobDef: " + jobDef.getInputPaths().toString() + " " + jobDef.getOutputPaths().toString());
+            logger.trace("newJob: " + newJob.getDataIn().toString() + " " + newJob.getDataOut().toString());
+            logger.trace("user: " + newJob.getUser().getCredentials().toString());
             jobIds.add(newJob.getId());
 
             String type = newJob instanceof COMPSsJob ? "COMPSs" : "Single";
-            logger.trace("New "+type+" Job created with id "+newJob.getId());
+            logger.trace("New " + type + " Job created with id " + newJob.getId());
             this.jm.enqueueJob(newJob);
         }
         return jobIds;
     }
 
+    /**
+     * TERMINATE ACTIVITY.
+     *
+     * Stops/Cancels the requested activities of the given job ids.
+     *
+     * @param jobIds Job ids to be terminated
+     * @return A list with the messages of each job termination
+     */
     public ArrayList<String> terminateActivity(ArrayList<String> jobIds) {
         ArrayList<String> messages = new ArrayList<>(jobIds.size());
-        for (String id:jobIds) {
+        for (String id : jobIds) {
             String message = "";
             Job job = this.jm.getJobs().get(id);
             if (job != null) {
@@ -75,20 +110,17 @@ public class PMESservice {
                     message += "Job with id "
                             + id
                             + " cannot be cancelled, the job has been finished in Failed state.";
+                } else if (job.getStatus().equals("FINISHED")) {
+                    message += "Job with id "
+                            + id
+                            + " cannot be cancelled, the job has been finished.";
                 } else {
-                    if (job.getStatus().equals("FINISHED")) {
-                        message += "Job with id "
-                                + id
-                                + " cannot be cancelled, the job has been finished.";
-                    } else {
-                        this.jm.deleteJob(job);
-                        message += "Job with id "
-                                + id
-                                + " will be cancelled.";
-                    }
+                    this.jm.deleteJob(job);
+                    message += "Job with id "
+                            + id
+                            + " will be cancelled.";
                 }
-            }
-            else {
+            } else {
                 message += "Job not found";
             }
             messages.add(message);
@@ -96,36 +128,50 @@ public class PMESservice {
         return messages;
     }
 
-    public ArrayList<JobStatus> getActivityStatus(ArrayList<String> jobids){
+    /**
+     * GET ACTIVITY STATUS.
+     *
+     * Retrieve the status of a set of jobs from their job ids.
+     *
+     * @param jobids Job ids to consult
+     * @return List of JobStatus corresponding to each job id
+     */
+    public ArrayList<JobStatus> getActivityStatus(ArrayList<String> jobids) {
         ArrayList<JobStatus> status = new ArrayList<>(jobids.size());
-        for (String id:jobids) {
-            logger.trace("Asking status for job: "+id);
+        for (String id : jobids) {
+            logger.trace("Asking status for job: " + id);
             Job job = this.jm.getJobs().get(id);
             if (job != null) {
                 logger.trace("Job Found");
                 logger.trace(job.getStatus());
                 status.add(JobStatus.valueOf(job.getStatus()));
-            }
-            else {
+            } else {
                 logger.trace("Job not found");
                 status.add(JobStatus.valueOf("ALL"));
             }
         }
-        logger.trace("Sending list status "+status.toString());
+        logger.trace("Sending list status " + status.toString());
         return status;
     }
 
-    public ArrayList<JobReport> getActivityReport(ArrayList<String> jobids){
+    /**
+     * GET ACTIVITY REPORT.
+     *
+     * Retrieve the report of a set of jobs from their job ids.
+     *
+     * @param jobids Job ids to consult
+     * @return List of JobReport corresponding to each job id
+     */
+    public ArrayList<JobReport> getActivityReport(ArrayList<String> jobids) {
         ArrayList<JobReport> reports = new ArrayList<>(jobids.size());
-        for (String id:jobids) {
-            logger.trace("Asking Activity for job: "+id);
+        for (String id : jobids) {
+            logger.trace("Asking Activity for job: " + id);
             Job job = this.jm.getJobs().get(id);
             if (job != null) {
                 logger.trace("Job Found");
                 JobReport jr = job.getReport();
                 reports.add(jr);
-            }
-            else {
+            } else {
                 logger.trace("Job not found");
                 reports.add(new JobReport());
             }
@@ -133,18 +179,57 @@ public class PMESservice {
         return reports;
     }
 
-    public SystemStatus getSystemStatus(){
+    /**
+     * GET SYSTEM STATUS.
+     *
+     * Retrieve the status of the whole system where PMES is deployed
+     *
+     * @return The system status
+     */
+    public SystemStatus getSystemStatus() {
         logger.trace(im.getSystemStatus().print());
         return im.getSystemStatus();
     }
 
-    /** GETTERS AND SETTERS*/
-    public JobManager getJm() { return jm; }
+    /**
+     *************************************************************************
+     * GETTERS AND SETTERS.
+     * ************************************************************************
+     */
+    /**
+     * Job manager getter
+     *
+     * @return the static job manager instance
+     */
+    public JobManager getJm() {
+        return jm;
+    }
 
-    public void setJm(JobManager jm) { this.jm = jm; }
+    /**
+     * Job manager setter
+     *
+     * @param jm the static job manager instance
+     */
+    public void setJm(JobManager jm) {
+        this.jm = jm;
+    }
 
-    public InfrastructureManager getIm() { return im; }
+    /**
+     * Infrastructure manager getter
+     *
+     * @return the static infrastructure manager instance
+     */
+    public InfrastructureManager getIm() {
+        return im;
+    }
 
-    public void setIm(InfrastructureManager im) { this.im = im; }
+    /**
+     * Infrastructure manager setter
+     *
+     * @param im the static infrastructure manager instance
+     */
+    public void setIm(InfrastructureManager im) {
+        this.im = im;
+    }
 
 }

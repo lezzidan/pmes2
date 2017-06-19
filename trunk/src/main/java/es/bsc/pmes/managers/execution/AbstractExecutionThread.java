@@ -13,81 +13,138 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Arrays;
 
-public abstract class AbstractExecutionThread extends Thread implements ExecutionThread{
+/**
+ * ABSTRACT EXECUTION THREAD Class.
+ *
+ * This class contains the abstract execution thread.
+ *
+ * - Singleton class. 
+ * - Abstracts the execution thread for COMPSs and Single modes. 
+ *     - COMPSs - Execute an application with COMPSs within a resource. 
+ *     - Single - Execute an application without COMPSs within a resource.
+ *
+ * @author scorella on 9/8/16.
+ */
+public abstract class AbstractExecutionThread extends Thread implements ExecutionThread {
+
+    /* Main attributes */
     private InfrastructureManager im = InfrastructureManager.getInfrastructureManager();
     private Process process = null;
+
+    /* Logger */
     private static final Logger logger = LogManager.getLogger(AbstractExecutionThread.class);
 
+    /**
+     * Thread run method.
+     */
     public void run() {
         executeJob();
     }
 
+    /**
+     * Abstract job getter
+     *
+     * @return the job being executed
+     */
     protected abstract Job getJob();
 
+    /**
+     * Abstract execution method.
+     */
     public abstract void executeJob();
 
+    /**
+     * Cancel the current job execution.
+     *
+     * @throws Exception Something wrong happened
+     */
     @Override
     public void cancel() throws Exception {
-        if (this.process != null){
+        if (this.process != null) {
             this.process.destroy();
             logger.trace("Job cancelled: Execution stopped");
             getJob().setStatus("CANCELLED");
         }
     }
 
-    public void stageIn(){
-        logger.trace("Staging in");
+    /**
+     * Does the stage in.
+     */
+    public void stageIn() {
+        logger.trace("Staging In");
         Integer failedTransfers = getJob().stage(0);
-        logger.trace("Failed Transfers: "+failedTransfers.toString());
+        logger.trace("Failed Transfers: " + failedTransfers.toString());
     }
 
-    public void stageOut(){
-        logger.trace("Staging out");
+    /**
+     * Does the stage out.
+     */
+    public void stageOut() {
+        logger.trace("Staging Out");
         Integer failedTransfers = getJob().stage(1);
-        logger.trace("Failed Transfers: "+failedTransfers.toString());
+        logger.trace("Failed Transfers: " + failedTransfers.toString());
     }
 
-    public String createResource(){
-        // Create Resource
-        // ** configure Resource Petition
-        logger.trace("Configuring Job " + getJob().getId());
+    /**
+     * Create a resource (eg VM).
+     *
+     * Takes into account the resource petition: - Hardware description -
+     * Software description - Job properties
+     *
+     * @return The new resource id
+     */
+    public String createResource() {
+
         // Configuring Hardware
         HardwareDescription hd = new HardwareDescription();
         hd.setMemorySize(getJob().getJobDef().getMemory());
-        hd.setTotalComputingUnits(getJob().getJobDef().getCores()*getJob().getJobDef().getNumNodes());
+        hd.setTotalComputingUnits(getJob().getJobDef().getCores() * getJob().getJobDef().getNumNodes());
         hd.setImageType(getJob().getJobDef().getImg().getImageType());
         hd.setImageName(getJob().getJobDef().getImg().getImageName());
 
         // Configure software
         SoftwareDescription sd = new SoftwareDescription();
 
-
         // Configure properties
         HashMap<String, String> prop = this.im.configureResource(getJob().getJobDef());
 
-        //** create resource
+        // Create resource
         logger.trace("Creating new Resource");
         String Id = this.im.createResource(hd, sd, prop);
-        logger.trace("Resource Id " + Id);
+        logger.trace("New resource created with Id " + Id);
         getJob().addResource(this.im.getActiveResources().get(Id));
         return Id;
     }
 
-    public void destroyResource(String Id){
-        logger.trace("Deleting Resource");
+    /**
+     * Destroy a resource (eg VM).
+     *
+     * Deletes an existing resource within the infrastructure manager.
+     *
+     * @param Id The resource id to be destroyed
+     */
+    public void destroyResource(String Id) {
+        logger.trace("Deleting Resource: " + Id);
         this.im.destroyResource(Id);
+        logger.trace("Resource deleted: " + Id);
     }
 
-    public Integer executeCommand(String[] cmd){
+    /**
+     * Command executor.
+     *
+     * @param cmd Command to be executed
+     * @return The execution exit value
+     */
+    public Integer executeCommand(String[] cmd) {
         // Runtime runtime = Runtime.getRuntime();
         Integer times = 3;
         Integer exitValue = 1;
         Integer i = 0;
         while (i < times && exitValue != 0) {
-            logger.trace("Round "+String.valueOf(i));
+            logger.trace("Round " + String.valueOf(i));
             logger.trace("Command: " + Arrays.toString(cmd));
 
-            if (i > 0){
+            if (i > 0) {
                 //Wait until vm will be ready
                 try {
                     Thread.sleep(60000);
@@ -98,13 +155,9 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
             try {
                 ProcessBuilder pb = new ProcessBuilder(cmd);
                 this.process = pb.start();
-                //this.process = runtime.exec(cmd);
 
-                BufferedReader in = new BufferedReader(new
-                        InputStreamReader(this.process.getInputStream()));
-
-                BufferedReader err = new BufferedReader(new
-                        InputStreamReader(this.process.getErrorStream()));
+                BufferedReader in = new BufferedReader(new InputStreamReader(this.process.getInputStream()));
+                BufferedReader err = new BufferedReader(new InputStreamReader(this.process.getErrorStream()));
 
                 // Output log
                 String outStr = "";
@@ -130,7 +183,7 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 
                 this.process.waitFor();
                 exitValue = this.process.exitValue();
-                logger.trace("Exit Value "+String.valueOf(exitValue));
+                logger.trace("Exit Value " + String.valueOf(exitValue));
                 getJob().getReport().setExitValue(exitValue);
 
             } catch (IOException e) {
@@ -143,15 +196,22 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
         return exitValue;
     }
 
-    public Boolean stopExecution(String Id, Boolean destroyMachine){
-        if (Id == null || Id.equals("-1")){
+    /**
+     * Stop execution.
+     *
+     * @param Id Resource id
+     * @param destroyResource if the resource has to be destroyed
+     * @return True if successful or False if failed.
+     */
+    public Boolean stopExecution(String Id, Boolean destroyResource) {
+        if (Id == null || Id.equals("-1")) {
             getJob().setStatus("FAILED");
             getJob().getReport().setJobErrorMessage("OCCI has failed creating the resource");
             return Boolean.TRUE;
         }
-        if ( getJob().getTerminate() ){
+        if (getJob().getTerminate()) {
             //Destroy VM if the user cancel the job.
-            if (destroyMachine) {
+            if (destroyResource) {
                 logger.trace("Job cancelled: Destroying resource with Id: " + Id);
                 destroyResource(Id);
             }

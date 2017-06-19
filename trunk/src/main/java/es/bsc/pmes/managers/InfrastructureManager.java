@@ -25,12 +25,10 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.stream.XMLStreamReader;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -149,9 +147,9 @@ public class InfrastructureManager {
     }
 
     /**
-     * ************************************************************************
+     *************************************************************************
      * GETTERS AND SETTERS.
-     ************************************************************************
+     * ************************************************************************
      */
     /**
      * Infrastructure manager getter
@@ -210,7 +208,7 @@ public class InfrastructureManager {
     /**
      * ************************************************************************
      * INFRASTRUCTURE MANAGER FUNCTIONS.
-     ************************************************************************
+     * ***********************************************************************
      */
     /**
      * CREATE RESOURCE METHOD.
