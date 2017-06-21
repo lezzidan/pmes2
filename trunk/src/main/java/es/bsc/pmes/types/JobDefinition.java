@@ -10,24 +10,25 @@ import java.util.UUID;
 public class JobDefinition {
     private String id;
     private String jobName;
-    private App app;
-    private Image img;
-    private User user;
-    private String mountPath;
-    private ArrayList<String> inputPaths;
-    private ArrayList<String> outputPaths;
     private Integer wallTime;
-    private Integer numNodes;
-    private Integer cores;
-    private Float memory;
-    private Float disk;
-    private HashMap<String, String> compss_flags;
-    private Integer initialVMs;
     private Integer minimumVMs;
     private Integer maximumVMs;
     private Integer limitVMs;
-
-
+    private Integer initialVMs;
+    private Float memory;
+    private Integer cores;
+    private Float disk;
+    private ArrayList<String> inputPaths;
+    private ArrayList<String> outputPaths;
+    private String infrastructure;
+    private ArrayList<MountPoint> mountPoints;
+    private Integer numNodes;
+    private User user;
+    private Image img;
+    private App app;
+    private HashMap<String, String> compss_flags;
+    
+    
     public JobDefinition() {
         this.id = UUID.randomUUID().toString();
         this.jobName = "";
@@ -36,7 +37,6 @@ public class JobDefinition {
         this.user = null;
         this.inputPaths = new ArrayList<String>();
         this.outputPaths = new ArrayList<String>();
-        this.mountPath = "";
         this.wallTime = -1;
         this.numNodes = -1;
         this.cores = -1;
@@ -47,6 +47,8 @@ public class JobDefinition {
         this.minimumVMs = 0;
         this.maximumVMs = 1;
         this.limitVMs = 1;
+        this.infrastructure ="";
+        this.mountPoints = new ArrayList<MountPoint>();
     }
 
     /** GETTERS AND SETTERS*/
@@ -188,11 +190,19 @@ public class JobDefinition {
         this.outputPaths = outputPaths;
     }
 
-    public String getMountPath() {
-        return mountPath;
+    public String getInfrastructure() {
+        return infrastructure;
     }
 
-    public void setMountPath(String mountPath) {
-        this.mountPath = mountPath;
+    public void setInfrastructure(String infrastructure) {
+        this.infrastructure = infrastructure;
+    }
+
+    public ArrayList<MountPoint> getMountPoints() {
+        return mountPoints;
+    }
+
+    public void setMountPoints(ArrayList<MountPoint> mountPoints) {
+        this.mountPoints = mountPoints;
     }
 }

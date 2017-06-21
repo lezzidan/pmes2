@@ -100,7 +100,8 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
         runcompss += " " + target + "/" + source;
         for (Object o : args.entrySet()) {
             Map.Entry pair = (Map.Entry) o;
-            runcompss += " " + (String) pair.getValue();
+            //runcompss += " " + (String) pair.getValue();
+            runcompss += " --" + (String) pair.getKey() + " " + (String) pair.getValue();
         }
         runcompss += "\"";
         cmd.add(runcompss);

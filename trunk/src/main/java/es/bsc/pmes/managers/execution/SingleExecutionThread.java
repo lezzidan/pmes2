@@ -95,7 +95,8 @@ public class SingleExecutionThread extends AbstractExecutionThread {
         commandToRun += target + "/./" + source;
         for (Object o : args.entrySet()) {
             Map.Entry pair = (Map.Entry) o;
-            commandToRun += " " + (String) pair.getValue();
+            //runcompss += " " + (String) pair.getValue();
+            commandToRun += " --" + (String) pair.getKey() + " " + (String) pair.getValue();
         }
         commandToRun += "";
         cmd.add(commandToRun);

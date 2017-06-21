@@ -13,6 +13,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.UUID;
 
 /**
@@ -134,6 +135,8 @@ public class Job {
     public void createReport() {
         try (PrintWriter writer = new PrintWriter(this.dirPath + "/report.txt", "UTF-8")) {
             writer.println("Job Report");
+            writer.println("---- Infrastructure ----");
+            writer.println("Infrastructure: " + this.jobDef.getInfrastructure());
             writer.println("---- Job Definition ----");
             writer.println("Job Name: "+this.jobDef.getJobName());
             writer.println("App: "+this.jobDef.getApp().getName());
@@ -144,7 +147,15 @@ public class Job {
             writer.println("User: "+this.jobDef.getUser().getUsername());
             writer.println("- UID: "+this.jobDef.getUser().getCredentials().get("uid"));
             writer.println("- GID: "+this.jobDef.getUser().getCredentials().get("gid"));
-            writer.println("Mount Path: "+this.jobDef.getMountPath());
+            ArrayList<MountPoint> mountPoints = this.jobDef.getMountPoints();
+            for (int i=0; i < mountPoints.size(); i++){
+                writer.println("Mount Point: " + i);
+                MountPoint mp = mountPoints.get(i);
+                String target = mp.getTarget();
+                String device = mp.getDevice();
+                String permissions = mp.getPermissions();
+                writer.println("- " + target + " : " + device + " : " + permissions);
+            }            
             writer.println("Input Files: "+this.jobDef.getInputPaths().toString());
             writer.println("Output Files: "+this.jobDef.getOutputPaths().toString());
             writer.println("Wall Clock time: "+this.jobDef.getWallTime());

@@ -9,6 +9,7 @@ import es.bsc.conn.types.VirtualResource;
 
 import es.bsc.pmes.types.Host;
 import es.bsc.pmes.types.JobDefinition;
+import es.bsc.pmes.types.MountPoint;
 import es.bsc.pmes.types.Resource;
 import es.bsc.pmes.types.SystemStatus;
 
@@ -317,11 +318,16 @@ public class InfrastructureManager {
         String path = "/home/pmes/pmes/jobs/" + dir + "/context.login";
         logger.trace("Creating context data file " + path);
         try {
+            String infrastructure = jobDef.getInfrastructure();
+            
             String user = jobDef.getUser().getUsername();
+            
             //TODO: check that uid and gid are not null
             String gid = jobDef.getUser().getCredentials().get("gid");
             String uid = jobDef.getUser().getCredentials().get("uid");
-            String mount = jobDef.getMountPath();
+            
+            // Retrieve mount points
+            ArrayList<MountPoint> mountPoints = jobDef.getMountPoints();
 
             PrintWriter writer = new PrintWriter(path, "UTF-8");
             // Cloud-init is not working properly on ubuntu16. Only bootcmd commands work correctly.
@@ -330,6 +336,7 @@ public class InfrastructureManager {
             writer.println("  - sudo groupadd -g " + gid + " transplant");
             writer.println("  - sudo useradd -m -d /home/" + user + " -s /bin/bash --uid " + uid + " --gid " + gid + " -G root " + user);
             /*  // CIFS folder mounting example - Deprecated
+            //String mount = jobDef.getMountPath();
             if (mount.equals("transplant")) {
                 writer.println("  - sudo mkdir -p /transplant");
                 // this line should change if the mount method is not CIFS.
@@ -338,7 +345,8 @@ public class InfrastructureManager {
                 writer.println("  - sudo mv /home/" + user + " /tmp");
                 writer.println("  - sudo ln -s " + mount + " /home/" + user);
             }*/
-            // NFS mounting
+            /*// NFS mounting
+            //String mount = jobDef.getMountPath();
             if (!mount.equals("")) {
                 // cloud = mug-bsc
                 // mountpoints = {dest : mountpoint, dest : mountpoint}  --- {"/sharedisk/":"/data/cloud/", "/sharedisk2/":"/data/cloud/public/"}
@@ -363,7 +371,38 @@ public class InfrastructureManager {
                     // TODO: ADD THE LINES TO MOUNT THE SHARED STORAGE AT EBI
                     logger.trace("[[[ ERROR ]]]: TODO: Add the lines to mount the shared storage at EBI.");
                 }
+            }*/
+            
+            if (mountPoints.size() > 0){
+                // There are mount points to add to cloud-init
+                logger.trace("Adding mounting point to context for the infrastructure: " + infrastructure);
+                switch (infrastructure) {
+                    case "mug-bsc":
+                        for (int i=0; i < mountPoints.size(); i++){
+                            MountPoint mp = mountPoints.get(i);
+                            String target = mp.getTarget();
+                            String device = mp.getDevice();
+                            String permissions = mp.getPermissions();
+                            writer.println("  - sudo mkdir -p " + target);
+                            if (permissions.equals("r")){
+                                writer.println("  - sudo mount -o ro -t nfs 192.168.122.222:" + device + " " + target);
+                            }else{
+                                writer.println("  - sudo mount -t nfs 192.168.122.222:" + device + " " + target);
+                            }
+                        }
+                        break;
+                    case "mug-irb":
+                        logger.trace("[[[ ERROR ]]]: TODO: Add the lines to mount the shared storage at IRB.");
+                        break;
+                    case "mug-ebi":
+                        logger.trace("[[[ ERROR ]]]: TODO: Add the lines to mount the shared storage at EBI.");
+                        break;
+                    default:
+                        logger.trace("[[[ ERROR ]]]: UNRECOGNIZED INFRASTRUCTURE WHERE TO MOUNT THE FOLDER.S");
+                        // TODO: ADD AND THROW AN EXCEPTION
+                }
             }
+            
             // enable ssh localhost (COMPSs requirement)
             writer.println("  - sudo -u " + user + " ssh-keygen -f /home/" + user + "/.ssh/id_rsa -t rsa -N \'\'");
             writer.println("  - cat /home/" + user + "/.ssh/id_rsa.pub >> /home/" + user + "/.ssh/authorized_keys");
@@ -371,10 +410,10 @@ public class InfrastructureManager {
             // COMPSs environment variables
             // Be careful with the distribution and JAVA installation.
             // TODO: this should be included into config xml.
-            // writer.println("  - echo \"export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64\" >> /home/"+user+"/.bashrc");  // BSC
-            writer.println("  - echo \"export JAVA_HOME=/usr/lib/jvm/java-8-oracle/\" >> /home/" + user + "/.bashrc");              // EBI
+            // writer.println("  - echo \"export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64\" >> /home/"+user+"/.bashrc");  // 
+            writer.println("  - echo \"export JAVA_HOME=/usr/lib/jvm/java-8-oracle/\" >> /home/" + user + "/.bashrc");           // Check that there is a symbolic link
             //writer.println("  - echo \"export PATH=$PATH:/opt/COMPSs/Runtime/scripts/user:/opt/COMPSs/Bindings/c/bin\" >> /home/"+user+"/.bashrc");
-            writer.println("  - echo \"source /opt/COMPSs/compssenv\" >> /home/" + user + "/.bashrc"); // COMPSs 2.0
+            writer.println("  - echo \"source /opt/COMPSs/compssenv\" >> /home/" + user + "/.bashrc");  // COMPSs 2.0
 
             // Add commands that are in config file.
             for (String cmd : this.commands) {
