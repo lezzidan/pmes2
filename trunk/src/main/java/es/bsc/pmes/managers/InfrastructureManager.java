@@ -230,7 +230,8 @@ public class InfrastructureManager {
                 rocciClient = new ROCCI(prop);
                 String vrID = (String) rocciClient.create(hd, sd, prop);
                 logger.trace("compute id: " + vrID);
-
+                
+                //FATAL -- : [rOCCI-cli] An error occurred! Message: You can assign only one link at a time!
                 if (Objects.equals("OpenStack", this.provider) && !"".equals(this.link2)) {
                     // If we are using OpenStack, like at EBI, it is necessary 
                     // to attach a new network interface for mounting the nfs.

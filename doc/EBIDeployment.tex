@@ -21,6 +21,10 @@ First acces to the VM with floating point.
 \begin{verbatim}
  ssh -vv -i lcodo.pem -l ubuntu 193.62.52.104
 \end{verbatim}
+Then change to root:
+\begin{verbatim}
+ sudo su
+\end{verbatim}
 Then acces to the VM which is hosting the PMES service:
 \begin{verbatim}
  ssh -i lcodo.pem -l ubuntu 192.168.0.27
@@ -29,6 +33,13 @@ Finally change to the user PMES.
 \begin{verbatim}
  sudo su pmes
 \end{verbatim}
+
+The pmes user and password are:
+\begin{verbatim}
+ username: pmes
+ password: pmes2017
+\end{verbatim}
+But it is not possible to connect directly with this credentials, since the only way to do ssh is with the lcodo.pem certificate.
 
 \section{OCCI}
 The occi endpoint is \texttt{https://extcloud05.ebi.ac.uk:8787/occi1.1/} \\
