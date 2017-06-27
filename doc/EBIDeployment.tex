@@ -94,7 +94,7 @@ You can call the service using curl or you can call the service using the python
 
 \texttt{createVM.json} is a json file with a job definition. For example:
 \begin{verbatim}
- [{ "jobName": "HelloTest2_584817558cb7550b5e9970b0",
+ [{ "jobName": "testExecutionNewJson",
            "wallTime": "5",
            "minimumVMs": "1",
            "maximumVMs": "1",
@@ -103,26 +103,42 @@ You can call the service using curl or you can call the service using the python
            "memory": "1.0",
            "cores": "1",
            "disk" : "1.0",
-           "inputPaths": ["/home/"],
-           "outputPaths": ["/home/"],
-           "mountPath":"",
+           "inputPaths": ["/home/pmes/APPSREPO/COMPSsApp"],
+           "outputPaths": ["/home/pmes/COMPSsApp"],
+           "infrastructure":"mug-ebi",
+           "mountPoints": [
+                 {
+                      "target":"/MUG_USERDATA/",
+                      "device":"/ifs/BSC-MuG/",
+                      "permissions":"rw"
+                 },
+                 {
+                      "target":"/MUG_PUBLIC/",
+                      "device":"/ifs/BSC-MuG/",
+                      "permissions":"r"
+                 }
+            ],
            "numNodes": "1",
            "user":
-              { "username": "lcodo",
+              { "username": "pmes",
                 "credentials":
-                { "pem": "",
-                  "key": "",
-                  "token": "6718197acbb04f7d9695f832cfb2e38f" }
+                { "pem": "/home/pmes/.ssh/id_rsa",
+                  "key": "/home/pmes/.ssh/id_rsa.pub",
+                  "uid": "1001",
+                  "gid": "1001",
+                  "token": " 35c5a9930c7d4c31a046380906eac6de" }
               },
-           "img": 
-              { "imageName": "os_tpl#4f916ede-218b-47e4-93aa-b795a5acf813", 
-                "imageType": "resource_tpl#721112dd-2f33-40eb-8975-7bd34dbabfc8"
-              },
+           "img": { "imageName": "deec8317-9c68-4e6e-83e3-00d003fca9bb", "imageType": "721112dd-2f33-40eb-8975-7bd34dbabfc8" },
            "app":
-              { "name": "HelloTest2",
-                "target": "/home/pmes/testSimple",
-                "source": "launch.sh",
-                "args": { "val1": "Hola", "val2": "Mundo" } ,
+              { "name": "KmeansTest",
+                "target": "/home/pmes/COMPSsApp/",
+                "source": "kmeans.py",
+                "args": {
+                     "numV": "1600" ,
+                     "dim": "3",
+                     "k": "4",
+                     "numFrag": "8"
+                } ,
                 "type": "COMPSs"
               },
            "compss_flags": {}
