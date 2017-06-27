@@ -231,16 +231,17 @@ public class InfrastructureManager {
                 String vrID = (String) rocciClient.create(hd, sd, prop);
                 logger.trace("compute id: " + vrID);
                 
-                //FATAL -- : [rOCCI-cli] An error occurred! Message: You can assign only one link at a time!
+                VirtualResource vr = rocciClient.waitUntilCreation(vrID);
+                
+                // The NFS at EBI requires a second network interface
+                // Uses the /etc/network/interfaces.d/eth1.cfg created with cloud-init
                 if (Objects.equals("OpenStack", this.provider) && !"".equals(this.link2)) {
                     // If we are using OpenStack, like at EBI, it is necessary 
                     // to attach a new network interface for mounting the nfs.
-                    logger.trace("[EBI] Attaching new network interface for storage sharing purposes (nfs).");
+                    logger.trace("[EBI] Attaching new network interface for storage sharing purposes (NFS).");
                     // TODO: ADD THE CALL TO rOCCI client.
                     rocciClient.attachLink(vrID, this.link2);
                 }
-
-                VirtualResource vr = rocciClient.waitUntilCreation(vrID);
 
                 logger.trace("VM id: " + vr.getId());
                 logger.trace("VM ip: " + vr.getIp());
@@ -396,10 +397,26 @@ public class InfrastructureManager {
                         logger.trace("[[[ ERROR ]]]: TODO: Add the lines to mount the shared storage at IRB.");
                         break;
                     case "mug-ebi":
-                        logger.trace("[[[ ERROR ]]]: TODO: Add the lines to mount the shared storage at EBI.");
+                        // Create extra configuration file for second adaptor and restart the new interface to get the IP
+                        // This second interface is intended to be used for the NFS storage.
+                        writer.println("  - sudo cp /etc/network/interfaces.d/eth0.cfg /etc/network/interfaces.d/eth1.cfg");
+                        writer.println("  - sudo sed -i 's/0/1/g' /etc/network/interfaces.d/eth1.cfg");
+                        writer.println("  - sudo ifdown eth1 && sudo ifup eth1");
+                        for (int i=0; i < mountPoints.size(); i++){
+                            MountPoint mp = mountPoints.get(i);
+                            String target = mp.getTarget();
+                            String device = mp.getDevice();
+                            String permissions = mp.getPermissions();
+                            writer.println("  - sudo mkdir -p " + target);
+                            if (permissions.equals("r")){
+                                writer.println("  - sudo mount -o ro -t nfs 10.35.115.201:" + device + " " + target);
+                            }else{
+                                writer.println("  - sudo mount -t nfs 10.35.115.201:" + device + " " + target);
+                            }
+                        }
                         break;
                     default:
-                        logger.trace("[[[ ERROR ]]]: UNRECOGNIZED INFRASTRUCTURE WHERE TO MOUNT THE FOLDER.S");
+                        logger.trace("[[[ ERROR ]]]: UNRECOGNIZED INFRASTRUCTURE WHERE TO MOUNT THE FOLDERS.");
                         // TODO: ADD AND THROW AN EXCEPTION
                 }
             }
