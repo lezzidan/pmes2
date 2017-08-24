@@ -126,7 +126,11 @@
             <artifactId>rocci-conn</artifactId>
             <version>${conn.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>es.bsc</groupId>
+            <artifactId>mesos-conn</artifactId>
+            <version>${conn.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>

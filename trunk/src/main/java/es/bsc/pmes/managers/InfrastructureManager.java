@@ -1,7 +1,9 @@
 package es.bsc.pmes.managers;
 
 import es.bsc.conn.exceptions.ConnException;
+import es.bsc.conn.Connector;
 import es.bsc.conn.rocci.ROCCI;
+import es.bsc.conn.mesos.Mesos;
 
 import es.bsc.conn.types.HardwareDescription;
 import es.bsc.conn.types.SoftwareDescription;
@@ -31,6 +33,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.TreeMap;
 
 /**
  * INFRASTRUCTURE MANAGER Class.
@@ -38,7 +41,14 @@ import java.util.Objects;
  * This class is aimed at managing the underlying infrastructure. To this end,
  * uses the connectors available at the conn package.
  *
- * - Singleton class. - Currently using the rOCCI connector.
+ * - Singleton class. 
+ *     - Uses generic Connector class.
+ *     - Currently works with the rOCCI connector.
+ *     - Enabled to add Mesos connector.
+ * 
+ * - Configuration:
+ *     - Xml file with the general configuration
+ *     - Cfg file (referenced by the xml file) with infrastructure specific parameters.
  *
  * @author scorella on 8/5/16.
  */
@@ -46,23 +56,34 @@ public class InfrastructureManager {
 
     /* Static infrastructure manager */
     private static InfrastructureManager infrastructureManager = new InfrastructureManager();
-    /* Connector to use */
-    private ROCCI rocciClient;
-    /* Active resources hashmap - defined in the configuration xml */
-    private HashMap<String, Resource> activeResources;
-    /* SystemStatus object */
-    private SystemStatus systemStatus;
+
+    /* Main config xml file */
+    // This configuration file includes only the general parameters
+    // (the ones that are needed and useful for all connectors)
+    private final String config_xml = "/home/pmes/pmes/config/config.xml";  // TODO: set this path as configuration (flag?)
+    private String workspace;    
+    
     /* Information contained within the pmes configuration xml */
-    private String provider;             // Provider (e.g. ONE, OpenStack)
-    private String occiEndPoint;         // rOCCI endpoint
-    private String auth;                 // Authentication method (e.g. x509, token)
-    private String ca_path;              // Certification authority path
-    private String link;                 // Network link - Defined by the provider
-    private String link2;                // Network link 2 - If extra network link is needed
+    /* Connector to use */
+    private String conn;
+    private Connector conn_client;
     private ArrayList<String> commands;  // Commands to include within the contextualization
     private ArrayList<String> auth_keys; // Ssh authorized keys (for the contextualization)
     private String logLevel;             // Log level (e.g. DEBUG, INFO)
     private String logPath;              // Path where to put the logs
+
+    /* Project related information */
+    // This configuration file includes the connector configuration parameters.
+    // It may also include infrastructure paramenters.
+    private String config_file;
+    /* Information contained within the config_file (K, V) */
+    // E.g.- key=value
+    TreeMap<String, String> configuration;
+
+    /* Active resources */
+    private HashMap<String, Resource> activeResources;    
+    /* SystemStatus object */
+    private SystemStatus systemStatus;
 
     /* Main logger */
     private static final Logger logger = LogManager.getLogger(InfrastructureManager.class);
@@ -71,20 +92,19 @@ public class InfrastructureManager {
      * CONSTRUCTOR. Default constructor.
      */
     private InfrastructureManager() {
+        this.workspace = "/tmp";
+        this.conn = "undefined";
+        this.config_file = "/tmp/undefined.txt";
         this.activeResources = new HashMap<>();
-        this.provider = "ONE"; // openNebula by default
         this.systemStatus = new SystemStatus();
         this.auth_keys = new ArrayList<>();
         this.commands = new ArrayList<>();
-        this.ca_path = "";
-        this.link = "";
-        this.link2 = "";
-        this.occiEndPoint = "";
         this.logLevel = "DEBUG";
         this.logPath = "/tmp";
+        this.configuration = new TreeMap<String, String>();
         try {
             configureResources();
-        } catch (ParserConfigurationException e) {
+        } catch (ParserConfigurationException | IOException e) {
             e.printStackTrace();
         }
     }
@@ -96,28 +116,24 @@ public class InfrastructureManager {
      * Manager values.
      *
      * @throws ParserConfigurationException
+     * @throws java.io.FileNotFoundException
      */
-    public void configureResources() throws ParserConfigurationException {
-        File fXML = new File("/home/pmes/pmes/config/config.xml"); // TODO: set this path as configuration (flag?)
+    public void configureResources() throws ParserConfigurationException, IOException {
+        File fXML = new File(this.config_xml);
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+
         Document doc = null;
         try {
             doc = dBuilder.parse(fXML);
         } catch (SAXException e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-
         doc.getDocumentElement().normalize();
 
-        this.provider = doc.getDocumentElement().getElementsByTagName("providerName").item(0).getAttributes().getNamedItem("Name").getTextContent();
-        this.occiEndPoint = doc.getDocumentElement().getElementsByTagName("endPointROCCI").item(0).getTextContent();
-        this.auth = doc.getDocumentElement().getElementsByTagName("auth").item(0).getTextContent();
-        this.ca_path = doc.getDocumentElement().getElementsByTagName("ca-path").item(0).getTextContent();
-        this.link = doc.getDocumentElement().getElementsByTagName("link").item(0).getTextContent();
-        this.link2 = doc.getDocumentElement().getElementsByTagName("link2").item(0).getTextContent();
+        this.workspace = doc.getDocumentElement().getElementsByTagName("workspace").item(0).getTextContent();
+        this.conn = doc.getDocumentElement().getElementsByTagName("connector").item(0).getTextContent();
+        this.config_file = doc.getDocumentElement().getElementsByTagName("configFile").item(0).getTextContent();
         this.logLevel = doc.getDocumentElement().getElementsByTagName("logLevel").item(0).getTextContent();
         this.logPath = doc.getDocumentElement().getElementsByTagName("logPath").item(0).getTextContent();
 
@@ -145,6 +161,17 @@ public class InfrastructureManager {
             Node node = cmds.item(i);
             this.commands.add(node.getTextContent());
         }
+        
+        // Retrieve the configuration from the config file
+        BufferedReader bfr = new BufferedReader(new FileReader(new File(config_file)));
+        String line;
+        while ((line = bfr.readLine()) != null) {
+            if (!line.startsWith("#") && !line.isEmpty()) {
+                String[] pair = line.trim().split("=");
+                this.configuration.put(pair[0].trim(), pair[1].trim());
+            }
+        }
+        bfr.close();
     }
 
     /**
@@ -180,24 +207,6 @@ public class InfrastructureManager {
     }
 
     /**
-     * Provider getter
-     *
-     * @return The infrastructure provider
-     */
-    public String getProvider() {
-        return provider;
-    }
-
-    /**
-     * Provider setter
-     *
-     * @param provider The new infrastructure provider
-     */
-    public void setProvider(String provider) {
-        this.provider = provider;
-    }
-
-    /**
      * System status getter
      *
      * @return The system status
@@ -225,44 +234,59 @@ public class InfrastructureManager {
      */
     public String createResource(HardwareDescription hd, SoftwareDescription sd, HashMap<String, String> prop) {
         logger.trace("Creating Resource");
-        if (Objects.equals("ONE", this.provider) || Objects.equals("OpenStack", this.provider)) {
-            try {
-                rocciClient = new ROCCI(prop);
-                String vrID = (String) rocciClient.create(hd, sd, prop);
-                logger.trace("compute id: " + vrID);
-                
-                VirtualResource vr = rocciClient.waitUntilCreation(vrID);
-                
-                // The NFS at EBI requires a second network interface
-                // Uses the /etc/network/interfaces.d/eth1.cfg created with cloud-init
-                if (Objects.equals("OpenStack", this.provider) && !"".equals(this.link2)) {
-                    // If we are using OpenStack, like at EBI, it is necessary 
-                    // to attach a new network interface for mounting the nfs.
-                    logger.trace("[EBI] Attaching new network interface for storage sharing purposes (NFS).");
-                    // TODO: ADD THE CALL TO rOCCI client.
-                    rocciClient.attachLink(vrID, this.link2);
-                }
+        try {
+            switch (this.conn) {
+                case "ROCCI":
+                    String provider = this.configuration.get("providerName");
+                    String link2 = this.configuration.get("link2");
+                    if (Objects.equals("ONE", provider) || Objects.equals("OpenStack", provider)) {
+                        conn_client = new ROCCI(prop);
+                        String vrID = (String) conn_client.create(hd, sd, prop);
+                        logger.trace("compute id: " + vrID);
 
-                logger.trace("VM id: " + vr.getId());
-                logger.trace("VM ip: " + vr.getIp());
+                        VirtualResource vr = conn_client.waitUntilCreation(vrID);
 
-                // Update System Status
-                // TODO: occi doesn't give information about what host will be hosting the VM
-                Host h = systemStatus.getCluster().get(0); //test purposes: always get first Host
-                systemStatus.update(h, hd.getTotalComputingUnits(), hd.getMemorySize());
-                logger.trace("IM update: " + hd.getTotalComputingUnits() + " " + hd.getMemorySize());
-                Resource newResource = new Resource(vr.getIp(), prop, vr);
-                activeResources.put((String) vr.getId(), newResource);
-                return (String) vr.getId();
-            } catch (ConnException e) {
-                logger.error("Error creating resource");
-                e.printStackTrace();
-                return "-1";
+                        // The NFS at EBI requires a second network interface
+                        // Uses the /etc/network/interfaces.d/eth1.cfg created with cloud-init
+                        if (Objects.equals("OpenStack", provider) && !"".equals(link2)) {
+                            // If we are using OpenStack, like at EBI, it is necessary 
+                            // to attach a new network interface for mounting the nfs.
+                            logger.trace("[EBI] Attaching new network interface for storage sharing purposes (NFS).");
+                            ((ROCCI) conn_client).attachLink(vrID, link2);
+                        }
+
+                        logger.trace("VM id: " + vr.getId());
+                        logger.trace("VM ip: " + vr.getIp());
+
+                        // Update System Status
+                        // TODO: occi doesn't give information about what host will be hosting the VM
+                        Host h = systemStatus.getCluster().get(0); //test purposes: always get first Host
+                        systemStatus.update(h, hd.getTotalComputingUnits(), hd.getMemorySize());
+                        logger.trace("IM update: " + hd.getTotalComputingUnits() + " " + hd.getMemorySize());
+                        Resource newResource = new Resource(vr.getIp(), prop, vr);
+                        activeResources.put((String) vr.getId(), newResource);
+                        return (String) vr.getId();
+
+                    } else {
+                        // Unsupported provider
+                        logger.error("Provider " + provider + " not supported");
+                        return null;
+                    }
+                case "MESOS":
+                    // Instantiate mesos connector:
+                    conn_client = new Mesos(prop);
+
+                    // TODO: Add mesos stuff.
+                    return null;
+                default:
+                    // Unsupported connector
+                    logger.error("Unsupported connector");
+                    return "-1";
             }
-        } else {
-            // Unsupported provider
-            logger.error("Provider " + this.provider + " not supported");
-            return null;
+        } catch (ConnException e) {
+            logger.error("Error creating resource");
+            e.printStackTrace();
+            return "-1";
         }
     }
 
@@ -278,34 +302,52 @@ public class InfrastructureManager {
     public HashMap<String, String> configureResource(JobDefinition jobDef) {
         HashMap<String, String> properties = new HashMap<>();
 
-        // Default rOCCI server configuration
-        properties.put("Server", this.occiEndPoint);
-        properties.put("auth", this.auth);
-        properties.put("link", this.link);
+        switch (this.conn) {
+            case "ROCCI":
+                String occiEndPoint = this.configuration.get("endPointROCCI");
+                String auth = this.configuration.get("auth");
+                String ca_path = this.configuration.get("ca-path");
+                String link = this.configuration.get("link");
 
-        if (this.auth.equals("token")) {
-            logger.trace("Authentication method: token");
-            logger.trace("token: " + jobDef.getUser().getCredentials().get("token"));
-            properties.put("token", jobDef.getUser().getCredentials().get("token"));
-        } else {
-            logger.trace("Authentication method: pem-key");
-            properties.put("ca-path", this.ca_path);
-            String keyPath = jobDef.getUser().getCredentials().get("key");
-            String pemPath = jobDef.getUser().getCredentials().get("pem");
-            properties.put("password", keyPath);
-            properties.put("user-cred", pemPath);
+                // Default rOCCI server configuration
+                properties.put("Server", occiEndPoint);
+                properties.put("auth", auth);
+                properties.put("link", link);
+
+                if (auth.equals("token")) {
+                    logger.trace("Authentication method: token");
+                    logger.trace("token: " + jobDef.getUser().getCredentials().get("token"));
+                    properties.put("token", jobDef.getUser().getCredentials().get("token"));
+                } else {
+                    logger.trace("Authentication method: pem-key");
+                    properties.put("ca-path", ca_path);
+                    String keyPath = jobDef.getUser().getCredentials().get("key");
+                    String pemPath = jobDef.getUser().getCredentials().get("pem");
+                    properties.put("password", keyPath);
+                    properties.put("user-cred", pemPath);
+                }
+
+                properties.put("owner", jobDef.getUser().getUsername());
+                properties.put("jobname", jobDef.getJobName());
+
+                String contextDataFile = createContextDataFile(jobDef);
+                properties.put("context", "user_data=\"file://" + contextDataFile + "\"");
+                break;
+            case "MESOS":
+                // TODO: Add MESOS stuff.
+                break;
+            default:
+                // TODO: default stuff?
+                // If nothing is done, properties will be empty
+                break;
         }
-
-        properties.put("owner", jobDef.getUser().getUsername());
-        properties.put("jobname", jobDef.getJobName());
-
-        String contextDataFile = createContextDataFile(jobDef);
-        properties.put("context", "user_data=\"file://" + contextDataFile + "\"");
         return properties;
     }
 
     /**
-     * CREATE CONTEXT FILE METHOD.
+     * CREATE CONTEXT FILE METHOD -- Just for ROCCI.
+     * 
+     * Called from configureResource function.
      *
      * This method creates the context file from the job definition taking into
      * account the peculiarities of the infrastructure. Currently considers the
@@ -317,17 +359,21 @@ public class InfrastructureManager {
     public String createContextDataFile(JobDefinition jobDef) {
         logger.trace("Creating context data file");
         String dir = jobDef.getJobName();
-        String path = "/home/pmes/pmes/jobs/" + dir + "/context.login";
+        String path = this.workspace + "/jobs/" + dir + "/context.login";
         logger.trace("Creating context data file " + path);
         try {
-            String infrastructure = jobDef.getInfrastructure();
+            //String infrastructure = jobDef.getInfrastructure();  // TODO: REMOVE INFRASTRUCTURE FROM JOB DEFINITION
+            String infrastructure = this.configuration.get("infrastructure");
+            String nfs_server = this.configuration.get("nfs_server");
+            String vm_java_home = this.configuration.get("vm_java_home");
+            String vm_compss_home = this.configuration.get("vm_compss_home");
             
             String user = jobDef.getUser().getUsername();
-            
+
             //TODO: check that uid and gid are not null
             String gid = jobDef.getUser().getCredentials().get("gid");
             String uid = jobDef.getUser().getCredentials().get("uid");
-            
+
             // Retrieve mount points
             ArrayList<MountPoint> mountPoints = jobDef.getMountPoints();
 
@@ -337,59 +383,22 @@ public class InfrastructureManager {
             writer.println("bootcmd:");
             writer.println("  - sudo groupadd -g " + gid + " transplant");
             writer.println("  - sudo useradd -m -d /home/" + user + " -s /bin/bash --uid " + uid + " --gid " + gid + " -G root " + user);
-            /*  // CIFS folder mounting example - Deprecated
-            //String mount = jobDef.getMountPath();
-            if (mount.equals("transplant")) {
-                writer.println("  - sudo mkdir -p /transplant");
-                // this line should change if the mount method is not CIFS.
-                writer.println("  - sudo mount -t cifs //192.168.122.253/INBTransplant /transplant -o user=guest,password=guestTransplant01,rsize=130048,sec=ntlmssp");
-                // change home directory to mount path.
-                writer.println("  - sudo mv /home/" + user + " /tmp");
-                writer.println("  - sudo ln -s " + mount + " /home/" + user);
-            }*/
-            /*// NFS mounting
-            //String mount = jobDef.getMountPath();
-            if (!mount.equals("")) {
-                // cloud = mug-bsc
-                // mountpoints = {dest : mountpoint, dest : mountpoint}  --- {"/sharedisk/":"/data/cloud/", "/sharedisk2/":"/data/cloud/public/"}
-                logger.trace("Adding context lines for the shared storage.");
-                String[] parts = mount.split(":/");
-                String cloud = parts[0];
-                String shared_path = parts[1];
-                logger.trace("Cloud where to mount: " + cloud + " with folder: " + shared_path);
-                if (cloud.equals("mug-bsc")) {
-                    writer.println("  - sudo mkdir -p /sharedisk");
-                    // this line should change if the mount method is not CIFS.
-                    writer.println("  - sudo mount -t nfs 192.168.122.222:" + shared_path + " /sharedisk/");
-                    // Hardcoded example:
-                    // writer.println("  - sudo mkdir -p /mug-bsc");
-                    // writer.println("  - sudo mount -t nfs 192.168.122.222:/data/cloud /mug-bsc/");
-                }
-                if (cloud.equals("mug-irb")) {
-                    // TODO: ADD THE LINES TO MOUNT THE SHARED STORAGE AT EBI
-                    logger.trace("[[[ ERROR ]]]: TODO: Add the lines to mount the shared storage at IRB.");
-                }
-                if (cloud.equals("mug-ebi")) {
-                    // TODO: ADD THE LINES TO MOUNT THE SHARED STORAGE AT EBI
-                    logger.trace("[[[ ERROR ]]]: TODO: Add the lines to mount the shared storage at EBI.");
-                }
-            }*/
-            
-            if (mountPoints.size() > 0){
+            // NFS mounting
+            if (mountPoints.size() > 0) {
                 // There are mount points to add to cloud-init
                 logger.trace("Adding mounting point to context for the infrastructure: " + infrastructure);
                 switch (infrastructure) {
                     case "mug-bsc":
-                        for (int i=0; i < mountPoints.size(); i++){
+                        for (int i = 0; i < mountPoints.size(); i++) {
                             MountPoint mp = mountPoints.get(i);
                             String target = mp.getTarget();
                             String device = mp.getDevice();
                             String permissions = mp.getPermissions();
                             writer.println("  - sudo mkdir -p " + target);
-                            if (permissions.equals("r")){
-                                writer.println("  - sudo mount -o ro -t nfs 192.168.122.222:" + device + " " + target);
-                            }else{
-                                writer.println("  - sudo mount -t nfs 192.168.122.222:" + device + " " + target);
+                            if (permissions.equals("r")) {
+                                writer.println("  - sudo mount -o ro -t nfs " + nfs_server + ":" + device + " " + target);
+                            } else {
+                                writer.println("  - sudo mount -t nfs " + nfs_server + ":" + device + " " + target);
                             }
                         }
                         break;
@@ -399,39 +408,37 @@ public class InfrastructureManager {
                     case "mug-ebi":
                         // Create extra configuration file for second adaptor and restart the new interface to get the IP
                         // This second interface is intended to be used for the NFS storage.
+                        // TODO: Check that this link can be done with the same occi query
                         writer.println("  - sudo cp /etc/network/interfaces.d/eth0.cfg /etc/network/interfaces.d/eth1.cfg");
                         writer.println("  - sudo sed -i 's/0/1/g' /etc/network/interfaces.d/eth1.cfg");
                         writer.println("  - sudo ifdown eth1 && sudo ifup eth1");
-                        for (int i=0; i < mountPoints.size(); i++){
+                        for (int i = 0; i < mountPoints.size(); i++) {
                             MountPoint mp = mountPoints.get(i);
                             String target = mp.getTarget();
                             String device = mp.getDevice();
                             String permissions = mp.getPermissions();
                             writer.println("  - sudo mkdir -p " + target);
-                            if (permissions.equals("r")){
-                                writer.println("  - sudo mount -o ro -t nfs 10.35.115.201:" + device + " " + target);
-                            }else{
-                                writer.println("  - sudo mount -t nfs 10.35.115.201:" + device + " " + target);
+                            if (permissions.equals("r")) {
+                                writer.println("  - sudo mount -o ro -t nfs " + nfs_server + ":" + device + " " + target);
+                            } else {
+                                writer.println("  - sudo mount -t nfs " + nfs_server + ":" + device + " " + target);
                             }
                         }
                         break;
                     default:
                         logger.trace("[[[ ERROR ]]]: UNRECOGNIZED INFRASTRUCTURE WHERE TO MOUNT THE FOLDERS.");
-                        // TODO: ADD AND THROW AN EXCEPTION
+                        // TODO: Add and throw new exception
                 }
             }
-            
+
             // enable ssh localhost (COMPSs requirement)
             writer.println("  - sudo -u " + user + " ssh-keygen -f /home/" + user + "/.ssh/id_rsa -t rsa -N \'\'");
             writer.println("  - cat /home/" + user + "/.ssh/id_rsa.pub >> /home/" + user + "/.ssh/authorized_keys");
 
             // COMPSs environment variables
             // Be careful with the distribution and JAVA installation.
-            // TODO: this should be included into config xml.
-            // writer.println("  - echo \"export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64\" >> /home/"+user+"/.bashrc");  // 
-            writer.println("  - echo \"export JAVA_HOME=/usr/lib/jvm/java-8-oracle/\" >> /home/" + user + "/.bashrc");           // Check that there is a symbolic link
-            //writer.println("  - echo \"export PATH=$PATH:/opt/COMPSs/Runtime/scripts/user:/opt/COMPSs/Bindings/c/bin\" >> /home/"+user+"/.bashrc");
-            writer.println("  - echo \"source /opt/COMPSs/compssenv\" >> /home/" + user + "/.bashrc");  // COMPSs 2.0
+            writer.println("  - echo \"export JAVA_HOME=" + vm_java_home + "\" >> /home/" + user + "/.bashrc");           // Check that there is a symbolic link
+            writer.println("  - echo \"source " + vm_compss_home + "/compssenv\" >> /home/" + user + "/.bashrc");  // COMPSs 2.0
 
             // Add commands that are in config file.
             for (String cmd : this.commands) {
@@ -462,7 +469,7 @@ public class InfrastructureManager {
     public void destroyResource(String Id) {
         VirtualResource vr = activeResources.get(Id).getVr();
         logger.trace("Destroying VM " + Id);
-        rocciClient.destroy(vr.getId());
+        this.conn_client.destroy(vr.getId());
         // TODO: test if destroy is done correctly
         // Update System Status
         // TODO: occi doesn't give information about what host will be host the VM
