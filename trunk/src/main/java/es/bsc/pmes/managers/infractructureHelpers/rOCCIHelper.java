@@ -48,11 +48,15 @@ public class rOCCIHelper extends InfrastructureHelper {
         String auth = configuration.get("auth");
         String ca_path = configuration.get("ca-path");
         String link = configuration.get("link");
+        String link2 = configuration.get("link2");
 
         // Default rOCCI server configuration
         properties.put("Server", occiEndPoint);
         properties.put("auth", auth);
         properties.put("link", link);
+        if (link2 != null){
+            properties.put("link2", link2);
+        }
 
         if (auth.equals("token")) {
             logger.trace("Authentication method: token");
@@ -79,22 +83,12 @@ public class rOCCIHelper extends InfrastructureHelper {
     @Override
     public VirtualResource createResource(HardwareDescription hd, SoftwareDescription sd, HashMap<String, String> prop, HashMap<String, String> configuration) throws ConnException {
         String provider = configuration.get("providerName");
-        String link2 = configuration.get("link2");
         if (Objects.equals("ONE", provider) || Objects.equals("OpenStack", provider)) {
             conn_client = new ROCCI(prop);
             String vrID = (String) conn_client.create(hd, sd, prop);
             logger.trace("compute id: " + vrID);
 
             VirtualResource vr = conn_client.waitUntilCreation(vrID);
-
-            // The NFS at EBI requires a second network interface
-            // Uses the /etc/network/interfaces.d/eth1.cfg created with cloud-init
-            if (Objects.equals("OpenStack", provider) && !"".equals(link2)) {
-                // If we are using OpenStack, like at EBI, it is necessary 
-                // to attach a new network interface for mounting the nfs.
-                logger.trace("[EBI] Attaching new network interface for storage sharing purposes (NFS).");
-                ((ROCCI) conn_client).attachLink(vrID, link2);
-            }
 
             logger.trace("VM id: " + vr.getId());
             logger.trace("VM ip: " + vr.getIp());
@@ -184,7 +178,6 @@ public class rOCCIHelper extends InfrastructureHelper {
                     case "mug-ebi":
                         // Create extra configuration file for second adaptor and restart the new interface to get the IP
                         // This second interface is intended to be used for the NFS storage.
-                        // TODO: Check that this link can be done with the same occi query
                         writer.println("  - sudo cp /etc/network/interfaces.d/eth0.cfg /etc/network/interfaces.d/eth1.cfg");
                         writer.println("  - sudo sed -i 's/0/1/g' /etc/network/interfaces.d/eth1.cfg");
                         writer.println("  - sudo ifdown eth1 && sudo ifup eth1");
@@ -214,8 +207,8 @@ public class rOCCIHelper extends InfrastructureHelper {
 
             // COMPSs environment variables
             // Be careful with the distribution and JAVA installation.
-            writer.println("  - echo \"export JAVA_HOME=" + vm_java_home + "\" >> /home/" + user + "/.bashrc");           // Check that there is a symbolic link
-            writer.println("  - echo \"source " + vm_compss_home + "/compssenv\" >> /home/" + user + "/.bashrc");  // COMPSs 2.0
+            writer.println("  - echo \"export JAVA_HOME=" + vm_java_home + "\" >> /home/" + user + "/.bashrc");    // Check that there is a symbolic link
+            writer.println("  - echo \"source " + vm_compss_home + "/compssenv\" >> /home/" + user + "/.bashrc");
 
             // Add commands that are in config file.
             for (String cmd : this.getCommands()) {
