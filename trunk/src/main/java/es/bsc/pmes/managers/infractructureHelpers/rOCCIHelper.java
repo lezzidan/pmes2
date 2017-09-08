@@ -207,8 +207,8 @@ public class rOCCIHelper extends InfrastructureHelper {
 
             // COMPSs environment variables
             // Be careful with the distribution and JAVA installation.
-            writer.println("  - echo \"export JAVA_HOME=" + vm_java_home + "\" >> /home/" + user + "/.bashrc");    // Check that there is a symbolic link
-            writer.println("  - echo \"source " + vm_compss_home + "/compssenv\" >> /home/" + user + "/.bashrc");
+            writer.println("  - echo \"export JAVA_HOME=" + vm_java_home + "\" >> /home/" + user + "/.bashrc");    // Check the cfg file
+            writer.println("  - echo \"source " + vm_compss_home + "/compssenv\" >> /home/" + user + "/.bashrc");  // Only needed if compssenv defined will override any predefined COMPSs env vars of .bashrc.
 
             // Add commands that are in config file.
             for (String cmd : this.getCommands()) {
