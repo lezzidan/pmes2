@@ -178,8 +178,12 @@ public class rOCCIHelper extends InfrastructureHelper {
                     case "mug-ebi":
                         // Create extra configuration file for second adaptor and restart the new interface to get the IP
                         // This second interface is intended to be used for the NFS storage.
-                        writer.println("  - sudo cp /etc/network/interfaces.d/eth0.cfg /etc/network/interfaces.d/eth1.cfg");
-                        writer.println("  - sudo sed -i 's/0/1/g' /etc/network/interfaces.d/eth1.cfg");
+                        //writer.println("  - sudo cp /etc/network/interfaces.d/eth0.cfg /etc/network/interfaces.d/eth1.cfg");
+                        //writer.println("  - sudo sed -i 's/0/1/g' /etc/network/interfaces.d/eth1.cfg");
+                        //writer.println("  - sudo ifdown eth1 && sudo ifup eth1");
+                        writer.println("  - sudo echo '# The secondary network interface' >> /etc/network/interfaces");
+                        writer.println("  - sudo echo 'auto eth1' >> /etc/network/interfaces");
+                        writer.println("  - sudo echo 'iface eth1 inet dhcp' >> /etc/network/interfaces");
                         writer.println("  - sudo ifdown eth1 && sudo ifup eth1");
                         for (int i = 0; i < mountPoints.size(); i++) {
                             MountPoint mp = mountPoints.get(i);
