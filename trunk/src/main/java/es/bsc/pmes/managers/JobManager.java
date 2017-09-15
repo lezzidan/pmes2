@@ -156,7 +156,7 @@ public class JobManager {
      * @param job the job to be removed from the scheduler
      */
     public void deleteJob(Job job) {
-        if (job.getStatus().equals("PENDING")) {
+        if (job.getStatus().equals("PENDING") || job.getStatus().equals("UNKNOWN")) {
             this.scheduler.deleteJob(job);
         } else {
             this.scheduler.stopJob(job);

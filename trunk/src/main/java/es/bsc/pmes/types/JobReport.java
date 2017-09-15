@@ -15,7 +15,7 @@ public class JobReport {
         this.jobDefinition = null;
         this.jobOutputMessage = "";
         this.jobErrorMessage ="";
-        this.jobStatus = JobStatus.valueOf("PENDING");
+        this.jobStatus = JobStatus.valueOf("UNKNOWN");
         this.elapsedTime = "-1";
         this.exitValue = "-1";
     }

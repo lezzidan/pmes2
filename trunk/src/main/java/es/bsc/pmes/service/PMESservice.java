@@ -147,7 +147,7 @@ public class PMESservice {
                 status.add(JobStatus.valueOf(job.getStatus()));
             } else {
                 logger.trace("Job not found");
-                status.add(JobStatus.valueOf("ALL"));
+                status.add(JobStatus.valueOf("FAILED"));
             }
         }
         logger.trace("Sending list status " + status.toString());
