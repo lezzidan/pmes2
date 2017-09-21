@@ -36,6 +36,8 @@
     </hosts>
     <logPath>/home/pmes/pmes/logs</logPath>
     <logLevel>DEBUG</logLevel>
+    <timeout>60</timeout>
+    <pollingInterval>5</pollingInterval>
     <runCmd>
         <cmd>echo "config script"</cmd>
     </runCmd>    

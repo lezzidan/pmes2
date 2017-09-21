@@ -53,6 +53,9 @@ import es.bsc.pmes.types.SystemStatus;
  * @author scorella on 8/5/16.
  */
 public class InfrastructureManager {
+	
+	/* Main logger */
+	private static final Logger logger = LogManager.getLogger(InfrastructureManager.class);
 
 	/* Static infrastructure manager */
 	private static InfrastructureManager infrastructureManager = new InfrastructureManager();
@@ -61,8 +64,9 @@ public class InfrastructureManager {
 	/* Main config xml file */
 	// This configuration file includes only the general parameters
 	// (the ones that are needed and useful for all connectors)
-	private final String configXml = "/home/pmes/pmes/config/config.xml"; // TODO: set this path as configuration (flag?)
-	private final String configSchema = "/home/pmes/pmes/config/config.xsd"; //TODO: avoid hardcoding
+	private final String configXml = "/home/pmes/pmes/config/config.xml"; // TODO: set this path as configuration
+																			// (flag?)
+	private final String configSchema = "/home/pmes/pmes/config/config.xsd"; // TODO: avoid hardcoding
 	private String workspace;
 
 	/* Information contained within the pmes configuration xml */
@@ -72,6 +76,8 @@ public class InfrastructureManager {
 	private ArrayList<String> auth_keys; // Ssh authorized keys (for the contextualization)
 	private String logLevel; // Log level (e.g. DEBUG, INFO)
 	private String logPath; // Path where to put the logs
+	private int timeout; // Timeout for SSH connections
+	private int pollingInterval; // Polling interval for SSH connectivity
 
 	/* Project related information */
 	// This configuration file includes the connector configuration parameters.
@@ -83,10 +89,7 @@ public class InfrastructureManager {
 	/* Active resources */
 	private HashMap<String, Resource> activeResources;
 	/* SystemStatus object */
-	private SystemStatus systemStatus;
-
-	/* Main logger */
-	private static final Logger logger = LogManager.getLogger(InfrastructureManager.class);
+	private SystemStatus systemStatus;	
 
 	/**
 	 * CONSTRUCTOR. Default constructor.
@@ -102,7 +105,7 @@ public class InfrastructureManager {
 		this.logLevel = "DEBUG";
 		this.logPath = "/tmp";
 		this.configuration = new HashMap<String, String>();
-		
+
 		try {
 			configureResources();
 		} catch (ParserConfigurationException | IOException e) {
@@ -123,20 +126,20 @@ public class InfrastructureManager {
 		// Validate config XML
 		File fXML = new File(this.configXml);
 		SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-		Source xmlFile = new StreamSource(fXML);
-
+		Source xmlFile = new StreamSource(fXML);	
+		
 		try {
 			Schema schema = schemaFactory.newSchema(new StreamSource(new File(this.configSchema)));
 			Validator validator = schema.newValidator();
 			validator.validate(xmlFile);
 		} catch (SAXException e) {
 			logger.error(xmlFile + " is not a valid config file.");
-			e.printStackTrace();
+			e.printStackTrace();						
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		// Retrieve the information from config xml		
+
+		// Retrieve the information from config xml
 		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 
@@ -153,6 +156,10 @@ public class InfrastructureManager {
 		this.configFile = doc.getDocumentElement().getElementsByTagName("configFile").item(0).getTextContent();
 		this.logLevel = doc.getDocumentElement().getElementsByTagName("logLevel").item(0).getTextContent();
 		this.logPath = doc.getDocumentElement().getElementsByTagName("logPath").item(0).getTextContent();
+		this.timeout = Integer
+				.parseInt(doc.getDocumentElement().getElementsByTagName("timeout").item(0).getTextContent());
+		this.pollingInterval = Integer
+				.parseInt(doc.getDocumentElement().getElementsByTagName("pollingInterval").item(0).getTextContent());
 
 		NodeList nlist = doc.getElementsByTagName("host");
 		for (int i = 0; i < nlist.getLength(); i++) {
@@ -243,6 +250,14 @@ public class InfrastructureManager {
 	 */
 	public SystemStatus getSystemStatus() {
 		return this.systemStatus;
+	}
+
+	public int getTimeout() {
+		return timeout;
+	}
+
+	public int getPollingInterval() {
+		return pollingInterval;
 	}
 
 	/**

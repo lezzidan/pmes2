@@ -9,6 +9,8 @@
 				<xs:element ref="hosts"/>
 				<xs:element name="logPath" type="xs:string"/>
 				<xs:element name="logLevel" type="xs:string"/>
+                <xs:element name="timeout" type="xs:int"/>
+                <xs:element name="pollingInterval" type="xs:int"/>
 				<xs:element ref="runCmd"/>
 				<xs:element ref="auth-keys"/>
 			</xs:sequence>

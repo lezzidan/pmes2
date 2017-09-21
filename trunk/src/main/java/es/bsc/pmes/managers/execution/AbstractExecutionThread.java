@@ -223,8 +223,8 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 		ProcessBuilder pb = new ProcessBuilder("ssh", addr, "echo");
 
 		// TODO: add timeout and polling interval in config file
-		int timeout = 60;
-		int pollingInterval = 5;
+		int timeout = this.im.getTimeout();
+		int pollingInterval = this.im.getPollingInterval();
 		int maxRetries = timeout / pollingInterval;
 		int tries = 0;
 
