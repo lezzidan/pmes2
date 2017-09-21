@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<xs:element name="pmes">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="workspace" type="xs:string"/>
+				<xs:element name="connector" type="xs:string"/>
+				<xs:element name="configFile" type="xs:string"/>		
+				<xs:element ref="hosts"/>
+				<xs:element name="logPath" type="xs:string"/>
+				<xs:element name="logLevel" type="xs:string"/>
+				<xs:element ref="runCmd"/>
+				<xs:element ref="auth-keys"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="hosts">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="host" maxOccurs="unbounded"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="host">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="name" type="xs:string"/>
+				<xs:element name="MAX_CPU" type="xs:string"/>
+				<xs:element name="MAX_MEM" type="xs:string"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="runCmd">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="cmd" type="xs:string"/>
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="auth-keys">                              
+                <xs:complexType>                       
+                        <xs:sequence>                        
+                                <xs:element name="key" type="xs:string" maxOccurs="unbounded"/>
+                        </xs:sequence>            
+                </xs:complexType>               
+        </xs:element>  				
+</xs:schema>
+

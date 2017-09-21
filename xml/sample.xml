@@ -1,0 +1,45 @@
+<pmes>
+    <workspace>/home/pmes/pmes</workspace>
+    <connector>ROCCI</connector>
+    <configFile>/home/pmes/pmes/config/mug.cfg</configFile>
+    <hosts>
+        <host>
+            <name>bsccv14</name>
+            <MAX_CPU>2400</MAX_CPU>
+            <MAX_MEM>99195808</MAX_MEM>
+        </host>
+        <host>
+            <name>bsccv15</name>
+            <MAX_CPU>2400</MAX_CPU>
+            <MAX_MEM>99195808</MAX_MEM>
+        </host>
+        <host>
+            <name>bsccv16</name>
+            <MAX_CPU>2400</MAX_CPU>
+            <MAX_MEM>99195808</MAX_MEM>
+        </host>
+        <host>
+            <name>bsccv17</name>
+            <MAX_CPU>2400</MAX_CPU>
+            <MAX_MEM>99195808</MAX_MEM>
+        </host>
+	<host>
+            <name>bsccv18</name>
+            <MAX_CPU>2400</MAX_CPU>
+            <MAX_MEM>99195808</MAX_MEM>
+        </host>
+        <host>
+            <name>bsccv19</name>          
+            <MAX_CPU>2400</MAX_CPU>
+            <MAX_MEM>99195808</MAX_MEM>                                    
+        </host>
+    </hosts>
+    <logPath>/home/pmes/pmes/logs</logPath>
+    <logLevel>DEBUG</logLevel>
+    <runCmd>
+        <cmd>echo "config script"</cmd>
+    </runCmd>    
+    <auth-keys>
+        <key>ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQD5KUm+a0udPUuiz8vCWK3aioQ6AjcvN/TZJvCsiTQS9oHyLMc0BuLC8mw6XtNq3223/ACz1OA35UuVvwDeRIQc7Dp8yC34BDCw1GWGjfjCJKitf2GtysNABzwnK5UOHCZKg91mfjCJujmIlHdbqUmATNdT27Ml+OS9IXZX7jNUeIIeBTkbSJi6YN4Io8yabpEf6wWHouDpovC3+VWWOwKPD0Q5HhvHtllGnDYAQQ4CF4Gx8X3jlBjbPvv6Pe/0RMKToHe6eZb6qxF/B8gqJYcommssIXtH4z7JgqxLrLPaYtztTHazL/uo0Gt3IuhMvr3Nn1IBXC/6+piZKzRV+wfr pmes@ubuntu</key>
+    </auth-keys>
+</pmes>
