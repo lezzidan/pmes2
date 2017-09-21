@@ -1,10 +1,11 @@
 package es.bsc.pmes.managers.execution;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -89,9 +90,9 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 		cmd.add("-i"); // interactive session because we want to source environment variables.
 		cmd.add("-c"); // needed due to the " over the runcompss command
 		String runcompss = "\"runcompss";
-		
+
 		// TODO: test compss flags from request json
-		for (String v : job.getJobDef().getCompss_flags().values()) {			
+		for (String v : job.getJobDef().getCompss_flags().values()) {
 			runcompss += v;
 		}
 		if (job.getJobDef().getApp().getSource().endsWith(".py")) {
@@ -115,13 +116,8 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 		String[] command = new String[cmd.size()];
 		job.setCmd(cmd.toArray(command));
 		logger.trace(Arrays.toString(command));
-
-		// Wait until the resource (VM) is ready at login stage
-		try {
-			Thread.sleep(60000); // Default: 60 seconds -- TODO: should be in the config xml.
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		
+		this.waitForResource(address);
 
 		if (this.stopExecution(Id, Boolean.TRUE)) {
 			return;
@@ -162,6 +158,5 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 
 		// Create Report
 		this.job.createReport();
-	}
-
+	}	
 }

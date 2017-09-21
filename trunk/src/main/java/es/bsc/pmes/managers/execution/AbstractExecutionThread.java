@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -147,33 +148,33 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 			logger.trace("Round " + String.valueOf(i));
 			logger.trace("Command: " + Arrays.toString(cmd));
 
-			if (i > 0) {
-				// Wait until vm will be ready
-				try {
-					Thread.sleep(60000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}
+			// if (i > 0) {
+			// // Wait until vm will be ready
+			// try {
+			// Thread.sleep(60000);
+			// } catch (InterruptedException e) {
+			// e.printStackTrace();
+			// }
+			// }
 			try {
 				ProcessBuilder pb = new ProcessBuilder(cmd);
 				pb.redirectErrorStream(true);
 				this.process = pb.start();
 
-				BufferedReader in = new BufferedReader(new InputStreamReader(this.process.getInputStream()));				
+				BufferedReader in = new BufferedReader(new InputStreamReader(this.process.getInputStream()));
 
 				// Output log
 				String outStr = "";
 				String line = null;
 				Job job = getJob();
-				
+
 				while ((line = in.readLine()) != null) {
 					outStr += line;
-					outStr += "\n";										
-					job.getReport().setJobOutputMessage(outStr);								
+					outStr += "\n";
+					job.getReport().setJobOutputMessage(outStr);
 				}
 				in.close();
-				logger.trace("out: " + outStr);			
+				logger.trace("out: " + outStr);
 
 				this.process.waitFor();
 				exitValue = this.process.exitValue();
@@ -215,5 +216,43 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 			return Boolean.TRUE;
 		}
 		return Boolean.FALSE;
+	}
+
+	// Maximum waiting time is timeout
+	protected void waitForResource(String addr) {
+		ProcessBuilder pb = new ProcessBuilder("ssh", addr, "echo");
+
+		// TODO: add timeout and polling interval in config file
+		int timeout = 60;
+		int pollingInterval = 5;
+		int maxRetries = timeout / pollingInterval;
+		int tries = 0;
+
+		logger.trace("Trying to SSH to resource...");
+
+		try {
+			while (tries < maxRetries) {
+				Process p = pb.start();
+
+				// ignore timeout (connectivity errors are handled later)
+				// TODO: set timeout in cfg file
+				if (!p.waitFor(timeout, TimeUnit.SECONDS)) {
+					logger.warn("SSH timeout after " + timeout + " seconds.");
+					return;
+				}
+				if (p.exitValue() == 0) {
+					logger.trace("SSH established.");
+					return;
+				}
+				logger.trace("Connection refused. Waiting " + pollingInterval + " seconds.");
+				tries++;
+				Thread.sleep(pollingInterval * 1000);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		logger.warn("Could not establish SSH connection in " + timeout + " seconds.");
 	}
 }
