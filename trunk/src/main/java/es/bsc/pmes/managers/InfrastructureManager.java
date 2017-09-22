@@ -1,38 +1,18 @@
 package es.bsc.pmes.managers;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.ArrayList;
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
-
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
+import java.util.List;
+import java.util.Map;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import es.bsc.conn.Connector;
 import es.bsc.conn.exceptions.ConnException;
 import es.bsc.conn.types.HardwareDescription;
 import es.bsc.conn.types.SoftwareDescription;
 import es.bsc.conn.types.VirtualResource;
 import es.bsc.pmes.managers.infractructureHelpers.InfrastructureHelper;
-import es.bsc.pmes.managers.infractructureHelpers.MESOSHelper;
-import es.bsc.pmes.managers.infractructureHelpers.rOCCIHelper;
 import es.bsc.pmes.types.Host;
 import es.bsc.pmes.types.JobDefinition;
 import es.bsc.pmes.types.Resource;
@@ -53,7 +33,7 @@ import es.bsc.pmes.types.SystemStatus;
  * @author scorella on 8/5/16.
  */
 public class InfrastructureManager {
-	
+
 	/* Main logger */
 	private static final Logger logger = LogManager.getLogger(InfrastructureManager.class);
 
@@ -61,152 +41,49 @@ public class InfrastructureManager {
 	private static InfrastructureManager infrastructureManager = new InfrastructureManager();
 	private InfrastructureHelper infrastructureHelper;
 
-	/* Main config xml file */
-	// This configuration file includes only the general parameters
-	// (the ones that are needed and useful for all connectors)
-	private final String configXml = "/home/pmes/pmes/config/config.xml"; // TODO: set this path as configuration
-																			// (flag?)
-	private final String configSchema = "/home/pmes/pmes/config/config.xsd"; // TODO: avoid hardcoding
-	private String workspace;
-
-	/* Information contained within the pmes configuration xml */
-	private String conn; // Connector to use as string
-	private Connector conn_client; // The actual connector to use
-	private ArrayList<String> commands; // Commands to include within the contextualization
-	private ArrayList<String> auth_keys; // Ssh authorized keys (for the contextualization)
-	private String logLevel; // Log level (e.g. DEBUG, INFO)
-	private String logPath; // Path where to put the logs
-	private int timeout; // Timeout for SSH connections
-	private int pollingInterval; // Polling interval for SSH connectivity
-
-	/* Project related information */
-	// This configuration file includes the connector configuration parameters.
-	// It may also include infrastructure paramenters.
-	private String configFile;
-	/* Information contained within the config_file (K, V) (E.g.- key=value) */
-	private HashMap<String, String> configuration;
-
 	/* Active resources */
-	private HashMap<String, Resource> activeResources;
+	private Map<String, Resource> activeResources;
 	/* SystemStatus object */
-	private SystemStatus systemStatus;	
+	private SystemStatus systemStatus;
 
 	/**
 	 * CONSTRUCTOR. Default constructor.
 	 */
 	private InfrastructureManager() {
-		this.workspace = "/tmp";
-		this.conn = "undefined";
-		this.configFile = "/tmp/undefined.txt";
-		this.activeResources = new HashMap<>();
 		this.systemStatus = new SystemStatus();
-		this.auth_keys = new ArrayList<>();
-		this.commands = new ArrayList<>();
-		this.logLevel = "DEBUG";
-		this.logPath = "/tmp";
-		this.configuration = new HashMap<String, String>();
-
-		try {
-			configureResources();
-		} catch (ParserConfigurationException | IOException e) {
-			e.printStackTrace();
-		}
+		this.activeResources = new HashMap<String, Resource>();
+		this.configureResources();
 	}
 
 	/**
 	 * CONFIGURE RESOURCES METHOD.
 	 *
-	 * Retrieves the information from the config xml and sets the Infrastructure
-	 * Manager values.
-	 *
-	 * @throws ParserConfigurationException
-	 * @throws java.io.FileNotFoundException
+	 * Instantiates the infrastructure helper and adds hosts to system status.
+	 * 
 	 */
-	public void configureResources() throws ParserConfigurationException, IOException {
-		// Validate config XML
-		File fXML = new File(this.configXml);
-		SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-		Source xmlFile = new StreamSource(fXML);	
-		
+	public void configureResources() {
+		ConfigurationManager cm = ConfigurationManager.getConfigurationManager();
+		String connector = "es.bsc.pmes.managers.infractructureHelpers." + cm.getConnectorClass();
+		String workspace = cm.getWorkspace();
+		List<String> commands = cm.getCommands();
+		List<String> authKeys = cm.getAuthKeys();
+
 		try {
-			Schema schema = schemaFactory.newSchema(new StreamSource(new File(this.configSchema)));
-			Validator validator = schema.newValidator();
-			validator.validate(xmlFile);
-		} catch (SAXException e) {
-			logger.error(xmlFile + " is not a valid config file.");
-			e.printStackTrace();						
-		} catch (IOException e) {
-			e.printStackTrace();
+			Constructor<?> c = Class.forName(connector).getConstructor(String.class, List.class, List.class);
+			this.infrastructureHelper = (InfrastructureHelper) c.newInstance(workspace, commands, authKeys);
+
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException("Connector class " + connector + " not found (check config file).", e);
+		} catch (NoSuchMethodException e) {
+			throw new RuntimeException("Could not find the appropriate constructor for " + connector + " class.", e);
+		} catch (SecurityException e) {
+			throw new RuntimeException(e);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 
-		// Retrieve the information from config xml
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-
-		Document doc = null;
-		try {
-			doc = dBuilder.parse(fXML);
-		} catch (SAXException e) {
-			e.printStackTrace();
-		}
-		doc.getDocumentElement().normalize();
-
-		this.workspace = doc.getDocumentElement().getElementsByTagName("workspace").item(0).getTextContent();
-		this.conn = doc.getDocumentElement().getElementsByTagName("connector").item(0).getTextContent();
-		this.configFile = doc.getDocumentElement().getElementsByTagName("configFile").item(0).getTextContent();
-		this.logLevel = doc.getDocumentElement().getElementsByTagName("logLevel").item(0).getTextContent();
-		this.logPath = doc.getDocumentElement().getElementsByTagName("logPath").item(0).getTextContent();
-		this.timeout = Integer
-				.parseInt(doc.getDocumentElement().getElementsByTagName("timeout").item(0).getTextContent());
-		this.pollingInterval = Integer
-				.parseInt(doc.getDocumentElement().getElementsByTagName("pollingInterval").item(0).getTextContent());
-
-		NodeList nlist = doc.getElementsByTagName("host");
-		for (int i = 0; i < nlist.getLength(); i++) {
-			Node node = nlist.item(i);
-			if (node.getNodeType() == Node.ELEMENT_NODE) {
-				Element element = (Element) node;
-				String name = element.getElementsByTagName("name").item(0).getTextContent();
-				Integer cpu = Integer.valueOf(element.getElementsByTagName("MAX_CPU").item(0).getTextContent());
-				Float mem = Float.valueOf(element.getElementsByTagName("MAX_MEM").item(0).getTextContent());
-				Host host = new Host(name, cpu, mem);
-				systemStatus.addHost(host);
-			}
-		}
-
-		NodeList keys = doc.getElementsByTagName("key");
-		for (int i = 0; i < keys.getLength(); i++) {
-			Node node = keys.item(i);
-			this.auth_keys.add(node.getTextContent());
-		}
-
-		NodeList cmds = doc.getElementsByTagName("cmd");
-		for (int i = 0; i < cmds.getLength(); i++) {
-			Node node = cmds.item(i);
-			this.commands.add(node.getTextContent());
-		}
-
-		// Retrieve the configuration from the config file
-		BufferedReader bfr = new BufferedReader(new FileReader(new File(configFile)));
-		String line;
-		while ((line = bfr.readLine()) != null) {
-			if (!line.startsWith("#") && !line.isEmpty()) {
-				String[] pair = line.trim().split("=");
-				this.configuration.put(pair[0].trim(), pair[1].trim());
-			}
-		}
-		bfr.close();
-
-		// Instantiate the appropiate infrastructure helper
-		switch (this.conn) {
-		case "ROCCI":
-			this.infrastructureHelper = new rOCCIHelper(this.workspace, this.commands, this.auth_keys);
-			break;
-		case "MESOS":
-			this.infrastructureHelper = new MESOSHelper(this.workspace, this.commands, this.auth_keys);
-			break;
-		default:
-			throw new UnsupportedOperationException("Undefined connector or helper not implemented.");
+		for (Host h : cm.getHosts()) {
+			this.systemStatus.addHost(h);
 		}
 	}
 
@@ -229,7 +106,7 @@ public class InfrastructureManager {
 	 *
 	 * @return Hashmap containing the active resources
 	 */
-	public HashMap<String, Resource> getActiveResources() {
+	public Map<String, Resource> getActiveResources() {
 		return activeResources;
 	}
 
@@ -252,14 +129,6 @@ public class InfrastructureManager {
 		return this.systemStatus;
 	}
 
-	public int getTimeout() {
-		return timeout;
-	}
-
-	public int getPollingInterval() {
-		return pollingInterval;
-	}
-
 	/**
 	 * ************************************************************************
 	 * INFRASTRUCTURE MANAGER FUNCTIONS.
@@ -280,10 +149,13 @@ public class InfrastructureManager {
 	 * @return String with the creation id ("-1" if error, null if unsupported
 	 *         provider)
 	 */
-	public String createResource(HardwareDescription hd, SoftwareDescription sd, HashMap<String, String> prop) {
+	public String createResource(HardwareDescription hd, SoftwareDescription sd, Map<String, String> prop) {
 		logger.trace("Creating Resource");
+
 		try {
-			VirtualResource vr = infrastructureHelper.createResource(hd, sd, prop, this.configuration);
+			Map<String, String> properties = ConfigurationManager.getConfigurationManager().getConnectorProperties();
+
+			VirtualResource vr = this.infrastructureHelper.createResource(hd, sd, prop, properties);
 			// Update System Status
 			// OCCI doesn't give information about what host will be hosting the VM
 			Host h = systemStatus.getCluster().get(0); // test purposes: always get first Host
@@ -307,10 +179,9 @@ public class InfrastructureManager {
 	 *            Job definition
 	 * @return Properties hashmap
 	 */
-	public HashMap<String, String> configureResource(JobDefinition jobDef) {
-		HashMap<String, String> properties = new HashMap<>();
-		properties = this.infrastructureHelper.configureResource(jobDef, this.configuration);
-		return properties;
+	public Map<String, String> configureResource(JobDefinition jobDef) {
+		Map<String, String> properties = ConfigurationManager.getConfigurationManager().getConnectorProperties();
+		return this.infrastructureHelper.configureResource(jobDef, properties);
 	}
 
 	/**

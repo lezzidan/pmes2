@@ -4,8 +4,7 @@
 		<xs:complexType>
 			<xs:sequence>
 				<xs:element name="workspace" type="xs:string"/>
-				<xs:element name="connector" type="xs:string"/>
-				<xs:element name="configFile" type="xs:string"/>		
+				<xs:element ref="connector"/>				
 				<xs:element ref="hosts"/>
 				<xs:element name="logPath" type="xs:string"/>
 				<xs:element name="logLevel" type="xs:string"/>
@@ -16,7 +15,26 @@
 			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
-	
+
+    <xs:element name="connector">
+        <xs:complexType>         
+            <xs:sequence>
+                <xs:element ref="property" maxOccurs="unbounded"/>
+            </xs:sequence>
+            
+            <xs:attribute name="className" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="property">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="key" type="xs:string"/>
+                <xs:element name="value" type="xs:string"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
 	<xs:element name="hosts">
 		<xs:complexType>
 			<xs:sequence>

@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
 
 import es.bsc.conn.types.HardwareDescription;
 import es.bsc.conn.types.SoftwareDescription;
+import es.bsc.pmes.managers.ConfigurationManager;
 import es.bsc.pmes.managers.InfrastructureManager;
 import es.bsc.pmes.types.Job;
 
@@ -108,7 +109,7 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 		SoftwareDescription sd = new SoftwareDescription();
 
 		// Configure properties
-		HashMap<String, String> prop = this.im.configureResource(getJob().getJobDef());
+		Map<String, String> prop = this.im.configureResource(getJob().getJobDef());
 
 		// Create resource
 		logger.trace("Creating new Resource");
@@ -223,8 +224,9 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 		ProcessBuilder pb = new ProcessBuilder("ssh", addr, "echo");
 
 		// TODO: add timeout and polling interval in config file
-		int timeout = this.im.getTimeout();
-		int pollingInterval = this.im.getPollingInterval();
+		ConfigurationManager cm = ConfigurationManager.getConfigurationManager();
+		int timeout = cm.getTimeout();
+		int pollingInterval = cm.getPollingInterval();
 		int maxRetries = timeout / pollingInterval;
 		int tries = 0;
 
