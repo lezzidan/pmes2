@@ -150,7 +150,7 @@ public class InfrastructureManager {
 	 *         provider)
 	 */
 	public String createResource(HardwareDescription hd, SoftwareDescription sd, Map<String, String> prop) {
-		logger.trace("Creating Resource");
+		logger.debug("Creating Resource");
 
 		try {
 			Map<String, String> properties = ConfigurationManager.getConfigurationManager().getConnectorProperties();
@@ -160,7 +160,7 @@ public class InfrastructureManager {
 			// OCCI doesn't give information about what host will be hosting the VM
 			Host h = systemStatus.getCluster().get(0); // test purposes: always get first Host
 			systemStatus.update(h, hd.getTotalComputingUnits(), hd.getMemorySize());
-			logger.trace("IM update: " + hd.getTotalComputingUnits() + " " + hd.getMemorySize());
+			logger.debug("IM update: " + hd.getTotalComputingUnits() + " " + hd.getMemorySize());
 			Resource newResource = new Resource(vr.getIp(), prop, vr);
 			activeResources.put((String) vr.getId(), newResource);
 			return (String) vr.getId();
@@ -194,7 +194,7 @@ public class InfrastructureManager {
 	 */
 	public void destroyResource(String Id) {
 		VirtualResource vr = activeResources.get(Id).getVr();
-		logger.trace("Destroying VM " + Id);
+		logger.debug("Destroying VM " + Id);
 		this.infrastructureHelper.destroyResource((String) vr.getId());
 	}
 }

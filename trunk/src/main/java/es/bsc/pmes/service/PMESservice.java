@@ -36,7 +36,7 @@ public class PMESservice {
      * Start the PMES service: Initializes the infrastructure and job managers
      */
     public void startService() {
-        logger.trace("Starting PMESService");
+        logger.debug("Starting PMESService");
         this.im = InfrastructureManager.getInfrastructureManager();
         this.jm = JobManager.getJobManager();
     }
@@ -46,7 +46,7 @@ public class PMESservice {
      */
     public void endService() {
         // Any cleanup?
-        logger.trace("Finishing PMESService");
+        logger.debug("Finishing PMESService");
     }
 
     /**
@@ -67,7 +67,7 @@ public class PMESservice {
         ArrayList<String> jobIds = new ArrayList<>(jobDefinitions.size());
         for (JobDefinition jobDef : jobDefinitions) {
             Job newJob;
-            logger.trace("Job Type: " + jobDef.getApp().getType());
+            logger.debug("Job Type: " + jobDef.getApp().getType());
             if (jobDef.getApp().getType().equals("COMPSs")) {
                 newJob = new COMPSsJob();
             } else {
@@ -78,13 +78,13 @@ public class PMESservice {
             newJob.setJobDef(jobDef);
             newJob.setDataIn(jobDef.getInputPaths());
             newJob.setDataOut(jobDef.getOutputPaths());
-            logger.trace("JobDef: " + jobDef.getInputPaths().toString() + " " + jobDef.getOutputPaths().toString());
-            logger.trace("newJob: " + newJob.getDataIn().toString() + " " + newJob.getDataOut().toString());
-            logger.trace("user: " + newJob.getUser().getCredentials().toString());
+            logger.debug("JobDef: " + jobDef.getInputPaths().toString() + " " + jobDef.getOutputPaths().toString());
+            logger.debug("newJob: " + newJob.getDataIn().toString() + " " + newJob.getDataOut().toString());
+            logger.debug("user: " + newJob.getUser().getCredentials().toString());
             jobIds.add(newJob.getId());
 
             String type = newJob instanceof COMPSsJob ? "COMPSs" : "Single";
-            logger.trace("New " + type + " Job created with id " + newJob.getId());
+            logger.debug("New " + type + " Job created with id " + newJob.getId());
             this.jm.enqueueJob(newJob);
         }
         return jobIds;
@@ -139,18 +139,18 @@ public class PMESservice {
     public ArrayList<JobStatus> getActivityStatus(ArrayList<String> jobids) {
         ArrayList<JobStatus> status = new ArrayList<>(jobids.size());
         for (String id : jobids) {
-            logger.trace("Asking status for job: " + id);
+            logger.debug("Asking status for job: " + id);
             Job job = this.jm.getJobs().get(id);
             if (job != null) {
-                logger.trace("Job Found");
-                logger.trace(job.getStatus());
+                logger.debug("Job Found");
+                logger.debug(job.getStatus());
                 status.add(JobStatus.valueOf(job.getStatus()));
             } else {
-                logger.trace("Job not found");
+                logger.debug("Job not found");
                 status.add(JobStatus.valueOf("FAILED"));
             }
         }
-        logger.trace("Sending list status " + status.toString());
+        logger.debug("Sending list status " + status.toString());
         return status;
     }
 
@@ -165,14 +165,14 @@ public class PMESservice {
     public ArrayList<JobReport> getActivityReport(ArrayList<String> jobids) {
         ArrayList<JobReport> reports = new ArrayList<>(jobids.size());
         for (String id : jobids) {
-            logger.trace("Asking Activity for job: " + id);
+            logger.debug("Asking Activity for job: " + id);
             Job job = this.jm.getJobs().get(id);
             if (job != null) {
-                logger.trace("Job Found");
+                logger.debug("Job Found");
                 JobReport jr = job.getReport();
                 reports.add(jr);
             } else {
-                logger.trace("Job not found");
+                logger.debug("Job not found");
                 reports.add(new JobReport());
             }
         }
@@ -187,7 +187,7 @@ public class PMESservice {
      * @return The system status
      */
     public SystemStatus getSystemStatus() {
-        logger.trace(im.getSystemStatus().print());
+        logger.debug(im.getSystemStatus().print());
         return im.getSystemStatus();
     }
 

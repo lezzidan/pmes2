@@ -188,7 +188,7 @@ public class Job {
 		if (!dir.exists()) {
 			boolean result = dir.mkdir();
 			if (result) {
-				logger.trace("Job execution directory created: " + path);
+				logger.debug("Job execution directory created: " + path);
 			}
 		}
 	}
@@ -209,8 +209,8 @@ public class Job {
 			dataToTransfer = this.dataIn;
 		}
 		for (String path : dataToTransfer) {
-			logger.trace("Staging file: " + path);
-			logger.trace("direction: " + direction.toString());
+			logger.debug("Staging file: " + path);
+			logger.debug("direction: " + direction.toString());
 			ArrayList<String> cmd = new ArrayList<>();
 			cmd.add("scp");
 			cmd.add("-r");
@@ -222,7 +222,7 @@ public class Job {
 				cmd.add(this.dirPath);
 			}
 
-			logger.trace("Command: " + cmd);
+			logger.debug("Command: " + cmd);
 
 			String[] command = new String[cmd.size()];
 			try {
@@ -242,7 +242,7 @@ public class Job {
 						outStr += line;
 					}
 					in.close();
-					logger.trace("outMessage: " + outStr);
+					logger.debug("outMessage: " + outStr);
 
 					// Error log
 					line = null;
@@ -251,11 +251,11 @@ public class Job {
 						errStr += line;
 					}
 					err.close();
-					logger.trace("errMessage: " + errStr);
+					logger.debug("errMessage: " + errStr);
 
 					process.waitFor();
 					pExitValue = process.exitValue();
-					logger.trace("exit Code: " + pExitValue);
+					logger.debug("exit Code: " + pExitValue);
 					exitValue += pExitValue; // How many transfers have been failed
 					max_retries += 1;
 					if (pExitValue != 0) {

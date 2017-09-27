@@ -65,7 +65,7 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 	public void cancel() throws Exception {
 		if (this.process != null) {
 			this.process.destroy();
-			logger.trace("Job cancelled: Execution stopped");
+			logger.debug("Job cancelled: Execution stopped");
 			getJob().setStatus("CANCELLED");
 		}
 	}
@@ -74,18 +74,18 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 	 * Does the stage in.
 	 */
 	public void stageIn() {
-		logger.trace("Staging In");
+		logger.debug("Staging In");
 		Integer failedTransfers = getJob().stage(0);
-		logger.trace("Failed Transfers: " + failedTransfers.toString());
+		logger.debug("Failed Transfers: " + failedTransfers.toString());
 	}
 
 	/**
 	 * Does the stage out.
 	 */
 	public void stageOut() {
-		logger.trace("Staging Out");
+		logger.debug("Staging Out");
 		Integer failedTransfers = getJob().stage(1);
-		logger.trace("Failed Transfers: " + failedTransfers.toString());
+		logger.debug("Failed Transfers: " + failedTransfers.toString());
 	}
 
 	/**
@@ -112,9 +112,9 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 		Map<String, String> prop = this.im.configureResource(getJob().getJobDef());
 
 		// Create resource
-		logger.trace("Creating new Resource");
+		logger.debug("Creating new Resource");
 		String Id = this.im.createResource(hd, sd, prop);
-		logger.trace("New resource created with Id " + Id);
+		logger.debug("New resource created with Id " + Id);
 		getJob().addResource(this.im.getActiveResources().get(Id));
 		return Id;
 	}
@@ -128,9 +128,9 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 	 *            The resource id to be destroyed
 	 */
 	public void destroyResource(String Id) {
-		logger.trace("Deleting Resource: " + Id);
+		logger.debug("Deleting Resource: " + Id);
 		this.im.destroyResource(Id);
-		logger.trace("Resource deleted: " + Id);
+		logger.debug("Resource deleted: " + Id);
 	}
 
 	/**
@@ -146,8 +146,8 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 		Integer exitValue = 1;
 		Integer i = 0;
 		while (i < times && exitValue != 0) {
-			logger.trace("Round " + String.valueOf(i));
-			logger.trace("Command: " + Arrays.toString(cmd));
+			logger.debug("Round " + String.valueOf(i));
+			logger.debug("Command: " + Arrays.toString(cmd));
 
 			// if (i > 0) {
 			// // Wait until vm will be ready
@@ -175,11 +175,11 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 					job.getReport().setJobOutputMessage(outStr);
 				}
 				in.close();
-				logger.trace("out: " + outStr);
+				logger.debug("out: " + outStr);
 
 				this.process.waitFor();
 				exitValue = this.process.exitValue();
-				logger.trace("Exit Value " + String.valueOf(exitValue));
+				logger.debug("Exit Value " + String.valueOf(exitValue));
 				job.getReport().setExitValue(exitValue);
 
 			} catch (IOException e) {
@@ -210,7 +210,7 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 		if (getJob().getTerminate()) {
 			// Destroy VM if the user cancel the job.
 			if (destroyResource) {
-				logger.trace("Job cancelled: Destroying resource with Id: " + Id);
+				logger.debug("Job cancelled: Destroying resource with Id: " + Id);
 				destroyResource(Id);
 			}
 			getJob().setStatus("CANCELLED");
@@ -230,7 +230,7 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 		int maxRetries = timeout / pollingInterval;
 		int tries = 0;
 
-		logger.trace("Trying to SSH to resource...");
+		logger.debug("Trying to SSH to resource...");
 
 		try {
 			while (tries < maxRetries) {
@@ -243,10 +243,10 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 					return;
 				}
 				if (p.exitValue() == 0) {
-					logger.trace("SSH established.");
+					logger.debug("SSH established.");
 					return;
 				}
-				logger.trace("Connection refused. Waiting " + pollingInterval + " seconds.");
+				logger.debug("Connection refused. Waiting " + pollingInterval + " seconds.");
 				tries++;
 				Thread.sleep(pollingInterval * 1000);
 			}

@@ -66,7 +66,7 @@ public class SchedulerThread extends Thread {
             if (!pendingJobs.isEmpty()) {
                 Job nextJob = this.nextJob();
                 if (nextJob.getTerminate()) {
-                    logger.trace("Job cancelled: Job Stop before execution");
+                    logger.debug("Job cancelled: Job Stop before execution");
                     nextJob.setStatus("CANCELLED");
                 } else {
                     nextJob.setStatus("RUNNING");
@@ -109,15 +109,15 @@ public class SchedulerThread extends Thread {
         //Run job
         ExecutionThread executor = null;
         if (job instanceof COMPSsJob) {
-            logger.trace("COMPSs Job");
+            logger.debug("COMPSs Job");
             executor = new COMPSsExecutionThread((COMPSsJob) job);
-            logger.trace("Executor created");
+            logger.debug("Executor created");
         } else {
-            logger.trace("Single Job");
+            logger.debug("Single Job");
             executor = new SingleExecutionThread((SingleJob) job);
         }
         this.tasks.put(job.getId(), executor);
-        logger.trace("Executor Start");
+        logger.debug("Executor Start");
         executor.start();
     }
 
@@ -151,7 +151,7 @@ public class SchedulerThread extends Thread {
     public void deleteJob(Job job) {
         Boolean removed = this.pendingJobs.remove(job);
         if (removed) {
-            logger.trace("Job cancelled: Job removed from the scheduler");
+            logger.debug("Job cancelled: Job removed from the scheduler");
         } else {
             this.stopJob(job);
         }

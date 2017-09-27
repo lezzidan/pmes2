@@ -63,11 +63,11 @@ public class rOCCIHelper extends InfrastructureHelper {
 		}
 
 		if (auth.equals("token")) {
-			logger.trace("Authentication method: token");
-			logger.trace("token: " + jobDef.getUser().getCredentials().get("token"));
+			logger.debug("Authentication method: token");
+			logger.debug("token: " + jobDef.getUser().getCredentials().get("token"));
 			properties.put("token", jobDef.getUser().getCredentials().get("token"));
 		} else {
-			logger.trace("Authentication method: pem-key");
+			logger.debug("Authentication method: pem-key");
 			properties.put("ca-path", ca_path);
 			String keyPath = jobDef.getUser().getCredentials().get("key");
 			String pemPath = jobDef.getUser().getCredentials().get("pem");
@@ -91,12 +91,12 @@ public class rOCCIHelper extends InfrastructureHelper {
 		if (Objects.equals("ONE", provider) || Objects.equals("OpenStack", provider)) {
 			conn_client = new ROCCI(prop);
 			String vrID = (String) conn_client.create(hd, sd, prop);
-			logger.trace("compute id: " + vrID);
+			logger.debug("compute id: " + vrID);
 
 			VirtualResource vr = conn_client.waitUntilCreation(vrID);
 
-			logger.trace("VM id: " + vr.getId());
-			logger.trace("VM ip: " + vr.getIp());
+			logger.debug("VM id: " + vr.getId());
+			logger.debug("VM ip: " + vr.getIp());
 			return vr;
 		} else {
 			// Unsupported provider
@@ -133,10 +133,10 @@ public class rOCCIHelper extends InfrastructureHelper {
 	 * @return Path where the context file has been stored
 	 */
 	public String createContextDataFile(JobDefinition jobDef, Map<String, String> configuration) {
-		logger.trace("Creating context data file");
+		logger.debug("Creating context data file");
 		String dir = jobDef.getJobName();
 		String path = this.getWorkspace() + "/jobs/" + dir + "/context.login";
-		logger.trace("Creating context data file " + path);
+		logger.debug("Creating context data file " + path);
 		try {
 			// String infrastructure = jobDef.getInfrastructure(); // TODO: REMOVE
 			// INFRASTRUCTURE FROM JOB DEFINITION
@@ -165,7 +165,7 @@ public class rOCCIHelper extends InfrastructureHelper {
 			// NFS mounting
 			if (mountPoints.size() > 0) {
 				// There are mount points to add to cloud-init
-				logger.trace("Adding mounting point to context for the infrastructure: " + infrastructure);
+				logger.debug("Adding mounting point to context for the infrastructure: " + infrastructure);
 				switch (infrastructure) {
 				case "mug-bsc":
 					for (int i = 0; i < mountPoints.size(); i++) {
@@ -182,7 +182,7 @@ public class rOCCIHelper extends InfrastructureHelper {
 					}
 					break;
 				case "mug-irb":
-					logger.trace("[[[ ERROR ]]]: TODO: Add the lines to mount the shared storage at IRB.");
+					logger.debug("[[[ ERROR ]]]: TODO: Add the lines to mount the shared storage at IRB.");
 					break;
 				case "mug-ebi":
 					// Create extra configuration file for second adaptor and restart the new
@@ -211,7 +211,7 @@ public class rOCCIHelper extends InfrastructureHelper {
 					}
 					break;
 				default:
-					logger.trace("[[[ ERROR ]]]: UNRECOGNIZED INFRASTRUCTURE WHERE TO MOUNT THE FOLDERS.");
+					logger.debug("[[[ ERROR ]]]: UNRECOGNIZED INFRASTRUCTURE WHERE TO MOUNT THE FOLDERS.");
 					// TODO: Add and throw new exception
 					break;
 				}

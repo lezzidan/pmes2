@@ -133,7 +133,7 @@ public class COMPSsJob extends Job {
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
             transformer.transform(source, result);
 
-            logger.trace("projects.xml generated and saved");
+            logger.debug("projects.xml generated and saved");
 
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
@@ -250,7 +250,7 @@ public class COMPSsJob extends Job {
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
             transformer.transform(source, result);
 
-            logger.trace("resources.xml generated and saved");
+            logger.debug("resources.xml generated and saved");
 
         } catch (ParserConfigurationException e) {
             e.printStackTrace();

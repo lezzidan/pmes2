@@ -31,7 +31,7 @@ public class PMESclient {
     public PMESclient() {
         pmesService = new PMESservice();
         this.address = "";
-        logger.trace("New PMESclient created without address");
+        logger.debug("New PMESclient created without address");
     }
 
     /**
@@ -42,7 +42,7 @@ public class PMESclient {
     public PMESclient(String address) {
         pmesService = new PMESservice();
         this.address = address;
-        logger.trace("New PMESclient created with address " + this.address);
+        logger.debug("New PMESclient created with address " + this.address);
     }
 
     /**
@@ -55,7 +55,7 @@ public class PMESclient {
     @Path("/startService/{id}")
     @Produces("text/plain")
     public String startService(@PathParam("id") String address) {
-        logger.trace("Starting PMES client at " + this.address);
+        logger.debug("Starting PMES client at " + this.address);
         PMESclient client = new PMESclient(address);
         return address;
     }
@@ -69,7 +69,7 @@ public class PMESclient {
     @Path("/stopService")
     @Produces("text/plain")
     public String stopService() {
-        logger.trace("Stopping PMES client at " + this.address);
+        logger.debug("Stopping PMES client at " + this.address);
         // TODO: stop service - Currently done by stopping tomcat
         return this.address;
     }
@@ -86,7 +86,7 @@ public class PMESclient {
     @Produces("application/json")
     public ArrayList<String> createActivity(ArrayList<JobDefinition> jobDefinitions) {
         ArrayList<String> jobIds = pmesService.createActivity(jobDefinitions);
-        logger.trace("Jobs created: " + jobIds.toString());
+        logger.debug("Jobs created: " + jobIds.toString());
         return jobIds;
     }
 
@@ -165,7 +165,7 @@ public class PMESclient {
     @Path("/pending")
     @Produces("text/plain")
     public String pending(){
-        logger.trace("Starting PMES client at "+this.address);
+        logger.debug("Starting PMES client at "+this.address);
         Integer size = pmesService.getJm().getJobs().size();
         return size.toString();
     }*/

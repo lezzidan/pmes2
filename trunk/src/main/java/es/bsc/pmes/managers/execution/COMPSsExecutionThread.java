@@ -58,17 +58,17 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 	 */
 	@Override
 	public void executeJob() {
-		logger.trace("COMPSs job execution requested: " + this.job.getId());
+		logger.debug("COMPSs job execution requested: " + this.job.getId());
 
 		// Check if the user want to stop execution
 		// The stop check is done between each stage of the execution
 		if (this.stopExecution("", Boolean.FALSE)) {
-			logger.trace("Terminate JOB");
+			logger.debug("Terminate JOB");
 			return;
 		}
 		// Create Resource
 		String Id = createResource();
-		logger.trace("Resource created with Id: " + Id);
+		logger.debug("Resource created with Id: " + Id);
 
 		if (this.stopExecution(Id, Boolean.TRUE)) {
 			return;
@@ -115,7 +115,7 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 
 		String[] command = new String[cmd.size()];
 		job.setCmd(cmd.toArray(command));
-		logger.trace(Arrays.toString(command));
+		logger.debug(Arrays.toString(command));
 		
 		this.waitForResource(address);
 
@@ -124,7 +124,7 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 		}
 
 		// Stage In
-		logger.trace("Stage in");
+		logger.debug("Stage in");
 		stageIn();
 
 		if (this.stopExecution(Id, Boolean.TRUE)) {
@@ -132,13 +132,13 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 		}
 
 		// Run job
-		logger.trace("Runnning");
+		logger.debug("Runnning");
 		long startTime = System.currentTimeMillis();
 		Integer exitValue = executeCommand(command);
 		long endTime = System.currentTimeMillis() - startTime;
 		job.getReport().setElapsedTime(String.valueOf(endTime));
-		logger.trace("Execution Time: " + String.valueOf(endTime));
-		logger.trace("Exit code" + exitValue);
+		logger.debug("Execution Time: " + String.valueOf(endTime));
+		logger.debug("Exit code" + exitValue);
 		if (exitValue > 0) {
 			if (exitValue == 143) {
 				job.setStatus("CANCELLED");
@@ -147,13 +147,13 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 			}
 		} else {
 			// Stage Out
-			logger.trace("Stage out");
+			logger.debug("Stage out");
 			stageOut();
 			job.setStatus("FINISHED");
 		}
 
 		// Destroy Resource
-		logger.trace("Destroy resource");
+		logger.debug("Destroy resource");
 		destroyResource(Id);
 
 		// Create Report
