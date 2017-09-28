@@ -2,25 +2,25 @@
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 	<xs:element name="pmes">
 		<xs:complexType>
-			<xs:sequence>
+			<xs:all>
 				<xs:element name="workspace" type="xs:string"/>
 				<xs:element ref="connector"/>				
 				<xs:element ref="hosts"/>
 				<xs:element name="logPath" type="xs:string"/>
 				<xs:element name="logLevel" type="xs:string"/>
-                <xs:element name="timeout" type="xs:int"/>
-                <xs:element name="pollingInterval" type="xs:int"/>
+                		<xs:element name="timeout" type="xs:int"/>
+		                <xs:element name="pollingInterval" type="xs:int"/>
 				<xs:element ref="runCmd"/>
 				<xs:element ref="auth-keys"/>
-			</xs:sequence>
+			</xs:all>
 		</xs:complexType>
 	</xs:element>
 
     <xs:element name="connector">
         <xs:complexType>         
-            <xs:sequence>
+            <xs:all>
                 <xs:element ref="property" maxOccurs="unbounded"/>
-            </xs:sequence>
+            </xs:all>
             
             <xs:attribute name="className" type="xs:string" use="required"/>
         </xs:complexType>
@@ -28,44 +28,44 @@
     
     <xs:element name="property">
         <xs:complexType>
-            <xs:sequence>
+            <xs:all>
                 <xs:element name="key" type="xs:string"/>
                 <xs:element name="value" type="xs:string"/>
-            </xs:sequence>
+            </xs:all>
         </xs:complexType>
     </xs:element>
     
 	<xs:element name="hosts">
 		<xs:complexType>
-			<xs:sequence>
+			<xs:all>
 				<xs:element ref="host" maxOccurs="unbounded"/>
-			</xs:sequence>
+			</xs:all>
 		</xs:complexType>
 	</xs:element>
 
 	<xs:element name="host">
 		<xs:complexType>
-			<xs:sequence>
+			<xs:all>
 				<xs:element name="name" type="xs:string"/>
 				<xs:element name="MAX_CPU" type="xs:string"/>
 				<xs:element name="MAX_MEM" type="xs:string"/>
-			</xs:sequence>
+			</xs:all>
 		</xs:complexType>
 	</xs:element>
 
 	<xs:element name="runCmd">
 		<xs:complexType>
-			<xs:sequence>
+			<xs:all>
 				<xs:element name="cmd" type="xs:string"/>
-			</xs:sequence>
+			</xs:all>
 		</xs:complexType>
 	</xs:element>
 
 	<xs:element name="auth-keys">                              
                 <xs:complexType>                       
-                        <xs:sequence>                        
+                        <xs:all>                        
                                 <xs:element name="key" type="xs:string" maxOccurs="unbounded"/>
-                        </xs:sequence>            
+                        </xs:all>            
                 </xs:complexType>               
         </xs:element>  				
 </xs:schema>
