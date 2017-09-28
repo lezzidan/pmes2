@@ -24,7 +24,7 @@ public class JobDefinition {
     private ArrayList<MountPoint> mountPoints;
     private Integer numNodes;
     private User user;
-    private Image img;
+    private Image img;    
     private App app;
     private HashMap<String, String> compss_flags;
     
