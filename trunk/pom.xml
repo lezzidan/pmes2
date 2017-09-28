@@ -49,6 +49,8 @@
         <log4j.version>2.6.1</log4j.version>
         <!-- <conn.version>1.0-74</conn.version> -->
         <conn.version>1.0-87</conn.version>
+        <compss.version>2.1.rc1709</compss.version>
+        
 
         <!-- Maven Plugins -->
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -146,7 +148,17 @@
             <groupId>com.sun.jersey</groupId>
             <artifactId>jersey-bundle</artifactId>
             <version>1.19.1</version>
-        </dependency>               
+        </dependency>           
+        <dependency>
+        	<groupId>es.bsc.compss</groupId>
+        	<artifactId>compss-project-schema</artifactId>
+        	<version>${compss.version}</version>
+        </dependency>    
+         <dependency>
+        	<groupId>es.bsc.compss</groupId>
+        	<artifactId>compss-resources-schema</artifactId>
+        	<version>${compss.version}</version>
+        </dependency> 
     </dependencies>
 
     <!-- BUILD-->
