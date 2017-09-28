@@ -44,7 +44,7 @@ public class ConfigurationManager {
 	// TODO: these paths could be relative to the installation path (maybe in
 	// tomcat?)
 	private static final String CONFIG_FILE = "/home/pmes/pmes/config/config.xml";
-	private static final String SCHEMA_FILE = "/home/pmes/pmes/config/config.xsd";
+	private static final String SCHEMA_FILE = "/home/pmes/pmes/config/config.xsd";	
 
 	private static ConfigurationManager cm = new ConfigurationManager();
 
@@ -223,5 +223,9 @@ public class ConfigurationManager {
 			Configurator.setRootLevel(Level.INFO);
 			break;
 		}
+	}
+	
+	public static void main(String args[]) throws Exception {
+		ConfigurationManager.getConfigurationManager();
 	}
 }

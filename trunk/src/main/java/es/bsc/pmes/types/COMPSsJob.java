@@ -1,266 +1,302 @@
 package es.bsc.pmes.types;
 
+import java.io.File;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.*;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.File;
-import java.util.ArrayList;
+import es.bsc.compss.types.project.jaxb.CloudType;
+import es.bsc.compss.types.project.jaxb.ProjectType;
 
 /**
  * Created by scorella on 9/19/16.
  */
 public class COMPSsJob extends Job {
 
-    private static final Logger logger = LogManager.getLogger(COMPSsJob.class.getName());
+	private static final Logger logger = LogManager.getLogger(COMPSsJob.class.getName());
 
-    public COMPSsJob() {
-        super();
-    }
+	public COMPSsJob() {
+		super();
+	}
 
-    /** Generate projects.xml */
-    public void generateProjects(){
-        try {
-            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+	public void generateProject() {
+		
+		
+		//
+		//
+		//
+		// ProjectType project = new ProjectType();
+		//
+		//
+		//
+		//
+		// CloudType cloud = new CloudType();
+		//
+		//
+		// cloud.getCloudProviderOrInitialVMsOrMinimumVMs().
+		
+		
+	}
 
-            Document doc = docBuilder.newDocument();
-            doc.setXmlStandalone(true);
-            Element rootElement = doc.createElement("Project");
-            doc.appendChild(rootElement);
+	/** Generate projects.xml */
+	public void generateProjects() {
+		try {
+			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
-            Element masterNode = doc.createElement("MasterNode");
-            rootElement.appendChild(masterNode);
+			Document doc = docBuilder.newDocument();
+			doc.setXmlStandalone(true);
+			Element rootElement = doc.createElement("Project");
+			doc.appendChild(rootElement);
 
-            Element cloud = doc.createElement("Cloud");
-            rootElement.appendChild(cloud);
+			Element masterNode = doc.createElement("MasterNode");
+			rootElement.appendChild(masterNode);
 
-            Element initialVMs = doc.createElement("InitialVMs");
-            initialVMs.appendChild(doc.createTextNode(this.getJobDef().getInitialVMs().toString()));
-            cloud.appendChild(initialVMs);
+			Element cloud = doc.createElement("Cloud");
+			rootElement.appendChild(cloud);
 
-            Element minimumVMs = doc.createElement("MinimumVMs");
-            minimumVMs.appendChild(doc.createTextNode(this.getJobDef().getMinimumVMs().toString()));
-            cloud.appendChild(minimumVMs);
+			Element initialVMs = doc.createElement("InitialVMs");
+			initialVMs.appendChild(doc.createTextNode(this.getJobDef().getInitialVMs().toString()));
+			cloud.appendChild(initialVMs);
 
-            Element maximumVMs = doc.createElement("MaximumVMs");
-            maximumVMs.appendChild(doc.createTextNode(this.getJobDef().getMaximumVMs().toString()));
-            cloud.appendChild(maximumVMs);
+			Element minimumVMs = doc.createElement("MinimumVMs");
+			minimumVMs.appendChild(doc.createTextNode(this.getJobDef().getMinimumVMs().toString()));
+			cloud.appendChild(minimumVMs);
 
-            Element cloudProvider = doc.createElement("CloudProvider");
-            cloud.appendChild(cloudProvider);
-            cloudProvider.setAttribute("Name", "one"); //TODO Parametrizar
+			Element maximumVMs = doc.createElement("MaximumVMs");
+			maximumVMs.appendChild(doc.createTextNode(this.getJobDef().getMaximumVMs().toString()));
+			cloud.appendChild(maximumVMs);
 
-            Element limitOfVMs = doc.createElement("LimitOfVMs");
-            limitOfVMs.appendChild(doc.createTextNode(this.getJobDef().getLimitVMs().toString()));
-            cloudProvider.appendChild(limitOfVMs);
+			Element cloudProvider = doc.createElement("CloudProvider");
+			cloud.appendChild(cloudProvider);
+			cloudProvider.setAttribute("Name", "one"); // TODO Parametrizar
 
-            Element properties = doc.createElement("Properties");
-            cloudProvider.appendChild(properties);
+			Element limitOfVMs = doc.createElement("LimitOfVMs");
+			limitOfVMs.appendChild(doc.createTextNode(this.getJobDef().getLimitVMs().toString()));
+			cloudProvider.appendChild(limitOfVMs);
 
-            String[] propertyNames = {"auth", "ca-auth", "user-cred", "password", "owner", "jobname", "max-vm-creation-time", "max-connection-errors", "vm_user", "context"}; // TODO revisar si puedo añadir property context
-            String[] propertyValue = {"x509", "/etc/grid-security/certificates", this.getUser().getCredentials().get("pem"), this.getUser().getCredentials().get("key"), this.getJobDef().getUser().getUsername(), this.getJobDef().getJobName(), "10", "15", this.getUser().getUsername(), "user_data=\"file://$PWD/tmpfedcloud.login\""}; //TODO parametrizar
-            for (int i= 0; i < propertyNames.length; i++) {
-                Element property = doc.createElement("Property");
-                properties.appendChild(property);
+			Element properties = doc.createElement("Properties");
+			cloudProvider.appendChild(properties);
 
-                Element name = doc.createElement("Name");
-                name.appendChild(doc.createTextNode(propertyNames[i]));
-                property.appendChild(name);
+			String[] propertyNames = { "auth", "ca-auth", "user-cred", "password", "owner", "jobname",
+					"max-vm-creation-time", "max-connection-errors", "vm_user", "context" }; // TODO revisar si puedo
+																								// añadir property
+																								// context
+			String[] propertyValue = { "x509", "/etc/grid-security/certificates",
+					this.getUser().getCredentials().get("pem"), this.getUser().getCredentials().get("key"),
+					this.getJobDef().getUser().getUsername(), this.getJobDef().getJobName(), "10", "15",
+					this.getUser().getUsername(), "user_data=\"file://$PWD/tmpfedcloud.login\"" }; // TODO parametrizar
+			for (int i = 0; i < propertyNames.length; i++) {
+				Element property = doc.createElement("Property");
+				properties.appendChild(property);
 
-                Element value = doc.createElement("Value");
-                value.appendChild(doc.createTextNode(propertyValue[i]));
-                property.appendChild(value);
-            }
+				Element name = doc.createElement("Name");
+				name.appendChild(doc.createTextNode(propertyNames[i]));
+				property.appendChild(name);
 
-            Element images = doc.createElement("Images");
-            cloudProvider.appendChild(images);
+				Element value = doc.createElement("Value");
+				value.appendChild(doc.createTextNode(propertyValue[i]));
+				property.appendChild(value);
+			}
 
-            Element image = doc.createElement("Image");
-            images.appendChild(image);
-            image.setAttribute("Name", this.getJobDef().getImg().getImageName());
+			Element images = doc.createElement("Images");
+			cloudProvider.appendChild(images);
 
-            Element installDir = doc.createElement("InstallDir");
-            installDir.appendChild(doc.createTextNode("/opt/COMPSs/"));
-            image.appendChild(installDir);
+			Element image = doc.createElement("Image");
+			images.appendChild(image);
+			image.setAttribute("Name", this.getJobDef().getImg().getImageName());
 
-            Element workingDir = doc.createElement("WorkingDir");
-            workingDir.appendChild(doc.createTextNode("/tmp/Worker/"));
-            image.appendChild(workingDir);
+			Element installDir = doc.createElement("InstallDir");
+			installDir.appendChild(doc.createTextNode("/opt/COMPSs/"));
+			image.appendChild(installDir);
 
-            Element user = doc.createElement("User");
-            user.appendChild(doc.createTextNode(this.getUser().getUsername()));
-            image.appendChild(user);
+			Element workingDir = doc.createElement("WorkingDir");
+			workingDir.appendChild(doc.createTextNode("/tmp/Worker/"));
+			image.appendChild(workingDir);
 
-            Element packages = doc.createElement("Package");
-            image.appendChild(packages);
+			Element user = doc.createElement("User");
+			user.appendChild(doc.createTextNode(this.getUser().getUsername()));
+			image.appendChild(user);
 
-            Element sources = doc.createElement("Source");
-            sources.appendChild(doc.createTextNode(this.getJobDef().getApp().getSource()));
-            packages.appendChild(sources);
+			Element packages = doc.createElement("Package");
+			image.appendChild(packages);
 
-            Element target = doc.createElement("Target");
-            target.appendChild(doc.createTextNode("/home/user/apps/"));
-            packages.appendChild(target);
+			Element sources = doc.createElement("Source");
+			sources.appendChild(doc.createTextNode(this.getJobDef().getApp().getSource()));
+			packages.appendChild(sources);
 
-            Element instanceTypes = doc.createElement("InstanceTypes");
-            cloudProvider.appendChild(instanceTypes);
+			Element target = doc.createElement("Target");
+			target.appendChild(doc.createTextNode("/home/user/apps/"));
+			packages.appendChild(target);
 
-            String[] instanceTypesNames = {"small", "medium", "large", "extra_large"};
-            for (String type:instanceTypesNames) {
-                Element instanceType = doc.createElement("InstanceType");
-                instanceTypes.appendChild(instanceType);
-                instanceType.setAttribute("Name",type);
-            }
+			Element instanceTypes = doc.createElement("InstanceTypes");
+			cloudProvider.appendChild(instanceTypes);
 
-            //Write to xml
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");
-            DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(new File("/home/bscuser/subversion/projects/pmes2/trunk/src/main/resources/projects.xml")); //TODO complete path
+			String[] instanceTypesNames = { "small", "medium", "large", "extra_large" };
+			for (String type : instanceTypesNames) {
+				Element instanceType = doc.createElement("InstanceType");
+				instanceTypes.appendChild(instanceType);
+				instanceType.setAttribute("Name", type);
+			}
 
-            //DEBUG
-            //StreamResult result = new StreamResult(System.out);
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-            transformer.transform(source, result);
+			// Write to xml
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");
+			DOMSource source = new DOMSource(doc);
+			StreamResult result = new StreamResult(
+					new File("/home/bscuser/subversion/projects/pmes2/trunk/src/main/resources/projects.xml")); // TODO
+																												// complete
+																												// path
 
-            logger.debug("projects.xml generated and saved");
+			// DEBUG
+			// StreamResult result = new StreamResult(System.out);
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+			transformer.transform(source, result);
 
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            e.printStackTrace();
-        }
-    }
+			logger.debug("projects.xml generated and saved");
 
-    /** Generate resources.xml */
-    public void generateResources(){
-        //TODO
-        try {
-            //Create Document
-            DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		} catch (TransformerConfigurationException e) {
+			e.printStackTrace();
+		} catch (TransformerException e) {
+			e.printStackTrace();
+		}
+	}
 
-            Document doc = docBuilder.newDocument();
-            doc.setXmlStandalone(true);
-            Element rootElement = doc.createElement("ResourcesList");
-            doc.appendChild(rootElement);
+	/** Generate resources.xml */
+	public void generateResources() {
+		// TODO
+		try {
+			// Create Document
+			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
-            Element cloudProvider = doc.createElement("CloudProvider");
-            rootElement.appendChild(cloudProvider);
-            cloudProvider.setAttribute("Name", "ProviderName"); //TODO parametrizar
+			Document doc = docBuilder.newDocument();
+			doc.setXmlStandalone(true);
+			Element rootElement = doc.createElement("ResourcesList");
+			doc.appendChild(rootElement);
 
-            Element endpoint = doc.createElement("Endpoint");
-            cloudProvider.appendChild(endpoint);
+			Element cloudProvider = doc.createElement("CloudProvider");
+			rootElement.appendChild(cloudProvider);
+			cloudProvider.setAttribute("Name", "ProviderName"); // TODO parametrizar
 
-            Element server = doc.createElement("Server");
-            server.appendChild(doc.createTextNode("https://bscgrid20.bsc.es:11443/")); //TODO parametrizar
-            endpoint.appendChild(server);
+			Element endpoint = doc.createElement("Endpoint");
+			cloudProvider.appendChild(endpoint);
 
-            Element connector = doc.createElement("Connector");
-            connector.appendChild(doc.createTextNode("integratedtoolkit.connectors.rocci.ROCCI")); //TODO parametrizar
-            endpoint.appendChild(connector);
+			Element server = doc.createElement("Server");
+			server.appendChild(doc.createTextNode("https://bscgrid20.bsc.es:11443/")); // TODO parametrizar
+			endpoint.appendChild(server);
 
-            Element images = doc.createElement("Images");
-            cloudProvider.appendChild(images);
+			Element connector = doc.createElement("Connector");
+			connector.appendChild(doc.createTextNode("integratedtoolkit.connectors.rocci.ROCCI")); // TODO parametrizar
+			endpoint.appendChild(connector);
 
-            Element image = doc.createElement("Image");
-            image.setAttribute("Name", this.getJobDef().getImg().getImageName());
-            images.appendChild(image);
+			Element images = doc.createElement("Images");
+			cloudProvider.appendChild(images);
 
-            Element creationTime = doc.createElement("CreationTime");
-            creationTime.appendChild(doc.createTextNode("60"));
-            image.appendChild(creationTime);
+			Element image = doc.createElement("Image");
+			image.setAttribute("Name", this.getJobDef().getImg().getImageName());
+			images.appendChild(image);
 
-            Element adaptors = doc.createElement("Adaptors");
-            image.appendChild(adaptors);
+			Element creationTime = doc.createElement("CreationTime");
+			creationTime.appendChild(doc.createTextNode("60"));
+			image.appendChild(creationTime);
 
-            Element adaptor = doc.createElement("Adaptor");
-            adaptor.setAttribute("Name", "integratedtoolkit.nio.master.NIOAdaptor");
-            adaptors.appendChild(adaptor);
+			Element adaptors = doc.createElement("Adaptors");
+			image.appendChild(adaptors);
 
-            Element submissionSystem = doc.createElement("SubmissionSystem");
-            adaptor.appendChild(submissionSystem);
+			Element adaptor = doc.createElement("Adaptor");
+			adaptor.setAttribute("Name", "integratedtoolkit.nio.master.NIOAdaptor");
+			adaptors.appendChild(adaptor);
 
-            Element interactive = doc.createElement("Interactive");
-            submissionSystem.appendChild(interactive);
+			Element submissionSystem = doc.createElement("SubmissionSystem");
+			adaptor.appendChild(submissionSystem);
 
-            Element ports = doc.createElement("Ports");
-            adaptor.appendChild(ports);
+			Element interactive = doc.createElement("Interactive");
+			submissionSystem.appendChild(interactive);
 
-            Element minport = doc.createElement("MinPort");
-            minport.appendChild(doc.createTextNode("43100")); //TODO parametrizar
-            ports.appendChild(minport);
+			Element ports = doc.createElement("Ports");
+			adaptor.appendChild(ports);
 
-            Element maxport = doc.createElement("MaxPort");
-            maxport.appendChild(doc.createTextNode("43110")); //TODO parametrizar
-            ports.appendChild(maxport);
+			Element minport = doc.createElement("MinPort");
+			minport.appendChild(doc.createTextNode("43100")); // TODO parametrizar
+			ports.appendChild(minport);
 
-            Element instanceTypes = doc.createElement("InstanceTypes");
-            cloudProvider.appendChild(instanceTypes);
+			Element maxport = doc.createElement("MaxPort");
+			maxport.appendChild(doc.createTextNode("43110")); // TODO parametrizar
+			ports.appendChild(maxport);
 
-            String[] instanceTypesNames = {"small", "medium", "large", "extra_large"};
-            String[] processorName = {"Processor1", "Processor1", "Processor1", "Processor1"}; //TODO parametrizar
-            String[] computingUnitsValue = {"1", "4", "8", "16"}; //TODO parametrizar
-            String[] priceValue = {"0.085", "0.212", "0.34", "0.68"}; //TODO parametrizar
-            for (int i = 0; i < instanceTypesNames.length; i++) {
-                Element instanceType = doc.createElement("InstanceType");
-                instanceTypes.appendChild(instanceType);
-                instanceType.setAttribute("Name",instanceTypesNames[i]);
+			Element instanceTypes = doc.createElement("InstanceTypes");
+			cloudProvider.appendChild(instanceTypes);
 
-                Element processor = doc.createElement("Processor");
-                instanceType.appendChild(processor);
-                processor.setAttribute("Name", processorName[i]);
+			String[] instanceTypesNames = { "small", "medium", "large", "extra_large" };
+			String[] processorName = { "Processor1", "Processor1", "Processor1", "Processor1" }; // TODO parametrizar
+			String[] computingUnitsValue = { "1", "4", "8", "16" }; // TODO parametrizar
+			String[] priceValue = { "0.085", "0.212", "0.34", "0.68" }; // TODO parametrizar
+			for (int i = 0; i < instanceTypesNames.length; i++) {
+				Element instanceType = doc.createElement("InstanceType");
+				instanceTypes.appendChild(instanceType);
+				instanceType.setAttribute("Name", instanceTypesNames[i]);
 
-                Element computingUnits = doc.createElement("ComputingUnits");
-                processor.appendChild(computingUnits);
-                computingUnits.appendChild(doc.createTextNode(computingUnitsValue[i]));
+				Element processor = doc.createElement("Processor");
+				instanceType.appendChild(processor);
+				processor.setAttribute("Name", processorName[i]);
 
-                Element price = doc.createElement("Price");
-                instanceType.appendChild(price);
+				Element computingUnits = doc.createElement("ComputingUnits");
+				processor.appendChild(computingUnits);
+				computingUnits.appendChild(doc.createTextNode(computingUnitsValue[i]));
 
-                Element timeUnit = doc.createElement("TimeUnit");
-                price.appendChild(timeUnit);
-                timeUnit.appendChild(doc.createTextNode("1"));
+				Element price = doc.createElement("Price");
+				instanceType.appendChild(price);
 
-                Element pricePerUnit = doc.createElement("PricePerUnit");
-                price.appendChild(pricePerUnit);
-                pricePerUnit.appendChild(doc.createTextNode(priceValue[i]));
-            }
+				Element timeUnit = doc.createElement("TimeUnit");
+				price.appendChild(timeUnit);
+				timeUnit.appendChild(doc.createTextNode("1"));
 
-            //Write to xml
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            Transformer transformer = transformerFactory.newTransformer();
-            transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");
-            DOMSource source = new DOMSource(doc);
-            StreamResult result = new StreamResult(new File("/home/bscuser/subversion/projects/pmes2/trunk/src/main/resources/resources.xml")); //TODO complete path
+				Element pricePerUnit = doc.createElement("PricePerUnit");
+				price.appendChild(pricePerUnit);
+				pricePerUnit.appendChild(doc.createTextNode(priceValue[i]));
+			}
 
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-            transformer.transform(source, result);
+			// Write to xml
+			TransformerFactory transformerFactory = TransformerFactory.newInstance();
+			Transformer transformer = transformerFactory.newTransformer();
+			transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");
+			DOMSource source = new DOMSource(doc);
+			StreamResult result = new StreamResult(
+					new File("/home/bscuser/subversion/projects/pmes2/trunk/src/main/resources/resources.xml")); // TODO
+																													// complete
+																													// path
 
-            logger.debug("resources.xml generated and saved");
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
+			transformer.transform(source, result);
 
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        } catch (TransformerConfigurationException e) {
-            e.printStackTrace();
-        } catch (TransformerException e) {
-            e.printStackTrace();
-        }
-    }
+			logger.debug("resources.xml generated and saved");
 
-
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		} catch (TransformerConfigurationException e) {
+			e.printStackTrace();
+		} catch (TransformerException e) {
+			e.printStackTrace();
+		}
+	}
 
 }

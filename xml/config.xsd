@@ -18,9 +18,9 @@
 
     <xs:element name="connector">
         <xs:complexType>         
-            <xs:all>
+            <xs:sequence>
                 <xs:element ref="property" maxOccurs="unbounded"/>
-            </xs:all>
+            </xs:sequence>
             
             <xs:attribute name="className" type="xs:string" use="required"/>
         </xs:complexType>
@@ -37,9 +37,9 @@
     
 	<xs:element name="hosts">
 		<xs:complexType>
-			<xs:all>
+			<xs:sequence>
 				<xs:element ref="host" maxOccurs="unbounded"/>
-			</xs:all>
+			</xs:sequence>
 		</xs:complexType>
 	</xs:element>
 
@@ -63,9 +63,9 @@
 
 	<xs:element name="auth-keys">                              
                 <xs:complexType>                       
-                        <xs:all>                        
+                        <xs:sequence>                        
                                 <xs:element name="key" type="xs:string" maxOccurs="unbounded"/>
-                        </xs:all>            
+                        </xs:sequence>            
                 </xs:complexType>               
         </xs:element>  				
 </xs:schema>
