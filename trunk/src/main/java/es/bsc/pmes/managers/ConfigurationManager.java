@@ -51,11 +51,6 @@ public class ConfigurationManager {
 	private static final String CONFIG_FILE = "/home/pmes/pmes/config/config.xml";
 	private static final String SCHEMA_FILE = "/home/pmes/pmes/config/config.xsd";
 
-	// private static final String CONFIG_FILE =
-	// "/home/jalvarez/eclipse-workspace/pmes2/xml/sample.xml";
-	// private static final String SCHEMA_FILE =
-	// "/home/jalvarez/eclipse-workspace/pmes2/xml/config.xsd";
-
 	private static ConfigurationManager cm = new ConfigurationManager();
 
 	/* Information contained within the PMES configuration XML */
