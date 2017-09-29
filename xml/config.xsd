@@ -3,26 +3,48 @@
 	<xs:element name="pmes">
 		<xs:complexType>
 			<xs:all>
-				<xs:element name="workspace" type="xs:string"/>
+				<xs:element name="workspace" type="xs:string"/>                
 				<xs:element ref="connector"/>				
 				<xs:element ref="hosts"/>
 				<xs:element name="logPath" type="xs:string"/>
 				<xs:element name="logLevel" type="xs:string"/>
-                		<xs:element name="timeout" type="xs:int"/>
-		                <xs:element name="pollingInterval" type="xs:int"/>
+                <xs:element name="timeout" type="xs:int"/>
+		        <xs:element name="pollingInterval" type="xs:int"/>
 				<xs:element ref="runCmd"/>
 				<xs:element ref="auth-keys"/>
+                <xs:element ref="compss"/>
 			</xs:all>
 		</xs:complexType>
 	</xs:element>
+    
+    <xs:element name="compss">
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="installDir" type="xs:string"/>
+                <xs:element name="workingDir" type="xs:string"/>
+                <xs:element name="connectorJar" type="xs:string"/>
+                <xs:element name="connectorClass" type="xs:string"/>
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
 
     <xs:element name="connector">
-        <xs:complexType>         
+        <xs:complexType>   
+            <xs:all>
+                <xs:element name="providerName" type="xs:string"/>
+                <xs:element name="endpoint" type="xs:string"/>
+                <xs:element ref="properties"/>
+            </xs:all>           
+            
+            <xs:attribute name="className" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+    
+    <xs:element name="properties">
+        <xs:complexType>
             <xs:sequence>
                 <xs:element ref="property" maxOccurs="unbounded"/>
             </xs:sequence>
-            
-            <xs:attribute name="className" type="xs:string" use="required"/>
         </xs:complexType>
     </xs:element>
     

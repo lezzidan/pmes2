@@ -95,5 +95,4 @@ public abstract class InfrastructureHelper {
 	 *            Resource id to remove
 	 */
 	public abstract void destroyResource(String Id);
-
 }

@@ -1,7 +1,11 @@
 package es.bsc.pmes.types;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
+import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -18,8 +22,13 @@ import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import es.bsc.compss.types.project.jaxb.CloudType;
-import es.bsc.compss.types.project.jaxb.ProjectType;
+import es.bsc.compss.types.project.ProjectFile;
+import es.bsc.compss.types.project.exceptions.InvalidElementException;
+import es.bsc.compss.types.project.jaxb.CloudPropertiesType;
+import es.bsc.compss.types.project.jaxb.ImageType;
+import es.bsc.compss.types.project.jaxb.InstanceTypeType;
+import es.bsc.compss.types.resources.ResourcesFile;
+import es.bsc.pmes.managers.ConfigurationManager;
 
 /**
  * Created by scorella on 9/19/16.
@@ -32,155 +41,99 @@ public class COMPSsJob extends Job {
 		super();
 	}
 
-	public void generateProject() {
-		
-		
-		//
-		//
-		//
-		// ProjectType project = new ProjectType();
-		//
-		//
-		//
-		//
-		// CloudType cloud = new CloudType();
-		//
-		//
-		// cloud.getCloudProviderOrInitialVMsOrMinimumVMs().
-		
-		
+	public static void main(String args[]) throws Exception {
+
 	}
 
-	/** Generate projects.xml */
-	public void generateProjects() {
+	public void generateConfigFiles(Path destination) {
+		this.generateProject(destination);
+		this.generateResources(destination);
+	}
+
+	private void generateProject(Path destination) {
+		logger.debug("Generating project.xml file...");
+
+		JobDefinition jobDef = this.getJobDef();
+		ConfigurationManager cm = ConfigurationManager.getConfigurationManager();
+
+		String imgName = jobDef.getImg().getImageName();
+		String imgType = jobDef.getImg().getImageType();
+		int cores = jobDef.getCores();
+		String compssHome = cm.getCompssHome();
+		String compssWorkingDir = cm.getCompssWorkingDir();
+		String providerName = cm.getProviderName();
+
+		// Minus 1 because the master is used as a worker (and is already one VM)
+		int maxVMs = jobDef.getMaximumVMs() - 1;
+		int minVMs = jobDef.getMinimumVMs() - 1;
+		int initialVMs = jobDef.getInitialVMs() - 1;
+
+		ImageType image = ProjectFile.createImage(imgName, compssHome, compssWorkingDir, cores);
+		InstanceTypeType instance = ProjectFile.createInstance(imgType);
+		CloudPropertiesType cloudProperties = ProjectFile.createCloudProperties(cm.getConnectorProperties());
+
+		List<ImageType> images = new ArrayList<ImageType>();
+		images.add(image);
+
+		List<InstanceTypeType> instances = new ArrayList<InstanceTypeType>();
+		instances.add(instance);
+
 		try {
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+			// Add the master as a compute node
+			ProjectFile project = new ProjectFile(logger);
+			project.addComputeNode("master", compssHome, compssWorkingDir, "pmes", cores);
 
-			Document doc = docBuilder.newDocument();
-			doc.setXmlStandalone(true);
-			Element rootElement = doc.createElement("Project");
-			doc.appendChild(rootElement);
+			// Setup the cloud provider for elasticity
+			project.addCloudProvider(providerName, images, instances, maxVMs, cloudProperties);
+			project.setCloudProperties(initialVMs, minVMs, maxVMs);
 
-			Element masterNode = doc.createElement("MasterNode");
-			rootElement.appendChild(masterNode);
+			project.toFile(destination.resolve("project.xml").toFile());
+		} catch (InvalidElementException | JAXBException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-			Element cloud = doc.createElement("Cloud");
-			rootElement.appendChild(cloud);
+	public void generateResources(Path destination) {
+		logger.debug("Generating resources.xml file...");
 
-			Element initialVMs = doc.createElement("InitialVMs");
-			initialVMs.appendChild(doc.createTextNode(this.getJobDef().getInitialVMs().toString()));
-			cloud.appendChild(initialVMs);
+		JobDefinition jobDef = this.getJobDef();
+		ConfigurationManager cm = ConfigurationManager.getConfigurationManager();
 
-			Element minimumVMs = doc.createElement("MinimumVMs");
-			minimumVMs.appendChild(doc.createTextNode(this.getJobDef().getMinimumVMs().toString()));
-			cloud.appendChild(minimumVMs);
+		int cores = jobDef.getCores();
+		float memory = jobDef.getMemory();
+		float disk = jobDef.getDisk();
+		String imgName = jobDef.getImg().getImageName();
+		String imgType = jobDef.getImg().getImageType();
+		String providerName = cm.getProviderName();
+		String endpoint = cm.getEndpoint();
+		String connectorJar = cm.getCompssConnectorJar();
+		String connectorClass = cm.getCompssConnectorClass();
 
-			Element maximumVMs = doc.createElement("MaximumVMs");
-			maximumVMs.appendChild(doc.createTextNode(this.getJobDef().getMaximumVMs().toString()));
-			cloud.appendChild(maximumVMs);
+		try {
+			ResourcesFile resources = new ResourcesFile(logger);
+			// TODO: hardcoded
+			resources.addComputeNode("master", "proc", cores, "es.bsc.compss.nio.master.NIOAdaptor", 43110, 43100);
+			es.bsc.compss.types.resources.jaxb.ImageType image = ResourcesFile.createImage(imgName,
+					"es.bsc.compss.nio.master.NIOAdaptor", 43110, 43100);
+			es.bsc.compss.types.resources.jaxb.InstanceTypeType instance = ResourcesFile.createInstance(imgType, "proc",
+					cores, memory, disk);
 
-			Element cloudProvider = doc.createElement("CloudProvider");
-			cloud.appendChild(cloudProvider);
-			cloudProvider.setAttribute("Name", "one"); // TODO Parametrizar
+			List<es.bsc.compss.types.resources.jaxb.ImageType> images = new ArrayList<es.bsc.compss.types.resources.jaxb.ImageType>();
+			images.add(image);
 
-			Element limitOfVMs = doc.createElement("LimitOfVMs");
-			limitOfVMs.appendChild(doc.createTextNode(this.getJobDef().getLimitVMs().toString()));
-			cloudProvider.appendChild(limitOfVMs);
+			List<es.bsc.compss.types.resources.jaxb.InstanceTypeType> instances = new ArrayList<es.bsc.compss.types.resources.jaxb.InstanceTypeType>();
+			instances.add(instance);
 
-			Element properties = doc.createElement("Properties");
-			cloudProvider.appendChild(properties);
+			resources.addCloudProvider(providerName, endpoint, connectorJar, connectorClass, images, instances);
+			resources.toFile(destination.resolve("resources.xml").toFile());
 
-			String[] propertyNames = { "auth", "ca-auth", "user-cred", "password", "owner", "jobname",
-					"max-vm-creation-time", "max-connection-errors", "vm_user", "context" }; // TODO revisar si puedo
-																								// añadir property
-																								// context
-			String[] propertyValue = { "x509", "/etc/grid-security/certificates",
-					this.getUser().getCredentials().get("pem"), this.getUser().getCredentials().get("key"),
-					this.getJobDef().getUser().getUsername(), this.getJobDef().getJobName(), "10", "15",
-					this.getUser().getUsername(), "user_data=\"file://$PWD/tmpfedcloud.login\"" }; // TODO parametrizar
-			for (int i = 0; i < propertyNames.length; i++) {
-				Element property = doc.createElement("Property");
-				properties.appendChild(property);
-
-				Element name = doc.createElement("Name");
-				name.appendChild(doc.createTextNode(propertyNames[i]));
-				property.appendChild(name);
-
-				Element value = doc.createElement("Value");
-				value.appendChild(doc.createTextNode(propertyValue[i]));
-				property.appendChild(value);
-			}
-
-			Element images = doc.createElement("Images");
-			cloudProvider.appendChild(images);
-
-			Element image = doc.createElement("Image");
-			images.appendChild(image);
-			image.setAttribute("Name", this.getJobDef().getImg().getImageName());
-
-			Element installDir = doc.createElement("InstallDir");
-			installDir.appendChild(doc.createTextNode("/opt/COMPSs/"));
-			image.appendChild(installDir);
-
-			Element workingDir = doc.createElement("WorkingDir");
-			workingDir.appendChild(doc.createTextNode("/tmp/Worker/"));
-			image.appendChild(workingDir);
-
-			Element user = doc.createElement("User");
-			user.appendChild(doc.createTextNode(this.getUser().getUsername()));
-			image.appendChild(user);
-
-			Element packages = doc.createElement("Package");
-			image.appendChild(packages);
-
-			Element sources = doc.createElement("Source");
-			sources.appendChild(doc.createTextNode(this.getJobDef().getApp().getSource()));
-			packages.appendChild(sources);
-
-			Element target = doc.createElement("Target");
-			target.appendChild(doc.createTextNode("/home/user/apps/"));
-			packages.appendChild(target);
-
-			Element instanceTypes = doc.createElement("InstanceTypes");
-			cloudProvider.appendChild(instanceTypes);
-
-			String[] instanceTypesNames = { "small", "medium", "large", "extra_large" };
-			for (String type : instanceTypesNames) {
-				Element instanceType = doc.createElement("InstanceType");
-				instanceTypes.appendChild(instanceType);
-				instanceType.setAttribute("Name", type);
-			}
-
-			// Write to xml
-			TransformerFactory transformerFactory = TransformerFactory.newInstance();
-			Transformer transformer = transformerFactory.newTransformer();
-			transformer.setOutputProperty(OutputKeys.STANDALONE, "yes");
-			DOMSource source = new DOMSource(doc);
-			StreamResult result = new StreamResult(
-					new File("/home/bscuser/subversion/projects/pmes2/trunk/src/main/resources/projects.xml")); // TODO
-																												// complete
-																												// path
-
-			// DEBUG
-			// StreamResult result = new StreamResult(System.out);
-			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-			transformer.transform(source, result);
-
-			logger.debug("projects.xml generated and saved");
-
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
-		} catch (TransformerConfigurationException e) {
-			e.printStackTrace();
-		} catch (TransformerException e) {
-			e.printStackTrace();
+		} catch (JAXBException | es.bsc.compss.types.resources.exceptions.InvalidElementException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
 	/** Generate resources.xml */
-	public void generateResources() {
+	public void generateResources2() {
 		// TODO
 		try {
 			// Create Document

@@ -1,15 +1,16 @@
 package es.bsc.pmes.managers.execution;
 
-import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import es.bsc.pmes.managers.ConfigurationManager;
 import es.bsc.pmes.types.COMPSsJob;
 import es.bsc.pmes.types.Job;
 
@@ -118,6 +119,9 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 		logger.debug(Arrays.toString(command));
 		
 		this.waitForResource(address);
+		
+		// Generate project and resources files
+		this.generateCOMPSsConfig();
 
 		if (this.stopExecution(Id, Boolean.TRUE)) {
 			return;
@@ -158,5 +162,15 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 
 		// Create Report
 		this.job.createReport();
-	}	
+	}
+
+	private void generateCOMPSsConfig() {
+		String jobName = job.getJobDef().getJobName();
+		String workspace = ConfigurationManager.getConfigurationManager().getWorkspace();
+		Path destination = Paths.get(workspace, ConfigurationManager.JOB_DIR, jobName);
+
+		logger.debug("Generating COMPSs config files in " + destination.toString());
+
+		job.generateConfigFiles(destination);
+	}
 }

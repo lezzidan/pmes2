@@ -39,12 +39,22 @@ import es.bsc.pmes.types.Host;
  */
 public class ConfigurationManager {
 
+	// Global properties
+	public static final String JOB_DIR = "/jobs";
+	public static final String PROJECT_DIR = "/Runtime/configuration/xml/projects";
+	public static final String RESOURCES_DIR = "/Runtime/configuration/xml/resources";
+
 	private static final Logger logger = LogManager.getLogger(ConfigurationManager.class);
 
 	// TODO: these paths could be relative to the installation path (maybe in
 	// tomcat?)
 	private static final String CONFIG_FILE = "/home/pmes/pmes/config/config.xml";
-	private static final String SCHEMA_FILE = "/home/pmes/pmes/config/config.xsd";	
+	private static final String SCHEMA_FILE = "/home/pmes/pmes/config/config.xsd";
+
+	// private static final String CONFIG_FILE =
+	// "/home/jalvarez/eclipse-workspace/pmes2/xml/sample.xml";
+	// private static final String SCHEMA_FILE =
+	// "/home/jalvarez/eclipse-workspace/pmes2/xml/config.xsd";
 
 	private static ConfigurationManager cm = new ConfigurationManager();
 
@@ -57,6 +67,12 @@ public class ConfigurationManager {
 	private int pollingInterval; // Polling interval for SSH connectivity
 	private List<Host> hosts;
 	private Map<String, String> properties;
+	private String compssHome;
+	private String compssWorkingDir;
+	private String providerName;
+	private String endpoint;
+	private String compssConnectorJar;
+	private String compssConnectorClass;
 
 	private ConfigurationManager() {
 		this.commands = new ArrayList<String>();
@@ -72,8 +88,32 @@ public class ConfigurationManager {
 		return cm;
 	}
 
+	public String getProviderName() {
+		return providerName;
+	}
+
+	public String getCompssConnectorJar() {
+		return compssConnectorJar;
+	}
+
+	public String getCompssConnectorClass() {
+		return compssConnectorClass;
+	}
+
+	public String getEndpoint() {
+		return endpoint;
+	}
+
 	public String getWorkspace() {
 		return workspace;
+	}
+
+	public String getCompssHome() {
+		return compssHome;
+	}
+
+	public String getCompssWorkingDir() {
+		return compssWorkingDir;
 	}
 
 	public String getConnectorClass() {
@@ -141,6 +181,14 @@ public class ConfigurationManager {
 		this.connector = doc.getDocumentElement().getElementsByTagName("connector").item(0).getAttributes()
 				.getNamedItem("className").getTextContent();
 		this.workspace = doc.getDocumentElement().getElementsByTagName("workspace").item(0).getTextContent();
+		this.compssHome = doc.getDocumentElement().getElementsByTagName("installDir").item(0).getTextContent();
+		this.compssWorkingDir = doc.getDocumentElement().getElementsByTagName("workingDir").item(0).getTextContent();
+		this.compssConnectorJar = doc.getDocumentElement().getElementsByTagName("connectorJar").item(0)
+				.getTextContent();
+		this.compssConnectorClass = doc.getDocumentElement().getElementsByTagName("connectorClass").item(0)
+				.getTextContent();
+		this.providerName = doc.getDocumentElement().getElementsByTagName("providerName").item(0).getTextContent();
+		this.endpoint = doc.getDocumentElement().getElementsByTagName("endpoint").item(0).getTextContent();
 		this.timeout = Integer
 				.parseInt(doc.getDocumentElement().getElementsByTagName("timeout").item(0).getTextContent());
 		this.pollingInterval = Integer
@@ -224,7 +272,7 @@ public class ConfigurationManager {
 			break;
 		}
 	}
-	
+
 	public static void main(String args[]) throws Exception {
 		ConfigurationManager.getConfigurationManager();
 	}
