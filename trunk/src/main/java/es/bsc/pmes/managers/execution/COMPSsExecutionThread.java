@@ -1,5 +1,6 @@
 package es.bsc.pmes.managers.execution;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import org.apache.logging.log4j.Logger;
 import es.bsc.pmes.managers.ConfigurationManager;
 import es.bsc.pmes.types.COMPSsJob;
 import es.bsc.pmes.types.Job;
+import es.bsc.pmes.types.User;
 
 /**
  * SINGLE EXECUTION THREAD Class.
@@ -102,12 +104,23 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 		} else {
 			runcompss += " --classpath=" + target;
 		}
+		ConfigurationManager cm = ConfigurationManager.getConfigurationManager();
+		String workingDir = cm.getCompssWorkingDir();
+
+		String resources = workingDir + "/resources.xml";
+		String project = workingDir + "/project.xml";
+
+		runcompss += " --conn=es.bsc.compss.connectors.DefaultNoSSHConnector";
+
+		runcompss += " --resources=" + resources + " --project=" + project;
+
 		runcompss += " " + target + "/" + source;
 
 		for (Entry<String, String> e : args.entrySet()) {
 			runcompss += " --" + e.getKey() + " " + e.getValue();
 		}
 		runcompss += "\"";
+
 		cmd.add(runcompss);
 
 		/*
@@ -117,11 +130,19 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 		String[] command = new String[cmd.size()];
 		job.setCmd(cmd.toArray(command));
 		logger.debug(Arrays.toString(command));
-		
+
+		// Wait for SSH connectivity
 		this.waitForResource(address);
-		
-		// Generate project and resources files
+
+		// Generate and transfer project and resources files
 		this.generateCOMPSsConfig();
+
+		this.transferContextFile();
+
+		// FIXME hardcoded
+		if (cm.getProviderName().equals("ONE")) {
+			this.transferCredentials();
+		}
 
 		if (this.stopExecution(Id, Boolean.TRUE)) {
 			return;
@@ -137,12 +158,18 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 
 		// Run job
 		logger.debug("Runnning");
+
 		long startTime = System.currentTimeMillis();
+
 		Integer exitValue = executeCommand(command);
+
 		long endTime = System.currentTimeMillis() - startTime;
+
 		job.getReport().setElapsedTime(String.valueOf(endTime));
+
 		logger.debug("Execution Time: " + String.valueOf(endTime));
 		logger.debug("Exit code" + exitValue);
+
 		if (exitValue > 0) {
 			if (exitValue == 143) {
 				job.setStatus("CANCELLED");
@@ -164,13 +191,112 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 		this.job.createReport();
 	}
 
+	private void transferCredentials() {
+		logger.debug("Transferring credentials...");
+
+		ConfigurationManager cm = ConfigurationManager.getConfigurationManager();
+		Job currentJob = this.getJob();
+		User user = currentJob.getJobDef().getUser();
+		
+		String compssWorkingDir = cm.getCompssWorkingDir();		
+		String username = user.getUsername();
+		String ip = currentJob.getResource(0).getIp();		
+		String srcKey = user.getCredentials().get("key");
+		String srcPem = user.getCredentials().get("pem");
+		String srcCa = cm.getConnectorProperties().get("ca-path");
+		String dstCa = username + "@" + ip + ":" + compssWorkingDir;		
+		String dstKey = username + "@" + ip + ":" + compssWorkingDir;
+
+		logger.debug("SCP: " + srcCa + " to " + dstCa);
+
+		ProcessBuilder pb = new ProcessBuilder();
+		pb.command("scp", "-r", srcCa, dstCa);
+
+		try {
+			pb.start();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
+		logger.debug("SCP: " + srcKey + " to " + dstCa);
+
+		pb = new ProcessBuilder();
+		pb.command("scp", srcKey, dstCa);
+
+		try {
+			pb.start();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
+		logger.debug("SCP: " + srcPem + " to " + dstCa);
+
+		pb = new ProcessBuilder();
+		pb.command("scp", srcPem, dstCa);
+
+		try {
+			pb.start();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private void transferContextFile() {
+		String workspace = ConfigurationManager.getConfigurationManager().getWorkspace();
+		String compssWorkingDir = ConfigurationManager.getConfigurationManager().getCompssWorkingDir();
+		String ip = job.getResource(0).getIp();
+		String username = job.getUser().getUsername();
+
+		String src = workspace + "/jobs/" + this.getJob().getJobDef().getJobName() + "/context.login";
+		String dst = username + "@" + ip + ":" + compssWorkingDir;
+
+		logger.debug("Transferring context file.");
+
+		ProcessBuilder pb = new ProcessBuilder();
+		pb.command("scp", src, dst);
+
+		try {
+			pb.start();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	private void generateCOMPSsConfig() {
 		String jobName = job.getJobDef().getJobName();
 		String workspace = ConfigurationManager.getConfigurationManager().getWorkspace();
-		Path destination = Paths.get(workspace, ConfigurationManager.JOB_DIR, jobName);
+		Path genDir = Paths.get(workspace, ConfigurationManager.JOB_DIR, jobName);
 
-		logger.debug("Generating COMPSs config files in " + destination.toString());
+		logger.debug("Generating COMPSs config files in " + genDir.toString());
 
-		job.generateConfigFiles(destination);
+		job.generateConfigFiles(genDir);
+
+		String ip = job.getResource(0).getIp();
+		String username = job.getUser().getUsername();
+
+		String workingDir = ConfigurationManager.getConfigurationManager().getCompssWorkingDir();
+		String srcProject = genDir.resolve("project.xml").toString();
+		String srcResources = genDir.resolve("resources.xml").toString();
+
+		logger.debug("Transferring project.xml.");
+
+		ProcessBuilder pb = new ProcessBuilder();
+		pb.command("scp", srcProject, username + "@" + ip + ":" + workingDir);
+
+		try {
+			pb.start();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+		logger.debug("Transferring resources.xml to.");
+
+		pb = new ProcessBuilder();
+		pb.command("scp", srcResources, username + "@" + ip + ":" + workingDir);
+
+		try {
+			pb.start();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

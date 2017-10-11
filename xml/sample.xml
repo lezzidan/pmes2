@@ -20,7 +20,7 @@
             </property>
             <property>
                 <key>auth</key>
-                <value>x509</value>
+                <value>x509</value> 
             </property>
             <property>
                 <key>ca-path</key>
@@ -46,6 +46,10 @@
                 <key>vm_compss_home</key>
                 <value>/opt/COMPSs</value>
             </property> 
+            <property>
+                <key>occiIP</key>
+                <value>192.168.122.111</value>
+            </property>
         </properties>
     </connector>    
     <hosts>

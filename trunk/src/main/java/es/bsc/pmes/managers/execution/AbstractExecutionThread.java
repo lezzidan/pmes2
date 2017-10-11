@@ -141,22 +141,13 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 	 * @return The execution exit value
 	 */
 	public Integer executeCommand(String[] cmd) {
-		// Runtime runtime = Runtime.getRuntime();
 		Integer times = 3;
 		Integer exitValue = 1;
 		Integer i = 0;
 		while (i < times && exitValue != 0) {
 			logger.debug("Round " + String.valueOf(i));
 			logger.debug("Command: " + Arrays.toString(cmd));
-
-			// if (i > 0) {
-			// // Wait until vm will be ready
-			// try {
-			// Thread.sleep(60000);
-			// } catch (InterruptedException e) {
-			// e.printStackTrace();
-			// }
-			// }
+		
 			try {
 				ProcessBuilder pb = new ProcessBuilder(cmd);
 				pb.redirectErrorStream(true);

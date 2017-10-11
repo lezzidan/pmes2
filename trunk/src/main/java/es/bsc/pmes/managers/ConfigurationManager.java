@@ -219,12 +219,15 @@ public class ConfigurationManager {
 			}
 		}
 
-		NodeList keys = doc.getElementsByTagName("key");
-		for (int i = 0; i < keys.getLength(); i++) {
-			Node node = keys.item(i);
-			this.authKeys.add(node.getTextContent());
-		}
+		Node authKeys = doc.getElementsByTagName("auth-keys").item(0);
+		NodeList keys = authKeys.getChildNodes();
 
+		for (int i = 0; i < keys.getLength(); i++) {
+			String key = keys.item(i).getTextContent();
+			if (!key.isEmpty()) {
+				this.authKeys.add(key);
+			}
+		}
 		NodeList cmds = doc.getElementsByTagName("cmd");
 		for (int i = 0; i < cmds.getLength(); i++) {
 			Node node = cmds.item(i);

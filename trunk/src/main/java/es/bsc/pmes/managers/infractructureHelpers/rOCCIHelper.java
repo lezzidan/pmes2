@@ -3,6 +3,8 @@ package es.bsc.pmes.managers.infractructureHelpers;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -136,6 +138,7 @@ public class rOCCIHelper extends InfrastructureHelper {
 		logger.debug("Creating context data file");
 		String dir = jobDef.getJobName();
 		String path = this.getWorkspace() + "/jobs/" + dir + "/context.login";
+		String occiEndPoint = configuration.get("endPointROCCI");
 		logger.debug("Creating context data file " + path);
 		try {
 			// String infrastructure = jobDef.getInfrastructure(); // TODO: REMOVE
@@ -144,6 +147,15 @@ public class rOCCIHelper extends InfrastructureHelper {
 			String nfs_server = configuration.get("nfs_server");
 			String vm_java_home = configuration.get("vm_java_home");
 			String vm_compss_home = configuration.get("vm_compss_home");
+			String occiIP = configuration.get("occiIP");
+			String hostname;
+
+			try {
+				URL u = new URL(occiEndPoint);
+				hostname = u.getHost();
+			} catch (MalformedURLException e) {
+				throw new RuntimeException(e);
+			}
 
 			String user = jobDef.getUser().getUsername();
 
@@ -230,6 +242,8 @@ public class rOCCIHelper extends InfrastructureHelper {
 			// writer.println(" - echo \"source " + vm_compss_home + "/compssenv\" >>
 			// /home/" + user + "/.bashrc"); // Only needed if compssenv defined will
 			// override any predefined COMPSs env vars of .bashrc.
+
+			writer.println("  - sudo echo \"" + occiIP + "   " + hostname + "\" >> /etc/hosts");
 
 			// Add commands that are in config file.
 			for (String cmd : this.getCommands()) {

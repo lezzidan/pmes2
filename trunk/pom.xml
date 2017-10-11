@@ -48,7 +48,7 @@
         <junit.version>4.12</junit.version>
         <log4j.version>2.6.1</log4j.version>
         <!-- <conn.version>1.0-74</conn.version> -->
-        <conn.version>1.0-87</conn.version>
+        <conn.version>1.0-93</conn.version>
         <compss.version>2.1.rc1709</compss.version>
         
 
