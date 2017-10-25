@@ -100,17 +100,17 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 		}
 		if (job.getJobDef().getApp().getSource().endsWith(".py")) {
 			runcompss += " --lang=python";
-			runcompss += " --pythonpath=" + target;
+			// runcompss += " --pythonpath=" + target;
 		} else {
 			runcompss += " --classpath=" + target;
 		}
 		ConfigurationManager cm = ConfigurationManager.getConfigurationManager();
-		String workingDir = cm.getCompssWorkingDir();
+		String workingDir = "/home/" + user;
 
 		String resources = workingDir + "/resources.xml";
 		String project = workingDir + "/project.xml";
 
-		runcompss += " --conn=es.bsc.compss.connectors.DefaultNoSSHConnector";
+		// runcompss += " --conn=es.bsc.compss.connectors.DefaultNoSSHConnector";
 
 		runcompss += " --resources=" + resources + " --project=" + project;
 
@@ -197,15 +197,14 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 		ConfigurationManager cm = ConfigurationManager.getConfigurationManager();
 		Job currentJob = this.getJob();
 		User user = currentJob.getJobDef().getUser();
-		
-		String compssWorkingDir = cm.getCompssWorkingDir();		
+
 		String username = user.getUsername();
-		String ip = currentJob.getResource(0).getIp();		
+		String ip = currentJob.getResource(0).getIp();
 		String srcKey = user.getCredentials().get("key");
 		String srcPem = user.getCredentials().get("pem");
 		String srcCa = cm.getConnectorProperties().get("ca-path");
-		String dstCa = username + "@" + ip + ":" + compssWorkingDir;		
-		String dstKey = username + "@" + ip + ":" + compssWorkingDir;
+		String dstCa = "pmes@" + ip + ":" + srcCa;
+		String dstKey = username + "@" + ip + ":";
 
 		logger.debug("SCP: " + srcCa + " to " + dstCa);
 
@@ -218,10 +217,10 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 			throw new RuntimeException(e);
 		}
 
-		logger.debug("SCP: " + srcKey + " to " + dstCa);
+		logger.debug("SCP: " + srcKey + " to " + dstKey);
 
 		pb = new ProcessBuilder();
-		pb.command("scp", srcKey, dstCa);
+		pb.command("scp", srcKey, dstKey);
 
 		try {
 			pb.start();
@@ -229,10 +228,10 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 			throw new RuntimeException(e);
 		}
 
-		logger.debug("SCP: " + srcPem + " to " + dstCa);
+		logger.debug("SCP: " + srcPem + " to " + dstKey);
 
 		pb = new ProcessBuilder();
-		pb.command("scp", srcPem, dstCa);
+		pb.command("scp", srcPem, dstKey);
 
 		try {
 			pb.start();
@@ -243,7 +242,7 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 
 	private void transferContextFile() {
 		String workspace = ConfigurationManager.getConfigurationManager().getWorkspace();
-		String compssWorkingDir = ConfigurationManager.getConfigurationManager().getCompssWorkingDir();
+		String compssWorkingDir = "/home/" + job.getUser().getUsername();
 		String ip = job.getResource(0).getIp();
 		String username = job.getUser().getUsername();
 
@@ -273,8 +272,7 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 
 		String ip = job.getResource(0).getIp();
 		String username = job.getUser().getUsername();
-
-		String workingDir = ConfigurationManager.getConfigurationManager().getCompssWorkingDir();
+		String workingDir = "/home/" + username;
 		String srcProject = genDir.resolve("project.xml").toString();
 		String srcResources = genDir.resolve("resources.xml").toString();
 
@@ -288,7 +286,7 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		logger.debug("Transferring resources.xml to.");
+		logger.debug("Transferring resources.xml.");
 
 		pb = new ProcessBuilder();
 		pb.command("scp", srcResources, username + "@" + ip + ":" + workingDir);

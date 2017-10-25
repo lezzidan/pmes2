@@ -62,8 +62,7 @@ public class ConfigurationManager {
 	private int pollingInterval; // Polling interval for SSH connectivity
 	private List<Host> hosts;
 	private Map<String, String> properties;
-	private String compssHome;
-	private String compssWorkingDir;
+	private String compssHome;	
 	private String providerName;
 	private String endpoint;
 	private String compssConnectorJar;
@@ -105,10 +104,6 @@ public class ConfigurationManager {
 
 	public String getCompssHome() {
 		return compssHome;
-	}
-
-	public String getCompssWorkingDir() {
-		return compssWorkingDir;
 	}
 
 	public String getConnectorClass() {
@@ -176,8 +171,7 @@ public class ConfigurationManager {
 		this.connector = doc.getDocumentElement().getElementsByTagName("connector").item(0).getAttributes()
 				.getNamedItem("className").getTextContent();
 		this.workspace = doc.getDocumentElement().getElementsByTagName("workspace").item(0).getTextContent();
-		this.compssHome = doc.getDocumentElement().getElementsByTagName("installDir").item(0).getTextContent();
-		this.compssWorkingDir = doc.getDocumentElement().getElementsByTagName("workingDir").item(0).getTextContent();
+		this.compssHome = doc.getDocumentElement().getElementsByTagName("installDir").item(0).getTextContent();		
 		this.compssConnectorJar = doc.getDocumentElement().getElementsByTagName("connectorJar").item(0)
 				.getTextContent();
 		this.compssConnectorClass = doc.getDocumentElement().getElementsByTagName("connectorClass").item(0)

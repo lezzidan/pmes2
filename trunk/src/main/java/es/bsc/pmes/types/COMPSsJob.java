@@ -1,6 +1,7 @@
 package es.bsc.pmes.types;
 
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,9 +48,10 @@ public class COMPSsJob extends Job {
 
 		String imgName = jobDef.getImg().getImageName();
 		String imgType = jobDef.getImg().getImageType();
+		String username = jobDef.getUser().getUsername();
 		int cores = jobDef.getCores();
 		String compssHome = cm.getCompssHome();
-		String compssWorkingDir = cm.getCompssWorkingDir();
+		Path compssWorkingDir = Paths.get("/home", username);
 		String providerName = cm.getProviderName();
 
 		// Minus 1 because the master is used as a worker (and is already one VM)
@@ -57,14 +59,19 @@ public class COMPSsJob extends Job {
 		int minVMs = jobDef.getMinimumVMs() - 1;
 		int initialVMs = jobDef.getInitialVMs() - 1;
 
-		ImageType image = ProjectFile.createImage(imgName, compssHome, compssWorkingDir, cores);
+		ImageType image = ProjectFile.createImage(imgName, compssHome, compssWorkingDir.toString(), cores);
 		InstanceTypeType instance = ProjectFile.createInstance(imgType);
 
 		Map<String, String> properties = InfrastructureManager.getInfrastructureManager()
 				.configureResource(this.getJobDef());
 
+		Path keyFile = Paths.get(jobDef.getUser().getCredentials().get("key")).getFileName();
+		Path pemFile = Paths.get(jobDef.getUser().getCredentials().get("pem")).getFileName();
+
 		// FIXME hardcoded
 		properties.put("context", "user_data=\"file://" + compssWorkingDir + "/context.login\"");
+		properties.put("user-cred", compssWorkingDir.resolve(pemFile).toString());
+		properties.put("password", compssWorkingDir.resolve(keyFile).toString());
 
 		CloudPropertiesType cloudProperties = ProjectFile.createCloudProperties(properties);
 
@@ -77,7 +84,8 @@ public class COMPSsJob extends Job {
 		try {
 			// Add the master as a compute node
 			ProjectFile project = new ProjectFile(logger);
-			project.addComputeNode(this.getResource(0).getIp(), compssHome, compssWorkingDir, "pmes", cores);
+			project.addComputeNode(this.getResource(0).getIp(), compssHome, compssWorkingDir.toString(), username,
+					cores);
 
 			// Setup the cloud provider for elasticity
 			project.addCloudProvider(providerName, images, instances, maxVMs, cloudProperties);

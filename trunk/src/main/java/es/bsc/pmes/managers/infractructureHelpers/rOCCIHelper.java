@@ -3,8 +3,10 @@ package es.bsc.pmes.managers.infractructureHelpers;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -147,13 +149,17 @@ public class rOCCIHelper extends InfrastructureHelper {
 			String nfs_server = configuration.get("nfs_server");
 			String vm_java_home = configuration.get("vm_java_home");
 			String vm_compss_home = configuration.get("vm_compss_home");
-			String occiIP = configuration.get("occiIP");
+			String occiIP;
+
+			// Get OCCI IP from hostname
 			String hostname;
 
 			try {
 				URL u = new URL(occiEndPoint);
 				hostname = u.getHost();
-			} catch (MalformedURLException e) {
+				InetAddress address = InetAddress.getByName(hostname);
+				occiIP = address.getHostAddress();
+			} catch (MalformedURLException | UnknownHostException e) {
 				throw new RuntimeException(e);
 			}
 
@@ -235,14 +241,16 @@ public class rOCCIHelper extends InfrastructureHelper {
 
 			// COMPSs environment variables
 			// Be careful with the distribution and JAVA installation.
-			writer.println("  - echo \"export JAVA_HOME=" + vm_java_home + "\" >> /home/" + user + "/.bashrc"); // Check
-																												// the
-																												// cfg
-																												// file
+			// writer.println(" - sudo echo \"JAVA_HOME=" + vm_java_home + "\" >>
+			// /etc/environment"); // Check
+			// the
+			// cfg
+			// file
 			// writer.println(" - echo \"source " + vm_compss_home + "/compssenv\" >>
 			// /home/" + user + "/.bashrc"); // Only needed if compssenv defined will
 			// override any predefined COMPSs env vars of .bashrc.
 
+			// Add OCCI IP to /etc/hosts so COMPSs master can resolve the OCCI endpoint
 			writer.println("  - sudo echo \"" + occiIP + "   " + hostname + "\" >> /etc/hosts");
 
 			// Add commands that are in config file.
@@ -253,6 +261,7 @@ public class rOCCIHelper extends InfrastructureHelper {
 			// Add all ssh-keys that are in config file.
 			for (String key : this.getAuth_keys()) {
 				writer.println("  - echo \"" + key + "\" >> /home/" + user + "/.ssh/authorized_keys");
+				writer.println("  - echo \"" + key + "\" >> /home/pmes/.ssh/authorized_keys");
 			}
 
 			// Redirect cloud-init log to a file
