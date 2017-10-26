@@ -13,6 +13,7 @@ import es.bsc.conn.types.HardwareDescription;
 import es.bsc.conn.types.SoftwareDescription;
 import es.bsc.conn.types.VirtualResource;
 import es.bsc.pmes.managers.infractructureHelpers.InfrastructureHelper;
+import es.bsc.pmes.types.COMPSsJob;
 import es.bsc.pmes.types.Host;
 import es.bsc.pmes.types.JobDefinition;
 import es.bsc.pmes.types.Resource;
@@ -182,6 +183,10 @@ public class InfrastructureManager {
 	public Map<String, String> configureResource(JobDefinition jobDef) {
 		Map<String, String> properties = ConfigurationManager.getConfigurationManager().getConnectorProperties();
 		return this.infrastructureHelper.configureResource(jobDef, properties);
+	}
+
+	public void configureCOMPSsMaster(COMPSsJob job) {
+		this.infrastructureHelper.configureCOMPSsMaster(job);
 	}
 
 	/**

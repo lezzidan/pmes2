@@ -7,6 +7,7 @@ import es.bsc.conn.exceptions.ConnException;
 import es.bsc.conn.types.HardwareDescription;
 import es.bsc.conn.types.SoftwareDescription;
 import es.bsc.conn.types.VirtualResource;
+import es.bsc.pmes.types.COMPSsJob;
 import es.bsc.pmes.types.JobDefinition;
 
 /**
@@ -95,4 +96,11 @@ public abstract class InfrastructureHelper {
 	 *            Resource id to remove
 	 */
 	public abstract void destroyResource(String Id);
+
+	/**
+	 * Configure a resource to act as COMPSs master
+	 * 
+	 * @param ip
+	 */
+	public abstract void configureCOMPSsMaster(COMPSsJob job);
 }

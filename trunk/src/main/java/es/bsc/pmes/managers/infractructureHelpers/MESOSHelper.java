@@ -12,6 +12,7 @@ import es.bsc.conn.mesos.Mesos;
 import es.bsc.conn.types.HardwareDescription;
 import es.bsc.conn.types.SoftwareDescription;
 import es.bsc.conn.types.VirtualResource;
+import es.bsc.pmes.types.COMPSsJob;
 import es.bsc.pmes.types.JobDefinition;
 
 /**
@@ -58,6 +59,13 @@ public class MESOSHelper extends InfrastructureHelper {
 		// TODO: test if destroy is done correctly
 		// TODO: Add Mesos stuff
 	}
+
+	@Override
+	public void configureCOMPSsMaster(COMPSsJob job) {
+		// TODO Auto-generated method stub
+		
+	}
+	
 
 	/**
 	 * ************************************************************************
