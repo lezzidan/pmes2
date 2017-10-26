@@ -105,7 +105,6 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 		} else {
 			runcompss += " --classpath=" + target;
 		}
-		ConfigurationManager cm = ConfigurationManager.getConfigurationManager();
 		String workingDir = "/home/" + user;
 
 		String resources = workingDir + "/resources.xml";

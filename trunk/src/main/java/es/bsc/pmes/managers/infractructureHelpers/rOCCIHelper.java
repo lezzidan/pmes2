@@ -687,7 +687,7 @@ public class rOCCIHelper extends InfrastructureHelper {
 			es.bsc.compss.types.resources.jaxb.ImageType image = ResourcesFile.createImage(imgName,
 					"es.bsc.compss.nio.master.NIOAdaptor", 43110, 43100);
 			// Creation time
-			image.getAdaptorsOrOperatingSystemOrSoftware().add(60);
+			image.getAdaptorsOrOperatingSystemOrSoftware().add(1);
 			es.bsc.compss.types.resources.jaxb.InstanceTypeType instance = ResourcesFile.createInstance(imgType, "proc",
 					cores, memory, disk);
 
