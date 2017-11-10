@@ -73,11 +73,17 @@ public class rOCCIHelper extends InfrastructureHelper {
 		String ca_path = configuration.get("ca-path");
 		String link = configuration.get("link");
 		String link2 = configuration.get("link2");
-
+		String netPrefix = configuration.get("network-prefix");
+		
+		
 		// Default rOCCI server configuration
 		properties.put("Server", occiEndPoint);
 		properties.put("auth", auth);
-		properties.put("link", link);
+		properties.put("link", link);		
+		
+		if (netPrefix != null) {
+			properties.put("network-prefix", netPrefix);
+		}		
 		if (link2 != null) {
 			properties.put("link2", link2);
 		}

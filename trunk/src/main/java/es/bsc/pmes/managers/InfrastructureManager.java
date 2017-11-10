@@ -160,8 +160,8 @@ public class InfrastructureManager {
 			// Update System Status
 			// OCCI doesn't give information about what host will be hosting the VM
 			Host h = systemStatus.getCluster().get(0); // test purposes: always get first Host
-			systemStatus.update(h, hd.getTotalComputingUnits(), hd.getMemorySize());
-			logger.debug("IM update: " + hd.getTotalComputingUnits() + " " + hd.getMemorySize());
+			systemStatus.update(h, hd.getTotalCPUComputingUnits(), hd.getMemorySize());
+			logger.debug("IM update: " + hd.getTotalCPUComputingUnits() + " " + hd.getMemorySize());
 			Resource newResource = new Resource(vr.getIp(), prop, vr);
 			activeResources.put((String) vr.getId(), newResource);
 			return (String) vr.getId();
