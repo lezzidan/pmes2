@@ -15,6 +15,7 @@ import es.bsc.pmes.managers.ConfigurationManager;
 import es.bsc.pmes.managers.InfrastructureManager;
 import es.bsc.pmes.types.COMPSsJob;
 import es.bsc.pmes.types.Job;
+import es.bsc.pmes.types.JobStatus;
 import es.bsc.pmes.types.User;
 
 /**
@@ -131,7 +132,11 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 		job.setCmd(cmd.toArray(command));
 
 		// Wait for SSH connectivity
-		this.waitForResource(address);
+		if (!this.waitForResource(address)) {
+			this.destroyResource(Id);
+			getJob().setStatus(JobStatus.FAILED);
+			return;
+		}
 
 		InfrastructureManager.getInfrastructureManager().configureCOMPSsMaster(this.job);
 
@@ -164,15 +169,15 @@ public class COMPSsExecutionThread extends AbstractExecutionThread {
 
 		if (exitValue > 0) {
 			if (exitValue == 143) {
-				job.setStatus("CANCELLED");
+				job.setStatus(JobStatus.CANCELLED);
 			} else {
-				job.setStatus("FAILED");
+				job.setStatus(JobStatus.FAILED);
 			}
 		} else {
 			// Stage Out
 			logger.debug("Stage out");
 			stageOut();
-			job.setStatus("FINISHED");
+			job.setStatus(JobStatus.FINISHED);
 		}
 
 		// Destroy Resource

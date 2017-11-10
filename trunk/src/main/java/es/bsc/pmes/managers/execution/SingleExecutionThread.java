@@ -10,6 +10,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import es.bsc.pmes.types.Job;
+import es.bsc.pmes.types.JobStatus;
 import es.bsc.pmes.types.SingleJob;
 
 /**
@@ -126,15 +127,15 @@ public class SingleExecutionThread extends AbstractExecutionThread {
 		logger.debug("Exit code" + exitValue);
 		if (exitValue > 0) {
 			if (exitValue == 143) {
-				job.setStatus("CANCELLED");
+				job.setStatus(JobStatus.CANCELLED);
 			} else {
-				job.setStatus("FAILED");
+				job.setStatus(JobStatus.FAILED);
 			}
 		} else {
 			// StageOut
 			logger.debug("Stage Out");
 			stageOut();
-			job.setStatus("FINISHED");
+			job.setStatus(JobStatus.FINISHED);
 		}
 
 		// Destroy Resource

@@ -1,6 +1,7 @@
 package es.bsc.pmes.managers;
 
 import es.bsc.pmes.types.Job;
+import es.bsc.pmes.types.JobStatus;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -146,7 +147,7 @@ public class JobManager {
      */
     public void enqueueJob(Job newJob) {
         this.jobs.put(newJob.getId(), newJob);
-        newJob.setStatus("PENDING");
+        newJob.setStatus(JobStatus.PENDING);
         this.scheduler.addJob(newJob);
     }
 
@@ -161,5 +162,6 @@ public class JobManager {
         } else {
             this.scheduler.stopJob(job);
         }
+        job.setStatus(JobStatus.CANCELLED);
     }
 }

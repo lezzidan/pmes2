@@ -5,6 +5,7 @@ import es.bsc.pmes.managers.execution.ExecutionThread;
 import es.bsc.pmes.managers.execution.SingleExecutionThread;
 import es.bsc.pmes.types.COMPSsJob;
 import es.bsc.pmes.types.Job;
+import es.bsc.pmes.types.JobStatus;
 import es.bsc.pmes.types.SingleJob;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -67,9 +68,9 @@ public class SchedulerThread extends Thread {
                 Job nextJob = this.nextJob();
                 if (nextJob.getTerminate()) {
                     logger.debug("Job cancelled: Job Stop before execution");
-                    nextJob.setStatus("CANCELLED");
+                    nextJob.setStatus(JobStatus.CANCELLED);
                 } else {
-                    nextJob.setStatus("RUNNING");
+                    nextJob.setStatus(JobStatus.RUNNING);
                     this.executeJob(nextJob);
                 }
             }

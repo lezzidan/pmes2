@@ -15,6 +15,7 @@ import es.bsc.conn.types.SoftwareDescription;
 import es.bsc.pmes.managers.ConfigurationManager;
 import es.bsc.pmes.managers.InfrastructureManager;
 import es.bsc.pmes.types.Job;
+import es.bsc.pmes.types.JobStatus;
 
 /**
  * ABSTRACT EXECUTION THREAD Class.
@@ -66,7 +67,7 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 		if (this.process != null) {
 			this.process.destroy();
 			logger.debug("Job cancelled: Execution stopped");
-			getJob().setStatus("CANCELLED");
+			getJob().setStatus(JobStatus.CANCELLED);
 		}
 	}
 
@@ -147,7 +148,7 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 		while (i < times && exitValue != 0) {
 			logger.debug("Round " + String.valueOf(i));
 			logger.debug("Command: " + Arrays.toString(cmd));
-		
+
 			try {
 				ProcessBuilder pb = new ProcessBuilder(cmd);
 				pb.redirectErrorStream(true);
@@ -194,7 +195,7 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 	 */
 	public Boolean stopExecution(String Id, Boolean destroyResource) {
 		if (Id == null || Id.equals("-1")) {
-			getJob().setStatus("FAILED");
+			getJob().setStatus(JobStatus.FAILED);
 			getJob().getReport().setJobErrorMessage("OCCI has failed creating the resource");
 			return Boolean.TRUE;
 		}
@@ -204,14 +205,14 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 				logger.debug("Job cancelled: Destroying resource with Id: " + Id);
 				destroyResource(Id);
 			}
-			getJob().setStatus("CANCELLED");
+			getJob().setStatus(JobStatus.CANCELLED);
 			return Boolean.TRUE;
 		}
 		return Boolean.FALSE;
 	}
 
 	// Maximum waiting time is timeout
-	protected void waitForResource(String addr) {
+	protected boolean waitForResource(String addr) {
 		ProcessBuilder pb = new ProcessBuilder("ssh", addr, "echo");
 
 		// TODO: add timeout and polling interval in config file
@@ -231,11 +232,11 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 				// TODO: set timeout in cfg file
 				if (!p.waitFor(timeout, TimeUnit.SECONDS)) {
 					logger.warn("SSH timeout after " + timeout + " seconds.");
-					return;
+					return false;
 				}
 				if (p.exitValue() == 0) {
 					logger.debug("SSH established.");
-					return;
+					return true;
 				}
 				logger.debug("Connection refused. Waiting " + pollingInterval + " seconds.");
 				tries++;
@@ -246,6 +247,7 @@ public abstract class AbstractExecutionThread extends Thread implements Executio
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		logger.warn("Could not establish SSH connection in " + timeout + " seconds.");
+		logger.warn("Could not establish SSH connection in " + timeout + " seconds. Terminating activity.");
+		return false;
 	}
 }

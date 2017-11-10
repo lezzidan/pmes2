@@ -106,11 +106,11 @@ public class PMESservice {
             if (job != null) {
                 job.setTerminate(Boolean.TRUE);
 
-                if (job.getStatus().equals("FAILED")) {
+                if (job.getStatus().equals(JobStatus.FAILED)) {
                     message += "Job with id "
                             + id
                             + " cannot be cancelled, the job has been finished in Failed state.";
-                } else if (job.getStatus().equals("FINISHED")) {
+                } else if (job.getStatus().equals(JobStatus.FINISHED)) {
                     message += "Job with id "
                             + id
                             + " cannot be cancelled, the job has been finished.";
@@ -144,10 +144,10 @@ public class PMESservice {
             if (job != null) {
                 logger.debug("Job Found");
                 logger.debug(job.getStatus());
-                status.add(JobStatus.valueOf(job.getStatus()));
+                status.add(job.getStatus());
             } else {
                 logger.debug("Job not found");
-                status.add(JobStatus.valueOf("FAILED"));
+                status.add(JobStatus.FAILED);
             }
         }
         logger.debug("Sending list status " + status.toString());

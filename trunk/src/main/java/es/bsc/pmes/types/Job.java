@@ -52,12 +52,12 @@ public class Job {
 		return id;
 	}
 
-	public String getStatus() {
-		return status.toString();
+	public JobStatus getStatus() {
+		return status;
 	}
 
-	public void setStatus(String status) {
-		this.status = JobStatus.valueOf(status);
+	public void setStatus(JobStatus status) {
+		this.status = status;
 		this.report.setJobStatus(this.status);
 	}
 

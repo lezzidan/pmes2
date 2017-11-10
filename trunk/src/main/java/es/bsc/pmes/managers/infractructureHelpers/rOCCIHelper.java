@@ -182,8 +182,8 @@ public class rOCCIHelper extends InfrastructureHelper {
 
 			// TODO: check that uid and gid are not null
 			String gid = jobDef.getUser().getCredentials().get("gid");
-			String uid = jobDef.getUser().getCredentials().get("uid");
-
+			String uid = jobDef.getUser().getCredentials().get("uid");			
+			
 			// Retrieve mount points
 			ArrayList<MountPoint> mountPoints = jobDef.getMountPoints();
 
@@ -439,7 +439,7 @@ public class rOCCIHelper extends InfrastructureHelper {
 
 	private void transferCredentials(COMPSsJob job) {
 		logger.debug("Transferring credentials...");
-
+		
 		ConfigurationManager cm = ConfigurationManager.getConfigurationManager();
 		User user = job.getJobDef().getUser();
 
